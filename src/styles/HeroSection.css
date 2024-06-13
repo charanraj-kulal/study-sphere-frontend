@@ -1,0 +1,52 @@
+/* src/components/HeroSection.css */
+.hero-section {
+  background: #fff;
+  padding: 50px 0;
+  text-align: center;
+}
+
+.container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.hero-text {
+  flex: 1;
+}
+
+.hero-text h1 {
+  margin: 0;
+  font-size: 2.5em;
+  font-weight: bold;
+}
+
+.hero-text .highlight {
+  color: #0056b3;
+}
+
+.hero-text p {
+  margin: 10px 0 20px;
+  font-size: 1.2em;
+}
+
+.hero-text .btn-login {
+  background: #fdbf1e;
+  color: #000;
+  padding: 10px 20px;
+  text-decoration: none;
+  border-radius: 5px;
+  font-weight: bold;
+}
+
+.hero-image {
+  flex: 1;
+  text-align: right;
+}
+
+.hero-image img {
+  max-width: 100%;
+  height: auto;
+}

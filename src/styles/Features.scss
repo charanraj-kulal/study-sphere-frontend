@@ -1,0 +1,58 @@
+/* src/components/Features.css */
+
+@font-face {
+  font-family: Graduate;
+  src: url("../../public/fonts/custom/Graduate-Regular.ttf");
+}
+.features-section {
+  background: #fff;
+  padding: 50px 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.container {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.features-text h3 {
+  font-family: Graduate;
+  flex: 1;
+  margin-right: 20px;
+}
+
+.features-text h2 {
+  font-size: 2.5em;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+.features-text .feature {
+  margin-bottom: 20px;
+}
+
+.features-text .feature h3 {
+  font-size: 1.5em;
+  font-weight: bold;
+  margin: 0;
+}
+
+.features-text .feature p {
+  font-size: 1.2em;
+  margin: 5px 0;
+}
+
+.features-image {
+  flex: 1;
+  text-align: right;
+}
+
+.features-image img {
+  max-width: 100%;
+  height: auto;
+}

@@ -1,0 +1,24 @@
+/* src/App.css */
+html,
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+#smooth-wrapper {
+  height: 100%;
+  overflow: hidden;
+  position: fixed;
+  width: 100%;
+}
+
+#smooth-content {
+  overflow: visible;
+  position: relative;
+}
+
+[data-scroll-container] {
+  overflow: hidden;
+}

@@ -1,12 +1,13 @@
 // src/components/Header.jsx
 import React from "react";
+import "../styles/header.css"; // Create this CSS file for header specific styles
 
 const Header = () => {
   return (
-    <header>
+    <header className="header">
       <div className="container">
         <div className="logo">
-          <h1>Study Sphere</h1>
+          <img src="/images/logo.png" alt="Study Sphere Logo" />
         </div>
         <nav>
           <ul>
@@ -20,19 +21,16 @@ const Header = () => {
               <a href="#about">About Us</a>
             </li>
             <li>
-              <a href="#domians">Domain</a>
+              <a href="#domain">Domains</a>
             </li>
             <li>
               <a href="#contact">Contact</a>
             </li>
-            <li>
-              <a href="/login">Login</a>
-            </li>
-            <li>
-              <a href="/register">Register</a>
-            </li>
           </ul>
         </nav>
+        <a href="/login" className="btn-login">
+          Login
+        </a>
       </div>
     </header>
   );

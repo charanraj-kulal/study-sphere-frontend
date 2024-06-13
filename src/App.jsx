@@ -1,13 +1,33 @@
 // src/App.jsx
-import React from "react";
+import React, { useEffect } from "react";
+// import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
+import LocomotiveScroll from "locomotive-scroll";
+import "locomotive-scroll/dist/locomotive-scroll.css";
 import Home from "./pages/Home";
-import "./styles/index.css";
+import "./styles/App.css";
 
 const App = () => {
+  useEffect(() => {
+    const scroll = new LocomotiveScroll({
+      el: document.querySelector("#smooth-content"),
+      smooth: true,
+    });
+
+    return () => {
+      scroll.destroy();
+    };
+  }, []);
+
   return (
-    <div className="App">
-      <Home />
+    // <Router>
+    <div id="smooth-wrapper">
+      <div id="smooth-content">
+        <div className="App" data-scroll-container>
+          <Home />
+        </div>
+      </div>
     </div>
+    // </Router>
   );
 };
 
