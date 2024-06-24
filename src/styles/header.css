@@ -1,4 +1,9 @@
 /* src/components/Header.css */
+
+@font-face {
+  font-family: icomoon;
+  src: url("../../public/fonts/remixicon.ttf");
+}
 .header {
   background: #f0f0f0;
   padding: 10px 0;
@@ -8,7 +13,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  max-width: 1000px;
+  max-width: 1200px;
   margin: 0 auto;
 }
 
@@ -21,6 +26,8 @@ nav ul {
   display: flex;
   margin: 0;
   padding: 0;
+  font-size: 20px;
+  justify-content: space-around;
 }
 
 nav ul li {
@@ -31,6 +38,7 @@ nav ul li a {
   text-decoration: none;
   color: #000;
   font-weight: bold;
+  font-family: icomoon;
 }
 
 .btn-login {
