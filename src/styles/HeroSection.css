@@ -4,7 +4,7 @@
   align-items: center;
   justify-content: center;
   padding: 50px 0;
-  background-color: #474747;
+  background-color: #fff;
 }
 .hero {
   font-size: clamp(40px, 10vw, 100px);
