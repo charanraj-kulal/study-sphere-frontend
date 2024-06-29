@@ -34,6 +34,7 @@ function SignUpForm() {
     evt.preventDefault();
 
     const { name, email, password, course } = state;
+    const userrole = 3; // Default role for new users
 
     try {
       const userCredential = await createUserWithEmailAndPassword(
@@ -47,7 +48,9 @@ function SignUpForm() {
         name,
         email,
         course,
+        password,
         userId: user.uid,
+        userrole, // Save user role in database
       });
 
       await sendEmailVerification(user);

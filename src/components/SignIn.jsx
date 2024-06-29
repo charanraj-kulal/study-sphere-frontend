@@ -32,8 +32,15 @@ function SignInForm() {
       });
       const { token } = response.data;
 
-      // Store the token in localStorage or any state management library
-      localStorage.setItem("jwtToken", token);
+      // Decode token to get user info
+      const decodedToken = parseJwt(token); // Assuming parseJwt function is defined
+      console.log(decodedToken);
+      // Store the token and user info in sessionStorage
+      sessionStorage.setItem("jwtToken", token);
+      sessionStorage.setItem("userName", decodedToken.name);
+      sessionStorage.setItem("userRole", decodedToken.role);
+      sessionStorage.setItem("userCourse", decodedToken.course);
+      sessionStorage.setItem("userEmail", decodedToken.email);
 
       setToast({
         visible: true,
@@ -56,6 +63,15 @@ function SignInForm() {
           error.response?.data?.message ||
           "Error signing in. Please check your credentials.",
       });
+    }
+  };
+
+  // Function to decode JWT token
+  const parseJwt = (token) => {
+    try {
+      return JSON.parse(atob(token.split(".")[1]));
+    } catch (e) {
+      return null;
     }
   };
 
