@@ -29,7 +29,7 @@ app.post("/login", async (req, res) => {
 
   try {
     // Use Firebase Auth REST API to verify email and password
-    const apiKey = "YOUR_FIREBASE_API_KEY"; // Replace with your Firebase web API key
+    const apiKey = "AIzaSyC_zbw6QLjNBrLsAiorx69sMymR42BxDbs"; // Replace with your Firebase web API key
     const authResponse = await axios.post(
       `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${apiKey}`,
       {
