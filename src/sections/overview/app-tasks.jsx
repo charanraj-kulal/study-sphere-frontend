@@ -1,21 +1,21 @@
-import { useState } from 'react';
-import PropTypes from 'prop-types';
+import { useState } from "react";
+import PropTypes from "prop-types";
 
-import Card from '@mui/material/Card';
-import Stack from '@mui/material/Stack';
-import Popover from '@mui/material/Popover';
-import MenuItem from '@mui/material/MenuItem';
-import Checkbox from '@mui/material/Checkbox';
-import IconButton from '@mui/material/IconButton';
-import CardHeader from '@mui/material/CardHeader';
-import FormControlLabel from '@mui/material/FormControlLabel';
+import Card from "@mui/material/Card";
+import Stack from "@mui/material/Stack";
+import Popover from "@mui/material/Popover";
+import MenuItem from "@mui/material/MenuItem";
+import Checkbox from "@mui/material/Checkbox";
+import IconButton from "@mui/material/IconButton";
+import CardHeader from "@mui/material/CardHeader";
+import FormControlLabel from "@mui/material/FormControlLabel";
 
-import Iconify from 'src/components/iconify';
+import Iconify from "../../components/iconify";
 
 // ----------------------------------------------------------------------
 
 export default function AnalyticsTasks({ title, subheader, list, ...other }) {
-  const [selected, setSelected] = useState(['2']);
+  const [selected, setSelected] = useState(["2"]);
 
   const handleClickComplete = (taskId) => {
     const tasksCompleted = selected.includes(taskId)
@@ -62,22 +62,22 @@ function TaskItem({ task, checked, onChange }) {
 
   const handleMarkComplete = () => {
     handleCloseMenu();
-    console.info('MARK COMPLETE', task.id);
+    console.info("MARK COMPLETE", task.id);
   };
 
   const handleShare = () => {
     handleCloseMenu();
-    console.info('SHARE', task.id);
+    console.info("SHARE", task.id);
   };
 
   const handleEdit = () => {
     handleCloseMenu();
-    console.info('EDIT', task.id);
+    console.info("EDIT", task.id);
   };
 
   const handleDelete = () => {
     handleCloseMenu();
-    console.info('DELETE', task.id);
+    console.info("DELETE", task.id);
   };
 
   return (
@@ -89,12 +89,12 @@ function TaskItem({ task, checked, onChange }) {
           pl: 2,
           pr: 1,
           py: 1,
-          '&:not(:last-of-type)': {
+          "&:not(:last-of-type)": {
             borderBottom: (theme) => `dashed 1px ${theme.palette.divider}`,
           },
           ...(checked && {
-            color: 'text.disabled',
-            textDecoration: 'line-through',
+            color: "text.disabled",
+            textDecoration: "line-through",
           }),
         }}
       >
@@ -104,7 +104,10 @@ function TaskItem({ task, checked, onChange }) {
           sx={{ flexGrow: 1, m: 0 }}
         />
 
-        <IconButton color={open ? 'inherit' : 'default'} onClick={handleOpenMenu}>
+        <IconButton
+          color={open ? "inherit" : "default"}
+          onClick={handleOpenMenu}
+        >
           <Iconify icon="eva:more-vertical-fill" />
         </IconButton>
       </Stack>
@@ -113,8 +116,8 @@ function TaskItem({ task, checked, onChange }) {
         open={!!open}
         anchorEl={open}
         onClose={handleCloseMenu}
-        anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
-        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+        anchorOrigin={{ vertical: "top", horizontal: "left" }}
+        transformOrigin={{ vertical: "top", horizontal: "right" }}
       >
         <MenuItem onClick={handleMarkComplete}>
           <Iconify icon="eva:checkmark-circle-2-fill" sx={{ mr: 2 }} />
@@ -131,7 +134,7 @@ function TaskItem({ task, checked, onChange }) {
           Share
         </MenuItem>
 
-        <MenuItem onClick={handleDelete} sx={{ color: 'error.main' }}>
+        <MenuItem onClick={handleDelete} sx={{ color: "error.main" }}>
           <Iconify icon="solar:trash-bin-trash-bold" sx={{ mr: 2 }} />
           Delete
         </MenuItem>

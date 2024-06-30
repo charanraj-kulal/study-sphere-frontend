@@ -1,12 +1,11 @@
-// src/App.jsx
 import React, { useEffect } from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+// import { BrowserRouter as Router } from "react-router-dom";
 import LocomotiveScroll from "locomotive-scroll";
 import "locomotive-scroll/dist/locomotive-scroll.css";
-import Home from "./pages/Home";
-import SignInSignUpForm from "./pages/SignInSignUpFrom";
-import Header from "./components/Header";
+import HeaderAndRoutes from "./routes/hooks/HeaderAndRoutes"; // Import the new wrapper component
 import "./styles/App.css";
+import Router from "./routes/sections";
+import ThemeProvider from "./theme";
 
 const App = () => {
   useEffect(() => {
@@ -21,18 +20,16 @@ const App = () => {
   }, []);
 
   return (
-    <Router>
+    <ThemeProvider>
+      <Router />
       <div id="smooth-wrapper">
         <div id="smooth-content">
           <div className="App" data-scroll-container>
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/login" element={<SignInSignUpForm />} />
-            </Routes>
+            <HeaderAndRoutes />
           </div>
         </div>
       </div>
-    </Router>
+    </ThemeProvider>
   );
 };
 

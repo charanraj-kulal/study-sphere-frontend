@@ -1,6 +1,8 @@
 import React, { useState } from "react";
-import axios from "axios";
+import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 import Toast from "./Toast"; // Assuming you have Toast component
+import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 function SignInForm() {
   const [state, setState] = useState({
@@ -12,6 +14,7 @@ function SignInForm() {
     type: "",
     message: "",
   });
+  const Navigate = useNavigate();
 
   const handleChange = (evt) => {
     const { name, value } = evt.target;
@@ -21,20 +24,65 @@ function SignInForm() {
     });
   };
 
+  const validateEmail = (email) => {
+    const emailPattern = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
+    return emailPattern.test(email);
+  };
+
   const handleOnSubmit = async (evt) => {
     evt.preventDefault();
     const { email, password } = state;
 
-    try {
-      const response = await axios.post("http://localhost:3000/login", {
-        email,
-        password,
+    // Validate inputs
+    if (!email) {
+      setToast({
+        visible: true,
+        type: "error",
+        message: "Email is required.",
       });
-      const { token } = response.data;
+      return;
+    }
 
-      // Decode token to get user info
-      const decodedToken = parseJwt(token); // Assuming parseJwt function is defined
-      console.log(decodedToken);
+    if (!validateEmail(email)) {
+      setToast({
+        visible: true,
+        type: "error",
+        message: "Invalid email format.",
+      });
+      return;
+    }
+
+    if (!password) {
+      setToast({
+        visible: true,
+        type: "error",
+        message: "Password is required.",
+      });
+      return;
+    }
+
+    if (password.length < 6) {
+      setToast({
+        visible: true,
+        type: "error",
+        message: "Password must be at least 6 characters long.",
+      });
+      return;
+    }
+
+    const auth = getAuth();
+    try {
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+      const user = userCredential.user;
+
+      // Fetch additional user details from Firestore
+      const token = await user.getIdToken();
+      const decodedToken = parseJwt(token);
+
       // Store the token and user info in sessionStorage
       sessionStorage.setItem("jwtToken", token);
       sessionStorage.setItem("userName", decodedToken.name);
@@ -53,15 +101,14 @@ function SignInForm() {
         email: "",
         password: "",
       });
-
+      Navigate("/");
       // Redirect or perform other actions on successful login
     } catch (error) {
+      console.error("Error during authentication:", error);
       setToast({
         visible: true,
         type: "error",
-        message:
-          error.response?.data?.message ||
-          "Error signing in. Please check your credentials.",
+        message: "Error signing in. Please check your credentials.",
       });
     }
   };
@@ -112,7 +159,7 @@ function SignInForm() {
           value={state.password}
           onChange={handleChange}
         />
-        <a href="#">Forgot your password?</a>
+        <Link to="/">Forgot your password?</Link>
         <button type="submit">Sign In</button>
       </form>
     </div>
