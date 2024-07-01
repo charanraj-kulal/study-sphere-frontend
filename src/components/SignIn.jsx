@@ -14,7 +14,7 @@ function SignInForm() {
     type: "",
     message: "",
   });
-  const Navigate = useNavigate();
+  const navigate = useNavigate();
 
   const handleChange = (evt) => {
     const { name, value } = evt.target;
@@ -101,8 +101,11 @@ function SignInForm() {
         email: "",
         password: "",
       });
-      Navigate("/");
-      // Redirect or perform other actions on successful login
+
+      // Navigate after toast is displayed
+      setTimeout(() => {
+        navigate("/dashboard");
+      }, 3000); // Adjust delay as needed for the toast message duration
     } catch (error) {
       console.error("Error during authentication:", error);
       setToast({

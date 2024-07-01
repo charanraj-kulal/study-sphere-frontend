@@ -1,10 +1,10 @@
-import PropTypes from 'prop-types';
+import PropTypes from "prop-types";
 
-import TextField from '@mui/material/TextField';
-import InputAdornment from '@mui/material/InputAdornment';
-import Autocomplete, { autocompleteClasses } from '@mui/material/Autocomplete';
+import TextField from "@mui/material/TextField";
+import InputAdornment from "@mui/material/InputAdornment";
+import Autocomplete, { autocompleteClasses } from "@mui/material/Autocomplete";
 
-import Iconify from 'src/components/iconify';
+import Iconify from "../../components/iconify";
 
 // ----------------------------------------------------------------------
 
@@ -23,7 +23,7 @@ export default function PostSearch({ posts }) {
           sx: {
             width: 320,
             [`& .${autocompleteClasses.option}`]: {
-              typography: 'body2',
+              typography: "body2",
             },
           },
         },
@@ -41,7 +41,7 @@ export default function PostSearch({ posts }) {
               <InputAdornment position="start">
                 <Iconify
                   icon="eva:search-fill"
-                  sx={{ ml: 1, width: 20, height: 20, color: 'text.disabled' }}
+                  sx={{ ml: 1, width: 20, height: 20, color: "text.disabled" }}
                 />
               </InputAdornment>
             ),

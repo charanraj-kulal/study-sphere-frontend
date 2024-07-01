@@ -15,7 +15,7 @@ body {
 }
 
 #smooth-content {
-  overflow: visible;
+  overflow: hidden;
   position: relative;
 }
 
