@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { collection, addDoc } from "firebase/firestore";
+import { collection, doc, setDoc } from "firebase/firestore"; // Adjusted import for setDoc
 import {
   createUserWithEmailAndPassword,
   sendEmailVerification,
@@ -44,11 +44,11 @@ function SignUpForm() {
       );
       const user = userCredential.user;
 
-      await addDoc(collection(db, "users"), {
+      // Use setDoc with the user ID as the document ID
+      await setDoc(doc(db, "users", user.uid), {
         name,
         email,
         course,
-        password,
         userId: user.uid,
         userrole, // Save user role in database
       });

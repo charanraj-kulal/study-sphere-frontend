@@ -1,7 +1,8 @@
+// src/routes/sections.jsx
 import { lazy, Suspense } from "react";
 import { Outlet, Navigate, useRoutes } from "react-router-dom";
-
 import DashboardLayout from "../layouts/dashboard";
+import SkeletonLoader from "../components/SkeletonLoader"; // Ensure correct extension
 
 // Lazy load your components
 export const IndexPage = lazy(() => import("../pages/app"));
@@ -18,7 +19,7 @@ export default function Router() {
     {
       path: "/",
       element: (
-        <Suspense fallback={<div>Loading...</div>}>
+        <Suspense fallback={<SkeletonLoader />}>
           <Home />
         </Suspense>
       ),
@@ -27,7 +28,7 @@ export default function Router() {
       path: "dashboard",
       element: (
         <DashboardLayout>
-          <Suspense fallback={<div>Loading...</div>}>
+          <Suspense fallback={<SkeletonLoader />}>
             <Outlet />
           </Suspense>
         </DashboardLayout>
@@ -42,16 +43,15 @@ export default function Router() {
     {
       path: "login",
       element: (
-        <Suspense fallback={<div>Loading...</div>}>
+        <Suspense fallback={<SkeletonLoader />}>
           <LoginPage />
         </Suspense>
       ),
     },
-
     {
       path: "404",
       element: (
-        <Suspense fallback={<div>Loading...</div>}>
+        <Suspense fallback={<SkeletonLoader />}>
           <Page404 />
         </Suspense>
       ),

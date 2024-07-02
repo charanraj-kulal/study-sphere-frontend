@@ -24,6 +24,7 @@ app.post("/login", async (req, res) => {
   console.log("Received login request with password:", password); // Log password here
 
   if (!email || !password) {
+    console.log("Email and password are required");
     return res.status(400).send({ message: "Email and password are required" });
   }
 
@@ -53,10 +54,17 @@ app.post("/login", async (req, res) => {
         .collection("users")
         .doc(localId)
         .get();
+
       if (!userDoc.exists) {
+        console.log(
+          `User document for localId ${localId} not found in Firestore`
+        );
         return res.status(400).send({ message: "User not found" });
       }
+
       const userData = userDoc.data();
+      console.log("Retrieved user data from Firestore:", userData);
+
       const userRole = userData.userrole;
       const userName = userData.name;
       const userCourse = userData.course;
@@ -74,7 +82,7 @@ app.post("/login", async (req, res) => {
           expiresIn: "1h",
         }
       );
-      console.log("Generated JWT token:", token);
+
       res.send({ token });
     } else {
       throw new Error("Invalid login credentials");
