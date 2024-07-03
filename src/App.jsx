@@ -1,38 +1,19 @@
-import React, { useEffect } from "react";
-import LocomotiveScroll from "locomotive-scroll";
-import "locomotive-scroll/dist/locomotive-scroll.css";
-import HeaderAndRoutes from "./routes/hooks/HeaderAndRoutes"; // Import the new wrapper component
+// App.jsx
+import React from "react";
 import "./styles/App.css";
-import Router from "./routes/sections";
 import ThemeProvider from "./theme";
+import { UserProvider } from "./UserContext";
+import RouterComponent from "./routes/sections"; // Import the modified Router
 
 const App = () => {
-  useEffect(() => {
-    const scrollEl = document.querySelector("#smooth-content");
-
-    if (scrollEl) {
-      const scroll = new LocomotiveScroll({
-        el: scrollEl,
-        smooth: true,
-      });
-
-      return () => {
-        scroll.destroy();
-      };
-    }
-  }, []);
-
   return (
-    <ThemeProvider>
-      <Router />
-      <div id="smooth-wrapper">
-        <div id="smooth-content">
-          <div className="App" data-scroll-container>
-            <HeaderAndRoutes />
-          </div>
+    <UserProvider>
+      <ThemeProvider>
+        <div className="App">
+          <RouterComponent />
         </div>
-      </div>
-    </ThemeProvider>
+      </ThemeProvider>
+    </UserProvider>
   );
 };
 

@@ -4,21 +4,21 @@ body {
   height: 100%;
   margin: 0;
   padding: 0;
-  overflow: hidden;
+  overflow: auto; /* Changed from hidden to auto */
 }
 
 #smooth-wrapper {
-  height: 100%;
-  overflow: hidden;
-  position: fixed;
+  height: auto; /* Changed from 100% to auto */
+  overflow: visible; /* Changed from hidden to visible */
+  position: static; /* Changed from fixed to static */
   width: 100%;
 }
 
 #smooth-content {
-  overflow: hidden;
+  overflow: visible; /* Changed from hidden to visible */
   position: relative;
 }
 
 [data-scroll-container] {
-  overflow: hidden;
+  overflow: visible; /* Changed from hidden to visible */
 }

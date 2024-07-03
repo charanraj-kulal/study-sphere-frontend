@@ -1,11 +1,13 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
-import Toast from "./Toast"; // Assuming you have Toast component
+import { useUser } from "../UserContext";
+import Toast from "./Toast";
 
 function SignInForm() {
   const [state, setState] = useState({ email: "", password: "" });
   const [toast, setToast] = useState({ visible: false, type: "", message: "" });
+  const { updateUserData } = useUser(); // Access updateUserData function from context
   const navigate = useNavigate();
 
   const handleChange = (evt) => {
@@ -36,7 +38,18 @@ function SignInForm() {
 
       if (response.ok) {
         const data = await response.json();
-        sessionStorage.setItem("jwtToken", data.token);
+        console.log("Received data:", data);
+
+        // Update user data context with fetched user information
+        updateUserData({
+          displayName: data.displayName,
+          email: data.email,
+          photoURL: data.photoURL,
+          userRole: data.userRole, // Add this line
+        });
+
+        // No need to set sessionStorage here as it's handled in the context
+
         setToast({
           visible: true,
           type: "success",

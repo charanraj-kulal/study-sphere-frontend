@@ -14,6 +14,7 @@ import { usePathname } from "../../routes/hooks";
 import { RouterLink } from "../../routes/components";
 
 import { useResponsive } from "../../hooks/use-responsive";
+import { useUser } from "../../UserContext";
 
 import { account } from "../../_mock/account";
 
@@ -27,7 +28,7 @@ import navConfig from "./config-navigation";
 
 export default function Nav({ openNav, onCloseNav }) {
   const pathname = usePathname();
-
+  const { userData } = useUser();
   const upLg = useResponsive("up", "lg");
 
   useEffect(() => {
@@ -50,10 +51,10 @@ export default function Nav({ openNav, onCloseNav }) {
         bgcolor: (theme) => alpha(theme.palette.grey[500], 0.12),
       }}
     >
-      <Avatar src={account.photoURL} alt="photoURL" />
+      <Avatar src={userData.photoURL} alt="photoURL" />
 
       <Box sx={{ ml: 2 }}>
-        <Typography variant="subtitle2">{account.displayName}</Typography>
+        <Typography variant="subtitle2">{userData.displayName}</Typography>
 
         <Typography variant="body2" sx={{ color: "text.secondary" }}>
           {account.role}

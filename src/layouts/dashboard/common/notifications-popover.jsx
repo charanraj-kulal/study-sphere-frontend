@@ -39,7 +39,7 @@ const NOTIFICATIONS = [
     id: faker.string.uuid(),
     title: faker.person.fullName(),
     description: "answered to your comment on the Minimal",
-    avatar: "/assets/images/avatars/avatar_2.jpg",
+    avatar: "../src/../src/assets/images/avatars/avatar_2.jpg",
     type: "friend_interactive",
     createdAt: sub(new Date(), { hours: 3, minutes: 30 }),
     isUnRead: true,
@@ -268,7 +268,7 @@ function renderContent(notification) {
       avatar: (
         <img
           alt={notification.title}
-          src="/assets/icons/ic_notification_package.svg"
+          src="/../src/assets/icons/ic_notification_package.svg"
         />
       ),
       title,
@@ -279,7 +279,7 @@ function renderContent(notification) {
       avatar: (
         <img
           alt={notification.title}
-          src="/assets/icons/ic_notification_shipping.svg"
+          src="/../src/assets/icons/ic_notification_shipping.svg"
         />
       ),
       title,
@@ -290,7 +290,7 @@ function renderContent(notification) {
       avatar: (
         <img
           alt={notification.title}
-          src="/assets/icons/ic_notification_mail.svg"
+          src="/../src/assets/icons/ic_notification_mail.svg"
         />
       ),
       title,
@@ -301,7 +301,7 @@ function renderContent(notification) {
       avatar: (
         <img
           alt={notification.title}
-          src="/assets/icons/ic_notification_chat.svg"
+          src="/../src/assets/icons/ic_notification_chat.svg"
         />
       ),
       title,

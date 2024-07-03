@@ -19,9 +19,9 @@ app.use(bodyParser.json());
 app.use(cors({ origin: "http://localhost:5173" })); // Adjust the origin to your frontend's address
 
 app.post("/login", async (req, res) => {
+  console.log("Login endpoint hit");
   const { email, password } = req.body;
   console.log("Received login request with email:", email);
-  console.log("Received login request with password:", password); // Log password here
 
   if (!email || !password) {
     console.log("Email and password are required");
@@ -29,8 +29,8 @@ app.post("/login", async (req, res) => {
   }
 
   try {
-    // Use Firebase Auth REST API to verify email and password
-    const apiKey = "AIzaSyC_zbw6QLjNBrLsAiorx69sMymR42BxDbs"; // Replace with your Firebase web API key
+    console.log("Attempting to authenticate with Firebase");
+    const apiKey = "AIzaSyC_zbw6QLjNBrLsAiorx69sMymR42BxDbs";
     const authResponse = await axios.post(
       `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${apiKey}`,
       {
@@ -44,11 +44,11 @@ app.post("/login", async (req, res) => {
       const { localId } = authResponse.data;
 
       const userRecord = await admin.auth().getUser(localId);
+
       if (!userRecord.emailVerified) {
         return res.status(400).send({ message: "Email not verified" });
       }
 
-      // Retrieve user information from Firestore
       const userDoc = await admin
         .firestore()
         .collection("users")
@@ -56,9 +56,6 @@ app.post("/login", async (req, res) => {
         .get();
 
       if (!userDoc.exists) {
-        console.log(
-          `User document for localId ${localId} not found in Firestore`
-        );
         return res.status(400).send({ message: "User not found" });
       }
 
@@ -69,6 +66,7 @@ app.post("/login", async (req, res) => {
       const userName = userData.name;
       const userCourse = userData.course;
 
+      console.log("Generating JWT token");
       const token = jwt.sign(
         {
           uid: userRecord.uid,
@@ -83,8 +81,23 @@ app.post("/login", async (req, res) => {
         }
       );
 
-      res.send({ token });
+      console.log("Sending response:", {
+        token,
+        displayName: userName,
+        email,
+        photoURL: "../../src/assets/images/avatars/avatar_25.jpg",
+        userRole, // Add this line
+      });
+
+      res.send({
+        token,
+        displayName: userName,
+        email,
+        photoURL: "../../src/assets/images/avatars/avatar_25.jpg",
+        userRole, // Add this line
+      });
     } else {
+      console.log("Invalid login credentials");
       throw new Error("Invalid login credentials");
     }
   } catch (error) {
