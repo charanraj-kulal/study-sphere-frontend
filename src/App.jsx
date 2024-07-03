@@ -1,13 +1,19 @@
-// src/App.jsx
+// App.jsx
 import React from "react";
-import Home from "./pages/Home";
-import "./styles/index.css";
+import "./styles/App.css";
+import ThemeProvider from "./theme";
+import { UserProvider } from "./UserContext";
+import RouterComponent from "./routes/sections"; // Import the modified Router
 
 const App = () => {
   return (
-    <div className="App">
-      <Home />
-    </div>
+    <UserProvider>
+      <ThemeProvider>
+        <div className="App">
+          <RouterComponent />
+        </div>
+      </ThemeProvider>
+    </UserProvider>
   );
 };
 

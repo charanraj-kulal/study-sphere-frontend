@@ -1,0 +1,91 @@
+/* src/styles/JoinUs.css */
+.Domains-section {
+  padding: 50px 0;
+  background-color: #fff;
+}
+
+.container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.Domains-image {
+  flex: 1;
+}
+
+.Domains-image img {
+  max-width: 100%;
+  height: auto;
+}
+
+.Domains-text {
+  flex: 1;
+  padding-left: 20px;
+}
+
+.Domains-text h2 {
+  font-size: 2.5rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  margin-bottom: 20px;
+  border-bottom: 5px solid black;
+  display: inline-block;
+  padding-bottom: 5px;
+}
+
+.Domains-text p {
+  font-size: 1.25rem;
+  line-height: 1.6;
+  color: #333;
+  margin-bottom: 20px;
+}
+
+.Domains-buttons {
+  display: flex;
+  gap: 20px;
+}
+
+.Domains-buttons .explore-button,
+.Domains-buttons .donate-button {
+  background-color: #fdbf2d;
+  color: #0033a0;
+  font-size: 1rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  padding: 10px 20px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.Domains-buttons .explore-button:hover,
+.Domains-buttons .donate-button:hover {
+  background-color: #0033a0;
+  color: #fdbf2d;
+}
+
+/* responsive  */
+@media (max-width: 768px) {
+  .container {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .Domains-text {
+    padding-left: 0;
+    margin-top: 20px;
+  }
+
+  .Domains-buttons {
+    flex-direction: column;
+  }
+
+  .Domains-buttons .explore-button,
+  .Domains-buttons .donate-button {
+    width: 100%;
+  }
+}

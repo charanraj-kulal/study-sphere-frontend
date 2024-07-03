@@ -1,39 +1,28 @@
-// src/components/Testimonials.jsx
+// src/components/Domains.jsx
 import React from "react";
+import "../styles/Domains.css";
 
-const Domain = () => {
+const Domains = () => {
   return (
-    <section id="domains" className="container">
-      <h2>Testimonials</h2>
-      <div className="testimonial">
-        <p>
-          "Study Sphere has transformed the way I study. The verified materials
-          are incredibly helpful!"
-        </p>
-        <p>
-          <strong>- Alex, Student</strong>
-        </p>
-      </div>
-      <div className="testimonial">
-        <p>
-          "As a lecturer, I find it rewarding to verify materials and help
-          students access quality resources."
-        </p>
-        <p>
-          <strong>- Dr. Smith, Lecturer</strong>
-        </p>
-      </div>
-      <div className="testimonial">
-        <p>
-          "The leaderboard and points system motivate me to contribute more to
-          the community."
-        </p>
-        <p>
-          <strong>- Jessica, Student</strong>
-        </p>
+    <section id="Domains" className="Domains-section">
+      <div className="container">
+        <div className="Domains-text">
+          <h2>Join Study Sphere Today</h2>
+          <p>
+            Become part of a growing community of learners and educators. Sign
+            up now and start sharing, learning, and growing together!
+          </p>
+          <div className="Domains-buttons">
+            <button className="explore-button">Explore</button>
+            <button className="donate-button">Donate</button>
+          </div>
+        </div>
+        <div className="Domains-image">
+          <img src="/images/contact_us.png" alt="Teacher Illustration" />
+        </div>
       </div>
     </section>
   );
 };
 
-export default Domain;
+export default Domains;

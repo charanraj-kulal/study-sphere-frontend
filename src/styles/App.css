@@ -1,0 +1,24 @@
+/* src/App.css */
+html,
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: auto; /* Changed from hidden to auto */
+}
+
+#smooth-wrapper {
+  height: auto; /* Changed from 100% to auto */
+  overflow: visible; /* Changed from hidden to visible */
+  position: static; /* Changed from fixed to static */
+  width: 100%;
+}
+
+#smooth-content {
+  overflow: visible; /* Changed from hidden to visible */
+  position: relative;
+}
+
+[data-scroll-container] {
+  overflow: visible; /* Changed from hidden to visible */
+}

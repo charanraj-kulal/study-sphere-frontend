@@ -5,7 +5,7 @@ import HeroSection from "../components/HeroSection";
 import Features from "../components/Features";
 import AboutUs from "../components/AboutUs";
 import Domain from "../components/Domains";
-import Contact from "../components/Contact";
+
 import Footer from "../components/Footer";
 
 const Home = () => {
@@ -16,7 +16,6 @@ const Home = () => {
       <Features />
       <AboutUs />
       <Domain />
-      <Contact />
       <Footer />
     </div>
   );
