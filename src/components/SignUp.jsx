@@ -1,12 +1,14 @@
+// src/components/SignUpForm.jsx
 import React, { useState } from "react";
-import { collection, doc, setDoc } from "firebase/firestore"; // Adjusted import for setDoc
+import { collection, doc, setDoc } from "firebase/firestore";
 import {
   createUserWithEmailAndPassword,
   sendEmailVerification,
   signOut,
 } from "firebase/auth";
-import { auth, db } from "../firebase"; // Adjust the path as needed
-import Toast from "./Toast"; // Import the Toast component
+import { auth, db } from "../firebase";
+import Toast from "./Toast";
+import LottieLoader from "./LottieLoader";
 
 function SignUpForm() {
   const [state, setState] = useState({
@@ -22,6 +24,8 @@ function SignUpForm() {
     message: "",
   });
 
+  const [isLoading, setIsLoading] = useState(false);
+
   const handleChange = (evt) => {
     const { name, value } = evt.target;
     setState({
@@ -36,6 +40,8 @@ function SignUpForm() {
     const { name, email, password, course } = state;
     const userrole = 3;
 
+    setIsLoading(true); // Start loading
+
     try {
       const userCredential = await createUserWithEmailAndPassword(
         auth,
@@ -44,13 +50,12 @@ function SignUpForm() {
       );
       const user = userCredential.user;
 
-      // Use setDoc with the user ID as the document ID
       await setDoc(doc(db, "users", user.uid), {
         name,
         email,
         course,
         userId: user.uid,
-        userrole, // Save user role in database
+        userrole,
       });
 
       await sendEmailVerification(user);
@@ -82,6 +87,7 @@ function SignUpForm() {
       });
     } finally {
       await signOut(auth);
+      setIsLoading(false); // Stop loading regardless of outcome
     }
   };
 
@@ -89,6 +95,7 @@ function SignUpForm() {
 
   return (
     <div className="form-container sign-up-container">
+      {isLoading && <LottieLoader />} {/* Render loader before the form */}
       {toast.visible && (
         <Toast
           type={toast.type}

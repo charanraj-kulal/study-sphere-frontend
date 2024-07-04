@@ -120,6 +120,7 @@
   top: 0;
   height: 100%;
   transition: all 0.6s ease-in-out;
+  z-index: 1;
 }
 
 .login-page .sign-in-container {
@@ -265,4 +266,21 @@
 .login-page footer a {
   color: #3c97bf;
   text-decoration: none;
+}
+.lottie-loader {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 9999; /* Ensure it's on top of other elements */
+}
+
+.lottie-loader .lottie-animation {
+  width: 200px;
+  height: 200px;
 }

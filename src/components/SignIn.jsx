@@ -1,13 +1,16 @@
+// src/components/SignInForm.jsx
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
 import { useUser } from "../UserContext";
 import Toast from "./Toast";
+import LottieLoader from "./LottieLoader";
 
 function SignInForm() {
   const [state, setState] = useState({ email: "", password: "" });
   const [toast, setToast] = useState({ visible: false, type: "", message: "" });
-  const { updateUserData } = useUser(); // Access updateUserData function from context
+  const [isLoading, setIsLoading] = useState(false);
+  const { updateUserData } = useUser();
   const navigate = useNavigate();
 
   const handleChange = (evt) => {
@@ -29,6 +32,8 @@ function SignInForm() {
       return;
     }
 
+    setIsLoading(true); // Start loading
+
     try {
       const response = await fetch("http://localhost:3000/login", {
         method: "POST",
@@ -40,15 +45,12 @@ function SignInForm() {
         const data = await response.json();
         console.log("Received data:", data);
 
-        // Update user data context with fetched user information
         updateUserData({
           displayName: data.displayName,
           email: data.email,
           photoURL: data.photoURL,
-          userRole: data.userRole, // Add this line
+          userRole: data.userRole,
         });
-
-        // No need to set sessionStorage here as it's handled in the context
 
         setToast({
           visible: true,
@@ -69,11 +71,14 @@ function SignInForm() {
     } catch (error) {
       console.error("Error during authentication:", error);
       setToast({ visible: true, type: "error", message: "Error signing in" });
+    } finally {
+      setIsLoading(false); // Stop loading regardless of outcome
     }
   };
 
   return (
     <div className="form-container sign-in-container">
+      {isLoading && <LottieLoader />} {/* Render loader before the form */}
       {toast.visible && (
         <Toast
           type={toast.type}
