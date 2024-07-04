@@ -2,10 +2,11 @@
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "../styles/header.css"; // Create this CSS file for header specific styles
+import { useUser } from "../UserContext";
 
 const Header = () => {
   const navigate = useNavigate();
-
+  const { userData } = useUser();
   useEffect(() => {
     const handleScroll = () => {
       const sections = document.querySelectorAll("section");
@@ -46,9 +47,15 @@ const Header = () => {
     }
   };
 
-  const handleLoginClick = (e) => {
+  const handleAuthButtonClick = (e) => {
     e.preventDefault();
-    navigate("/login");
+    if (userData) {
+      // If user is logged in, navigate to dashboard
+      navigate("/dashboard");
+    } else {
+      // If user is not logged in, navigate to login page
+      navigate("/login");
+    }
   };
 
   return (
@@ -86,8 +93,12 @@ const Header = () => {
             </li>
           </ul>
         </nav>
-        <a href="/login" className="btn-login" onClick={handleLoginClick}>
-          Login
+        <a
+          href={userData ? "/dashboard" : "/login"}
+          className="btn-login"
+          onClick={handleAuthButtonClick}
+        >
+          {userData ? "Dashboard" : "Login"}
         </a>
       </div>
     </header>

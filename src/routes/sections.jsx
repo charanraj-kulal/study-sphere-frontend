@@ -2,7 +2,8 @@
 import { lazy, Suspense } from "react";
 import { Outlet, Navigate, useRoutes } from "react-router-dom";
 import DashboardLayout from "../layouts/dashboard";
-import SkeletonLoader from "../components/SkeletonLoader"; // Ensure correct extension
+import SkeletonLoader from "../components/SkeletonLoader";
+import ProtectedRoute from "../components/ProtectedRoute";
 
 // Lazy load your components
 export const IndexPage = lazy(() => import("../pages/app"));
@@ -26,18 +27,23 @@ export default function Router() {
     },
     {
       path: "dashboard",
-      element: (
-        <DashboardLayout>
-          <Suspense fallback={<SkeletonLoader />}>
-            <Outlet />
-          </Suspense>
-        </DashboardLayout>
-      ),
+      element: <ProtectedRoute />, // Use ProtectedRoute here
       children: [
-        { element: <IndexPage />, index: true },
-        { path: "user", element: <UserPage /> },
-        { path: "products", element: <ProductsPage /> },
-        { path: "blog", element: <BlogPage /> },
+        {
+          element: (
+            <DashboardLayout>
+              <Suspense fallback={<SkeletonLoader />}>
+                <Outlet />
+              </Suspense>
+            </DashboardLayout>
+          ),
+          children: [
+            { element: <IndexPage />, index: true },
+            { path: "user", element: <UserPage /> },
+            { path: "products", element: <ProductsPage /> },
+            { path: "blog", element: <BlogPage /> },
+          ],
+        },
       ],
     },
     {

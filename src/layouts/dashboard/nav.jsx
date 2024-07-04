@@ -57,7 +57,13 @@ export default function Nav({ openNav, onCloseNav }) {
         <Typography variant="subtitle2">{userData.displayName}</Typography>
 
         <Typography variant="body2" sx={{ color: "text.secondary" }}>
-          {account.role}
+          {userData.userRole === 3
+            ? "Student"
+            : userData.userRole === 2
+              ? "Lecturer"
+              : userData.userRole === 1
+                ? "Admin"
+                : "Unknown Role"}
         </Typography>
       </Box>
     </Box>
@@ -71,38 +77,38 @@ export default function Nav({ openNav, onCloseNav }) {
     </Stack>
   );
 
-  const renderUpgrade = (
-    <Box sx={{ px: 2.5, pb: 3, mt: 10 }}>
-      <Stack
-        alignItems="center"
-        spacing={3}
-        sx={{ pt: 5, borderRadius: 2, position: "relative" }}
-      >
-        <Box
-          component="img"
-          src="/assets/illustrations/illustration_avatar.png"
-          sx={{ width: 100, position: "absolute", top: -50 }}
-        />
+  // const renderUpgrade = (
+  //   <Box sx={{ px: 2.5, pb: 3, mt: 10 }}>
+  //     <Stack
+  //       alignItems="center"
+  //       spacing={3}
+  //       sx={{ pt: 5, borderRadius: 2, position: "relative" }}
+  //     >
+  //       <Box
+  //         component="img"
+  //         src="/assets/illustrations/illustration_avatar.png"
+  //         sx={{ width: 100, position: "absolute", top: -50 }}
+  //       />
 
-        <Box sx={{ textAlign: "center" }}>
-          <Typography variant="h6">Get more?</Typography>
+  //       <Box sx={{ textAlign: "center" }}>
+  //         <Typography variant="h6">Get more?</Typography>
 
-          <Typography variant="body2" sx={{ color: "text.secondary", mt: 1 }}>
-            From only $69
-          </Typography>
-        </Box>
+  //         <Typography variant="body2" sx={{ color: "text.secondary", mt: 1 }}>
+  //           From only $69
+  //         </Typography>
+  //       </Box>
 
-        <Button
-          href="https://material-ui.com/store/items/minimal-dashboard/"
-          target="_blank"
-          variant="contained"
-          color="inherit"
-        >
-          Upgrade to Pro
-        </Button>
-      </Stack>
-    </Box>
-  );
+  //       <Button
+  //         href="https://material-ui.com/store/items/minimal-dashboard/"
+  //         target="_blank"
+  //         variant="contained"
+  //         color="inherit"
+  //       >
+  //         Upgrade to Pro
+  //       </Button>
+  //     </Stack>
+  //   </Box>
+  // );
 
   const renderContent = (
     <Scrollbar
@@ -123,7 +129,7 @@ export default function Nav({ openNav, onCloseNav }) {
 
       <Box sx={{ flexGrow: 1 }} />
 
-      {renderUpgrade}
+      {/* {renderUpgrade} */}
     </Scrollbar>
   );
 

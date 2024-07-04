@@ -3,10 +3,22 @@ import React, { useEffect, useRef } from "react";
 // import { loadFull } from "tsparticles";
 import { gsap } from "gsap";
 import "../styles/HeroSection.css";
+import { useUser } from "../UserContext";
 
 const HeroSection = () => {
   const imageRef = useRef(null);
+  const { userData } = useUser();
 
+  const handleAuthButtonClick = (e) => {
+    e.preventDefault();
+    if (userData) {
+      // If user is logged in, navigate to dashboard
+      navigate("/dashboard");
+    } else {
+      // If user is not logged in, navigate to login page
+      navigate("/login");
+    }
+  };
   useEffect(() => {
     const image = imageRef.current;
 
@@ -48,8 +60,12 @@ const HeroSection = () => {
             Your ultimate destination for collaborative learning and resource
             sharing
           </p>
-          <a href="/login" className="btn-login">
-            Login
+          <a
+            href={userData ? "/dashboard" : "/login"}
+            className="btn-login"
+            onClick={handleAuthButtonClick}
+          >
+            {userData ? "Dashboard" : "Login"}
           </a>
         </div>
         <div className="hero-image">
