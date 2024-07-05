@@ -43,69 +43,98 @@ app.post("/login", async (req, res) => {
     if (authResponse.data && authResponse.data.idToken) {
       const { localId } = authResponse.data;
 
-      const userRecord = await admin.auth().getUser(localId);
+      try {
+        const userRecord = await admin.auth().getUser(localId);
 
-      if (!userRecord.emailVerified) {
-        return res.status(400).send({ message: "Email not verified" });
-      }
-
-      const userDoc = await admin
-        .firestore()
-        .collection("users")
-        .doc(localId)
-        .get();
-
-      if (!userDoc.exists) {
-        return res.status(400).send({ message: "User not found" });
-      }
-
-      const userData = userDoc.data();
-      console.log("Retrieved user data from Firestore:", userData);
-
-      const userRole = userData.userrole;
-      const userName = userData.name;
-      const userCourse = userData.course;
-
-      console.log("Generating JWT token");
-      const token = jwt.sign(
-        {
-          uid: userRecord.uid,
-          role: userRole,
-          name: userName,
-          course: userCourse,
-          email,
-        },
-        "YOUR_JWT_SECRET_KEY",
-        {
-          expiresIn: "1h",
+        if (!userRecord.emailVerified) {
+          return res.status(403).send({ message: "Email not verified" });
         }
-      );
 
-      console.log("Sending response:", {
-        token,
-        displayName: userName,
-        email,
-        photoURL: "../../src/assets/images/avatars/avatar_25.jpg",
-        userRole, // Add this line
-      });
+        const userDoc = await admin
+          .firestore()
+          .collection("users")
+          .doc(localId)
+          .get();
 
-      res.send({
-        token,
-        displayName: userName,
-        email,
-        photoURL: "../../src/assets/images/avatars/avatar_25.jpg",
-        userRole, // Add this line
-      });
+        if (!userDoc.exists) {
+          return res
+            .status(404)
+            .send({ message: "User not found in database" });
+        }
+
+        const userData = userDoc.data();
+        console.log("Retrieved user data from Firestore:", userData);
+
+        const userRole = userData.userrole;
+        const userName = userData.name;
+        const userCourse = userData.course;
+        const profilePhotoURL = userData.profilePhotoURL;
+        const status = userData.status;
+
+        console.log("Generating JWT token");
+        const token = jwt.sign(
+          {
+            uid: userRecord.uid,
+            role: userRole,
+            name: userName,
+            course: userCourse,
+            email,
+            profilePhotoURL,
+            status,
+          },
+          "YOUR_JWT_SECRET_KEY",
+          {
+            expiresIn: "1h",
+          }
+        );
+
+        console.log("Sending response:", {
+          token,
+          displayName: userName,
+          email,
+          photoURL: profilePhotoURL,
+          userRole,
+          status,
+        });
+
+        res.send({
+          token,
+          displayName: userName,
+          email,
+          photoURL: profilePhotoURL,
+          userRole,
+          status,
+        });
+      } catch (error) {
+        console.error("Error retrieving user data:", error);
+        res.status(500).send({ message: "Error retrieving user data" });
+      }
     } else {
       console.log("Invalid login credentials");
-      throw new Error("Invalid login credentials");
+      res.status(401).send({ message: "Invalid email or password" });
     }
   } catch (error) {
     console.error(
       "Error during authentication:",
       error.response?.data || error.message
     );
-    res.status(400).send({ message: "Invalid credentials" });
+    if (error.response && error.response.data && error.response.data.error) {
+      switch (error.response.data.error.message) {
+        case "EMAIL_NOT_FOUND":
+          return res.status(404).send({ message: "Email not found" });
+        case "INVALID_PASSWORD":
+          return res.status(401).send({ message: "Invalid password" });
+        case "USER_DISABLED":
+          return res
+            .status(403)
+            .send({ message: "User account has been disabled" });
+        case "INVALID_LOGIN_CREDENTIALS":
+          return res.status(401).send({ message: "Invalid email or password" });
+        default:
+          return res.status(400).send({ message: "Authentication failed" });
+      }
+    }
+    res.status(500).send({ message: "Server error during authentication" });
   }
 });
 

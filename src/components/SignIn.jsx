@@ -1,4 +1,3 @@
-// src/components/SignInForm.jsx
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
@@ -27,12 +26,39 @@ function SignInForm() {
     evt.preventDefault();
     const { email, password } = state;
 
-    if (!email || !validateEmail(email) || !password || password.length < 6) {
-      setToast({ visible: true, type: "error", message: "Invalid input" });
+    if (!email) {
+      setToast({ visible: true, type: "error", message: "Email is required" });
       return;
     }
 
-    setIsLoading(true); // Start loading
+    if (!validateEmail(email)) {
+      setToast({
+        visible: true,
+        type: "error",
+        message: "Invalid email format",
+      });
+      return;
+    }
+
+    if (!password) {
+      setToast({
+        visible: true,
+        type: "error",
+        message: "Password is required",
+      });
+      return;
+    }
+
+    if (password.length < 6) {
+      setToast({
+        visible: true,
+        type: "error",
+        message: "Password must be at least 6 characters",
+      });
+      return;
+    }
+
+    setIsLoading(true);
 
     try {
       const response = await fetch("http://localhost:3000/login", {
@@ -41,15 +67,15 @@ function SignInForm() {
         body: JSON.stringify({ email, password }),
       });
 
-      if (response.ok) {
-        const data = await response.json();
-        console.log("Received data:", data);
+      const data = await response.json();
 
+      if (response.ok) {
         updateUserData({
           displayName: data.displayName,
           email: data.email,
           photoURL: data.photoURL,
           userRole: data.userRole,
+          status: data.status,
         });
 
         setToast({
@@ -65,20 +91,21 @@ function SignInForm() {
         setToast({
           visible: true,
           type: "error",
-          message: "Invalid credentials",
+          message: data.message || "Invalid credentials",
         });
       }
     } catch (error) {
       console.error("Error during authentication:", error);
       setToast({ visible: true, type: "error", message: "Error signing in" });
     } finally {
-      setIsLoading(false); // Stop loading regardless of outcome
+      setIsLoading(false);
     }
   };
 
   return (
     <div className="form-container sign-in-container">
-      {isLoading && <LottieLoader />} {/* Render loader before the form */}
+      {isLoading && <LottieLoader />}
+
       {toast.visible && (
         <Toast
           type={toast.type}
@@ -86,7 +113,7 @@ function SignInForm() {
           onClose={() => setToast({ ...toast, visible: false })}
         />
       )}
-      <form onSubmit={handleOnSubmit}>
+      <form style={{ width: 384 }} onSubmit={handleOnSubmit}>
         <h1>Sign in</h1>
         <input
           type="email"
