@@ -4,6 +4,7 @@ import {
   createUserWithEmailAndPassword,
   sendEmailVerification,
   signOut,
+  onAuthStateChanged,
 } from "firebase/auth";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { auth, db, storage } from "../firebase";
@@ -48,6 +49,7 @@ function SignUpForm() {
     const { name, email, password, course, profilePhoto } = state;
     const userrole = 3;
     const status = "active";
+    const isVerified = "No"; // Initial value set to No
 
     setIsLoading(true); // Start loading
 
@@ -66,6 +68,7 @@ function SignUpForm() {
         profilePhotoURL = await getDownloadURL(storageRef);
       }
 
+      // Add user document with isVerified set to No
       await setDoc(doc(db, "users", user.uid), {
         name,
         email,
@@ -74,9 +77,22 @@ function SignUpForm() {
         userrole,
         profilePhotoURL,
         status,
+        isVerified, // Include isVerified field
       });
 
       await sendEmailVerification(user);
+
+      // Listen for email verification status change
+      onAuthStateChanged(auth, (user) => {
+        if (user && user.emailVerified) {
+          // Update isVerified to Yes after email is verified
+          setDoc(
+            doc(db, "users", user.uid),
+            { isVerified: "Yes" },
+            { merge: true }
+          );
+        }
+      });
 
       setToast({
         visible: true,

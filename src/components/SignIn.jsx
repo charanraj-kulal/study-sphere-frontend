@@ -70,23 +70,33 @@ function SignInForm() {
       const data = await response.json();
 
       if (response.ok) {
-        updateUserData({
-          displayName: data.displayName,
-          email: data.email,
-          photoURL: data.photoURL,
-          userRole: data.userRole,
-          status: data.status,
-        });
+        if (data.isEmailVerified) {
+          updateUserData({
+            displayName: data.displayName,
+            email: data.email,
+            photoURL: data.photoURL,
+            userRole: data.userRole,
+            status: data.status,
+            isVerified: "Yes",
+            isEmailVerified: data.isEmailVerified,
+          });
 
-        setToast({
-          visible: true,
-          type: "success",
-          message: "Login successful",
-        });
+          setToast({
+            visible: true,
+            type: "success",
+            message: "Login successful",
+          });
 
-        setTimeout(() => {
-          navigate("/dashboard");
-        }, 3000);
+          setTimeout(() => {
+            navigate("/dashboard");
+          }, 3000);
+        } else {
+          setToast({
+            visible: true,
+            type: "error",
+            message: "Please verify your email before logging in",
+          });
+        }
       } else {
         setToast({
           visible: true,

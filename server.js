@@ -63,6 +63,18 @@ app.post("/login", async (req, res) => {
         }
 
         const userData = userDoc.data();
+        const isEmailVerified = userRecord.emailVerified;
+        console.log(isEmailVerified);
+        if (userData.isVerified !== "Yes") {
+          await admin
+            .firestore()
+            .collection("users")
+            .doc(userRecord.uid)
+            .update({
+              isVerified: "Yes",
+            });
+          userData.isVerified = "Yes";
+        }
         console.log("Retrieved user data from Firestore:", userData);
 
         const userRole = userData.userrole;
@@ -81,6 +93,7 @@ app.post("/login", async (req, res) => {
             email,
             profilePhotoURL,
             status,
+            isEmailVerified,
           },
           "YOUR_JWT_SECRET_KEY",
           {
@@ -95,6 +108,7 @@ app.post("/login", async (req, res) => {
           photoURL: profilePhotoURL,
           userRole,
           status,
+          isEmailVerified: true,
         });
 
         res.send({
@@ -104,6 +118,7 @@ app.post("/login", async (req, res) => {
           photoURL: profilePhotoURL,
           userRole,
           status,
+          isEmailVerified: true,
         });
       } catch (error) {
         console.error("Error retrieving user data:", error);
