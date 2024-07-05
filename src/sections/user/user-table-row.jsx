@@ -14,13 +14,11 @@ import IconButton from "@mui/material/IconButton";
 import Label from "../../components/label";
 import Iconify from "../../components/iconify";
 
-// ----------------------------------------------------------------------
-
 export default function UserTableRow({
   selected,
   name,
   avatarUrl,
-  company,
+  course,
   role,
   isVerified,
   status,
@@ -52,9 +50,17 @@ export default function UserTableRow({
           </Stack>
         </TableCell>
 
-        <TableCell>{company}</TableCell>
+        <TableCell>{course}</TableCell>
 
-        <TableCell>{role}</TableCell>
+        <TableCell>
+          {role === 3
+            ? "Student"
+            : role === 2
+              ? "Lecturer"
+              : role === 1
+                ? "Admin"
+                : "Unknown Role"}
+        </TableCell>
 
         <TableCell align="center">{isVerified ? "Yes" : "No"}</TableCell>
 
@@ -96,12 +102,12 @@ export default function UserTableRow({
 }
 
 UserTableRow.propTypes = {
-  avatarUrl: PropTypes.any,
-  company: PropTypes.any,
+  avatarUrl: PropTypes.string,
+  course: PropTypes.string,
   handleClick: PropTypes.func,
-  isVerified: PropTypes.any,
-  name: PropTypes.any,
-  role: PropTypes.any,
-  selected: PropTypes.any,
+  isVerified: PropTypes.bool,
+  name: PropTypes.string,
+  role: PropTypes.number,
+  selected: PropTypes.bool,
   status: PropTypes.string,
 };

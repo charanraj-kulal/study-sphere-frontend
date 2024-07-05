@@ -1,4 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { db } from "../../../firebase"; // Adjust the path based on your project structure
+import { collection, getDocs } from "firebase/firestore";
 
 import Card from "@mui/material/Card";
 import Stack from "@mui/material/Stack";
@@ -10,8 +12,6 @@ import Typography from "@mui/material/Typography";
 import TableContainer from "@mui/material/TableContainer";
 import TablePagination from "@mui/material/TablePagination";
 
-import { users } from "../../../_mock/user";
-
 import Iconify from "../../../components/iconify";
 import Scrollbar from "../../../components/scrollbar";
 
@@ -22,20 +22,31 @@ import TableEmptyRows from "../table-empty-rows";
 import UserTableToolbar from "../user-table-toolbar";
 import { emptyRows, applyFilter, getComparator } from "../utils";
 
-// ----------------------------------------------------------------------
-
 export default function UserPage() {
+  const [users, setUsers] = useState([]);
   const [page, setPage] = useState(0);
-
   const [order, setOrder] = useState("asc");
-
   const [selected, setSelected] = useState([]);
-
   const [orderBy, setOrderBy] = useState("name");
-
   const [filterName, setFilterName] = useState("");
-
   const [rowsPerPage, setRowsPerPage] = useState(5);
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const querySnapshot = await getDocs(collection(db, "users"));
+        const usersData = querySnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setUsers(usersData);
+      } catch (error) {
+        console.error("Error fetching users:", error);
+      }
+    };
+
+    fetchUsers();
+  }, []);
 
   const handleSort = (event, id) => {
     const isAsc = orderBy === id && order === "asc";
@@ -132,8 +143,8 @@ export default function UserPage() {
                 onSelectAllClick={handleSelectAllClick}
                 headLabel={[
                   { id: "name", label: "Name" },
-                  { id: "company", label: "Company" },
-                  { id: "role", label: "Role" },
+                  { id: "course", label: "Course" },
+                  { id: "userrole", label: "Role" },
                   { id: "isVerified", label: "Verified", align: "center" },
                   { id: "status", label: "Status" },
                   { id: "" },
@@ -146,11 +157,11 @@ export default function UserPage() {
                     <UserTableRow
                       key={row.id}
                       name={row.name}
-                      role={row.role}
+                      course={row.course}
+                      role={row.userrole}
                       status={row.status}
-                      company={row.company}
-                      avatarUrl={row.avatarUrl}
-                      isVerified={row.isVerified}
+                      avatarUrl={row.profilePhotoURL}
+                      isVerified={row.isVerified === "Yes"}
                       selected={selected.indexOf(row.name) !== -1}
                       handleClick={(event) => handleClick(event, row.name)}
                     />
