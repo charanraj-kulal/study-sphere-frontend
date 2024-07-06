@@ -153,6 +153,24 @@ app.post("/login", async (req, res) => {
   }
 });
 
+app.delete("/api/users/:uid", async (req, res) => {
+  const uid = req.params.uid;
+
+  try {
+    // Delete user from Firebase Authentication
+    await admin.auth().deleteUser(uid);
+
+    // Delete user from Firestore
+    await admin.firestore().collection("users").doc(uid).delete();
+
+    res.status(200).send({ message: "User deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting user:", error);
+    res
+      .status(500)
+      .send({ message: "Error deleting user", error: error.message });
+  }
+});
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
 });

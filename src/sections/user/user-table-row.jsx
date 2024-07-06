@@ -1,5 +1,7 @@
 import { useState } from "react";
 import PropTypes from "prop-types";
+import { doc, deleteDoc } from "firebase/firestore"; // Import necessary Firestore functions
+import axios from "axios";
 
 import Stack from "@mui/material/Stack";
 import Avatar from "@mui/material/Avatar";
@@ -13,9 +15,11 @@ import IconButton from "@mui/material/IconButton";
 
 import Label from "../../components/label";
 import Iconify from "../../components/iconify";
+import { db } from "../../firebase"; // Import Firestore instance
 
 export default function UserTableRow({
   selected,
+  id, // Add the id prop to identify the user
   name,
   avatarUrl,
   course,
@@ -23,6 +27,7 @@ export default function UserTableRow({
   isVerified,
   status,
   handleClick,
+  setUsers, // Pass the setUsers function to update the state
 }) {
   const [open, setOpen] = useState(null);
 
@@ -32,6 +37,22 @@ export default function UserTableRow({
 
   const handleCloseMenu = () => {
     setOpen(null);
+  };
+
+  const handleDeleteUser = async () => {
+    try {
+      // Call the server endpoint to delete the user
+      await axios.delete(`http://localhost:3000/api/users/${id}`);
+
+      // Update the local state
+      setUsers((prevUsers) => prevUsers.filter((user) => user.id !== id));
+
+      console.log("User deleted successfully");
+    } catch (error) {
+      console.error("Error deleting user:", error);
+    }
+
+    handleCloseMenu();
   };
 
   return (
@@ -92,7 +113,7 @@ export default function UserTableRow({
           Edit
         </MenuItem>
 
-        <MenuItem onClick={handleCloseMenu} sx={{ color: "error.main" }}>
+        <MenuItem onClick={handleDeleteUser} sx={{ color: "error.main" }}>
           <Iconify icon="eva:trash-2-outline" sx={{ mr: 2 }} />
           Delete
         </MenuItem>
@@ -102,6 +123,7 @@ export default function UserTableRow({
 }
 
 UserTableRow.propTypes = {
+  id: PropTypes.string.isRequired, // Add id prop type
   avatarUrl: PropTypes.string,
   course: PropTypes.string,
   handleClick: PropTypes.func,
@@ -110,4 +132,5 @@ UserTableRow.propTypes = {
   role: PropTypes.number,
   selected: PropTypes.bool,
   status: PropTypes.string,
+  setUsers: PropTypes.func.isRequired, // Add setUsers prop type
 };

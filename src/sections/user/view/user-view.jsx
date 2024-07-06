@@ -156,6 +156,7 @@ export default function UserPage() {
                   .map((row) => (
                     <UserTableRow
                       key={row.id}
+                      id={row.userId} // Adjusted to pass the correct id prop
                       name={row.name}
                       course={row.course}
                       role={row.userrole}
@@ -164,6 +165,7 @@ export default function UserPage() {
                       isVerified={row.isVerified === "Yes"}
                       selected={selected.indexOf(row.name) !== -1}
                       handleClick={(event) => handleClick(event, row.name)}
+                      setUsers={setUsers} // Pass setUsers to UserTableRow
                     />
                   ))}
 
