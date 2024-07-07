@@ -8,8 +8,13 @@ import {
 } from "firebase/auth";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { auth, db, storage } from "../firebase";
-import Toast from "./Toast";
+import Toast from "./ToastLogin";
 import LottieLoader from "./LottieLoader";
+
+import IconButton from "@mui/material/IconButton";
+import Typography from "@mui/material/Typography";
+
+import Iconify from "./iconify";
 
 function SignUpForm() {
   const [state, setState] = useState({
@@ -49,7 +54,10 @@ function SignUpForm() {
     const { name, email, password, course, profilePhoto } = state;
     const userrole = 3;
     const status = "active";
-    const isVerified = "No"; // Initial value set to No
+    const isVerified = "No";
+    const points = 0;
+    const uploadCount = 0;
+    const downloadCount = 0; // Initial value set to No
 
     setIsLoading(true); // Start loading
 
@@ -77,7 +85,10 @@ function SignUpForm() {
         userrole,
         profilePhotoURL,
         status,
-        isVerified, // Include isVerified field
+        isVerified,
+        uploadCount,
+        downloadCount,
+        points,
       });
 
       await sendEmailVerification(user);
@@ -171,11 +182,27 @@ function SignUpForm() {
               </option>
             ))}
           </select>
+          <label htmlFor="profile-photo-upload" style={{ cursor: "pointer" }}>
+            <IconButton
+              component="span"
+              sx={{
+                display: "block",
+                margin: "auto",
+                textAlign: "center",
+                "&:hover": { color: "blue" },
+              }}
+            >
+              <Iconify icon="mingcute:upload-3-fill" />
+              <Typography variant="body2">Upload Profile Photo</Typography>
+            </IconButton>
+          </label>
           <input
+            id="profile-photo-upload"
             type="file"
             name="profilePhoto"
             onChange={handleChange}
             accept="image/*"
+            style={{ display: "none" }} // Hide the input element visually
           />
           <button type="submit">Sign Up</button>
         </form>

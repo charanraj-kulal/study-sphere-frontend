@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
 import { useUser } from "../UserContext";
-import Toast from "./Toast";
+import Toast from "./ToastLogin";
 import LottieLoader from "./LottieLoader";
 
 function SignInForm() {

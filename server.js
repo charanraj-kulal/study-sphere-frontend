@@ -4,6 +4,14 @@ import admin from "firebase-admin";
 import jwt from "jsonwebtoken";
 import cors from "cors";
 import axios from "axios";
+import dotenv from "dotenv";
+import { fileURLToPath } from "url";
+import path from "path";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+dotenv.config({ path: path.resolve(__dirname, ".env") });
 
 // Import the service account key with an import assertion
 import serviceAccount from "./serviceAccountKey.json" assert { type: "json" };
@@ -30,7 +38,7 @@ app.post("/login", async (req, res) => {
 
   try {
     console.log("Attempting to authenticate with Firebase");
-    const apiKey = "AIzaSyC_zbw6QLjNBrLsAiorx69sMymR42BxDbs";
+    const apiKey = process.env.FIREBASE_API_kEY; // Replace with your actual API key
     const authResponse = await axios.post(
       `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${apiKey}`,
       {
@@ -45,8 +53,10 @@ app.post("/login", async (req, res) => {
 
       try {
         const userRecord = await admin.auth().getUser(localId);
+        console.log("User record retrieved:", userRecord);
 
         if (!userRecord.emailVerified) {
+          console.log("Email not verified");
           return res.status(403).send({ message: "Email not verified" });
         }
 
@@ -57,14 +67,16 @@ app.post("/login", async (req, res) => {
           .get();
 
         if (!userDoc.exists) {
+          console.log("User not found in database");
           return res
             .status(404)
             .send({ message: "User not found in database" });
         }
 
         const userData = userDoc.data();
-        const isEmailVerified = userRecord.emailVerified;
-        console.log(isEmailVerified);
+        console.log("Retrieved user data from Firestore:", userData);
+
+        // Ensure `isVerified` status in Firestore matches email verification status
         if (userData.isVerified !== "Yes") {
           await admin
             .firestore()
@@ -75,25 +87,17 @@ app.post("/login", async (req, res) => {
             });
           userData.isVerified = "Yes";
         }
-        console.log("Retrieved user data from Firestore:", userData);
 
-        const userRole = userData.userrole;
-        const userName = userData.name;
-        const userCourse = userData.course;
-        const profilePhotoURL = userData.profilePhotoURL;
-        const status = userData.status;
-
-        console.log("Generating JWT token");
         const token = jwt.sign(
           {
             uid: userRecord.uid,
-            role: userRole,
-            name: userName,
-            course: userCourse,
+            role: userData.userrole,
+            name: userData.name,
+            course: userData.course,
             email,
-            profilePhotoURL,
-            status,
-            isEmailVerified,
+            profilePhotoURL: userData.profilePhotoURL,
+            status: userData.status,
+            isEmailVerified: true,
           },
           "YOUR_JWT_SECRET_KEY",
           {
@@ -103,21 +107,21 @@ app.post("/login", async (req, res) => {
 
         console.log("Sending response:", {
           token,
-          displayName: userName,
+          displayName: userData.name,
           email,
-          photoURL: profilePhotoURL,
-          userRole,
-          status,
+          photoURL: userData.profilePhotoURL,
+          userRole: userData.userrole,
+          status: userData.status,
           isEmailVerified: true,
         });
 
         res.send({
           token,
-          displayName: userName,
+          displayName: userData.name,
           email,
-          photoURL: profilePhotoURL,
-          userRole,
-          status,
+          photoURL: userData.profilePhotoURL,
+          userRole: userData.userrole,
+          status: userData.status,
           isEmailVerified: true,
         });
       } catch (error) {
@@ -166,11 +170,28 @@ app.delete("/api/users/:uid", async (req, res) => {
     res.status(200).send({ message: "User deleted successfully" });
   } catch (error) {
     console.error("Error deleting user:", error);
-    res
-      .status(500)
-      .send({ message: "Error deleting user", error: error.message });
+    if (error.code === "auth/user-not-found") {
+      // If the user is not found in Authentication, try to delete from Firestore only
+      try {
+        await admin.firestore().collection("users").doc(uid).delete();
+        res
+          .status(200)
+          .send({ message: "User deleted from Firestore successfully" });
+      } catch (firestoreError) {
+        console.error("Error deleting user from Firestore:", firestoreError);
+        res.status(500).send({
+          message: "Error deleting user from Firestore",
+          error: firestoreError.message,
+        });
+      }
+    } else {
+      res
+        .status(500)
+        .send({ message: "Error deleting user", error: error.message });
+    }
   }
 });
+
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
 });

@@ -1,3 +1,4 @@
+/* Toast.css */
 * {
   margin: 0;
   padding: 0;
@@ -112,6 +113,116 @@
 }
 
 .progress.active:before {
+  animation: progress 5s linear forwards;
+}
+
+@keyframes progress {
+  100% {
+    right: 100%;
+  }
+}
+
+/* Specific styles for the toast in the header */
+.toast.header-toast {
+  position: fixed;
+  top: 15px;
+  right: 30px;
+  left: auto;
+  z-index: 9999;
+  background: #ffffff;
+  color: #232323;
+  width: 300px;
+  padding: 10px 15px;
+  margin-left: 10px;
+  box-shadow: 0 6px 20px -5px rgba(0, 0, 0, 0.9);
+  border: 1px solid black;
+  overflow: hidden;
+  transform: none;
+  transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.35);
+}
+.toast.header-toast .toast-content {
+  display: flex;
+  align-items: flex-start;
+}
+
+.toast.header-toast .icon-container {
+  margin-right: 15px;
+  margin-top: 5px;
+}
+
+.toast.header-toast .message-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.toast.header-toast .check {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 35px;
+  width: 25px;
+  color: #fff;
+  font-size: 15px;
+  border-radius: 50%;
+}
+
+.toast.header-toast .message {
+  margin: 0;
+}
+
+.toast.header-toast .text {
+  font-size: 14px;
+  font-weight: 400;
+  color: #666666;
+}
+
+.toast.header-toast .text.text-1 {
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 5px;
+}
+
+.toast.header-toast .close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 14px;
+}
+
+.toast.header-toast .progress {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  width: 100%;
+}
+
+.toast.success .check {
+  background-color: #28a745;
+}
+
+.toast.error .check {
+  background-color: #dc3545;
+}
+
+.toast.success .progress:before {
+  background-color: #28a745;
+}
+
+.toast.error .progress:before {
+  background-color: #dc3545;
+}
+
+.toast.success .text.text-1 {
+  color: #28a745;
+}
+
+.toast.error .text.text-1 {
+  color: #dc3545;
+}
+
+/* Ensure the progress bar animation works correctly */
+.toast.header-toast .progress.active:before {
   animation: progress 5s linear forwards;
 }
 

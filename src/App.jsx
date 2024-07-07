@@ -4,16 +4,19 @@ import "./styles/App.css";
 import ThemeProvider from "./theme";
 import { UserProvider } from "./UserContext";
 import RouterComponent from "./routes/sections"; // Import the modified Router
+import { ToastProvider } from "./hooks/ToastContext";
 
 const App = () => {
   return (
-    <UserProvider>
-      <ThemeProvider>
-        <div className="App">
-          <RouterComponent />
-        </div>
-      </ThemeProvider>
-    </UserProvider>
+    <ToastProvider>
+      <UserProvider>
+        <ThemeProvider>
+          <div className="App">
+            <RouterComponent />
+          </div>
+        </ThemeProvider>
+      </UserProvider>
+    </ToastProvider>
   );
 };
 
