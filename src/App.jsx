@@ -2,7 +2,7 @@
 import React from "react";
 import "./styles/App.css";
 import ThemeProvider from "./theme";
-import { UserProvider } from "./UserContext";
+import { UserProvider } from "./hooks/UserContext";
 import RouterComponent from "./routes/sections"; // Import the modified Router
 import { ToastProvider } from "./hooks/ToastContext";
 

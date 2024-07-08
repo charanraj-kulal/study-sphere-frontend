@@ -1,17 +1,17 @@
 import { Helmet } from "react-helmet-async";
 
-import { LoginView } from "../sections/login";
+import { UploadView } from "../sections/upload/view";
 
 // ----------------------------------------------------------------------
 
-export default function LoginPage() {
+export default function ProductsPage() {
   return (
     <>
       <Helmet>
-        <title> Login | Minimal UI </title>
+        <title> Upload | Study Sphere </title>
       </Helmet>
 
-      <LoginView />
+      <UploadView />
     </>
   );
 }

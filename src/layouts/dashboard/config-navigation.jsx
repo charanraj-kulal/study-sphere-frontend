@@ -17,7 +17,7 @@ const navConfig = [
   },
   {
     title: "verify",
-    path: "/dashboard",
+    path: "/dashboard/verify",
     icon: icon("ic_verify"),
   },
   {
@@ -27,7 +27,7 @@ const navConfig = [
   },
   {
     title: "upload",
-    path: "/dashboard/products",
+    path: "/dashboard/upload",
     icon: icon("ic_upload"),
   },
   {

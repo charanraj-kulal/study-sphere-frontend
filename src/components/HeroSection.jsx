@@ -3,7 +3,7 @@ import React, { useEffect, useRef } from "react";
 // import { loadFull } from "tsparticles";
 import { gsap } from "gsap";
 import "../styles/HeroSection.css";
-import { useUser } from "../UserContext";
+import { useUser } from "../hooks/UserContext";
 
 const HeroSection = () => {
   const imageRef = useRef(null);

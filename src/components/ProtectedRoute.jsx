@@ -1,6 +1,6 @@
 // src/components/ProtectedRoute.jsx
 import { Navigate, Outlet } from "react-router-dom";
-import { useUser } from "../UserContext";
+import { useUser } from "../hooks/UserContext";
 
 const ProtectedRoute = () => {
   const { userData } = useUser();

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
-import { useUser } from "../UserContext";
+import { useUser } from "../hooks/UserContext";
 import Toast from "./ToastLogin";
 import LottieLoader from "./LottieLoader";
 
@@ -73,6 +73,8 @@ function SignInForm() {
         if (data.isEmailVerified) {
           updateUserData({
             displayName: data.displayName,
+            uid: data.uid,
+            course: data.course,
             email: data.email,
             photoURL: data.photoURL,
             userRole: data.userRole,

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { db, storage, auth } from "../../../firebase";
-import { sendPasswordResetEmail, sendEmailVerification } from "firebase/auth";
+import { sendPasswordResetEmail } from "firebase/auth";
 import { collection, getDocs, doc, setDoc } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { createUserWithEmailAndPassword } from "firebase/auth";

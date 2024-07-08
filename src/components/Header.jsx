@@ -2,7 +2,7 @@
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "../styles/header.css"; // Create this CSS file for header specific styles
-import { useUser } from "../UserContext";
+import { useUser } from "../hooks/UserContext";
 
 const Header = () => {
   const navigate = useNavigate();

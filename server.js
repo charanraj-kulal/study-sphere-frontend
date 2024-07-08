@@ -108,6 +108,8 @@ app.post("/login", async (req, res) => {
         console.log("Sending response:", {
           token,
           displayName: userData.name,
+          course: userData.course,
+          uid: userRecord.uid,
           email,
           photoURL: userData.profilePhotoURL,
           userRole: userData.userrole,
@@ -118,6 +120,8 @@ app.post("/login", async (req, res) => {
         res.send({
           token,
           displayName: userData.name,
+          course: userData.course,
+          uid: userRecord.uid,
           email,
           photoURL: userData.profilePhotoURL,
           userRole: userData.userrole,

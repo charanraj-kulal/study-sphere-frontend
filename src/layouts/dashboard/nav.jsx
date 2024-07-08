@@ -14,7 +14,7 @@ import { usePathname } from "../../routes/hooks";
 import { RouterLink } from "../../routes/components";
 
 import { useResponsive } from "../../hooks/use-responsive";
-import { useUser } from "../../UserContext";
+import { useUser } from "../../hooks/UserContext";
 
 import { account } from "../../_mock/account";
 
