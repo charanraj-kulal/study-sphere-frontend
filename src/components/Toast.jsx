@@ -1,7 +1,8 @@
+// Toast.js
 import React, { useEffect } from "react";
 import "../styles/Toast.css";
 
-const Toast = ({ type, message, onClose }) => {
+const Toast = ({ type, message, onClose, className }) => {
   useEffect(() => {
     const timer1 = setTimeout(() => {
       onClose();
@@ -18,14 +19,16 @@ const Toast = ({ type, message, onClose }) => {
   }, [onClose]);
 
   return (
-    <div className={`toast active ${type}`}>
+    <div className={`toast active ${type} ${className}`}>
       <div className="toast-content">
-        <i
-          className={`fas ${
-            type === "success" ? "fa-solid fa-check" : "fa-solid fa-times"
-          } check`}
-        ></i>
-        <div className="message">
+        <div className="icon-container">
+          <i
+            className={`fas ${
+              type === "success" ? "fa-solid fa-check" : "fa-solid fa-times"
+            } check`}
+          ></i>
+        </div>
+        <div className="message-container">
           <span className="text text-1">
             {type === "success" ? "Success" : "Error"}
           </span>

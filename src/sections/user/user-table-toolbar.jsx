@@ -9,12 +9,11 @@ import InputAdornment from "@mui/material/InputAdornment";
 
 import Iconify from "../../components/iconify";
 
-// ----------------------------------------------------------------------
-
 export default function UserTableToolbar({
   numSelected,
   filterName,
   onFilterName,
+  onDeleteSelected,
 }) {
   return (
     <Toolbar
@@ -51,7 +50,7 @@ export default function UserTableToolbar({
 
       {numSelected > 0 ? (
         <Tooltip title="Delete">
-          <IconButton>
+          <IconButton onClick={onDeleteSelected}>
             <Iconify icon="eva:trash-2-fill" />
           </IconButton>
         </Tooltip>
@@ -70,4 +69,5 @@ UserTableToolbar.propTypes = {
   numSelected: PropTypes.number,
   filterName: PropTypes.string,
   onFilterName: PropTypes.func,
+  onDeleteSelected: PropTypes.func,
 };

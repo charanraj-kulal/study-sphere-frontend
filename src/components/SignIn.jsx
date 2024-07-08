@@ -1,13 +1,15 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
-import { useUser } from "../UserContext";
-import Toast from "./Toast";
+import { useUser } from "../hooks/UserContext";
+import Toast from "./ToastLogin";
+import LottieLoader from "./LottieLoader";
 
 function SignInForm() {
   const [state, setState] = useState({ email: "", password: "" });
   const [toast, setToast] = useState({ visible: false, type: "", message: "" });
-  const { updateUserData } = useUser(); // Access updateUserData function from context
+  const [isLoading, setIsLoading] = useState(false);
+  const { updateUserData } = useUser();
   const navigate = useNavigate();
 
   const handleChange = (evt) => {
@@ -24,10 +26,39 @@ function SignInForm() {
     evt.preventDefault();
     const { email, password } = state;
 
-    if (!email || !validateEmail(email) || !password || password.length < 6) {
-      setToast({ visible: true, type: "error", message: "Invalid input" });
+    if (!email) {
+      setToast({ visible: true, type: "error", message: "Email is required" });
       return;
     }
+
+    if (!validateEmail(email)) {
+      setToast({
+        visible: true,
+        type: "error",
+        message: "Invalid email format",
+      });
+      return;
+    }
+
+    if (!password) {
+      setToast({
+        visible: true,
+        type: "error",
+        message: "Password is required",
+      });
+      return;
+    }
+
+    if (password.length < 6) {
+      setToast({
+        visible: true,
+        type: "error",
+        message: "Password must be at least 6 characters",
+      });
+      return;
+    }
+
+    setIsLoading(true);
 
     try {
       const response = await fetch("http://localhost:3000/login", {
@@ -36,44 +67,57 @@ function SignInForm() {
         body: JSON.stringify({ email, password }),
       });
 
+      const data = await response.json();
+
       if (response.ok) {
-        const data = await response.json();
-        console.log("Received data:", data);
+        if (data.isEmailVerified) {
+          updateUserData({
+            displayName: data.displayName,
+            uid: data.uid,
+            course: data.course,
+            email: data.email,
+            photoURL: data.photoURL,
+            userRole: data.userRole,
+            status: data.status,
+            isVerified: "Yes",
+            isEmailVerified: data.isEmailVerified,
+          });
 
-        // Update user data context with fetched user information
-        updateUserData({
-          displayName: data.displayName,
-          email: data.email,
-          photoURL: data.photoURL,
-          userRole: data.userRole, // Add this line
-        });
+          setToast({
+            visible: true,
+            type: "success",
+            message: "Login successful",
+          });
 
-        // No need to set sessionStorage here as it's handled in the context
-
-        setToast({
-          visible: true,
-          type: "success",
-          message: "Login successful",
-        });
-
-        setTimeout(() => {
-          navigate("/dashboard");
-        }, 3000);
+          setTimeout(() => {
+            navigate("/dashboard");
+          }, 3000);
+        } else {
+          setToast({
+            visible: true,
+            type: "error",
+            message: "Please verify your email before logging in",
+          });
+        }
       } else {
         setToast({
           visible: true,
           type: "error",
-          message: "Invalid credentials",
+          message: data.message || "Invalid credentials",
         });
       }
     } catch (error) {
       console.error("Error during authentication:", error);
       setToast({ visible: true, type: "error", message: "Error signing in" });
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
     <div className="form-container sign-in-container">
+      {isLoading && <LottieLoader />}
+
       {toast.visible && (
         <Toast
           type={toast.type}
@@ -81,7 +125,7 @@ function SignInForm() {
           onClose={() => setToast({ ...toast, visible: false })}
         />
       )}
-      <form onSubmit={handleOnSubmit}>
+      <form style={{ width: 384 }} onSubmit={handleOnSubmit}>
         <h1>Sign in</h1>
         <input
           type="email"

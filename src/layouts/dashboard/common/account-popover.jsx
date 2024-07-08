@@ -1,7 +1,9 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 import Box from "@mui/material/Box";
 import Avatar from "@mui/material/Avatar";
+import Badge from "@mui/material/Badge";
 import Divider from "@mui/material/Divider";
 import Popover from "@mui/material/Popover";
 import { alpha } from "@mui/material/styles";
@@ -10,13 +12,14 @@ import Typography from "@mui/material/Typography";
 import IconButton from "@mui/material/IconButton";
 
 import { account } from "../../../_mock/account";
-import { useUser } from "../../../UserContext";
+import { useUser } from "../../../hooks/UserContext";
 // ----------------------------------------------------------------------
 
 const MENU_OPTIONS = [
   {
     label: "Home",
     icon: "eva:home-fill",
+    path: "/",
   },
   {
     label: "Profile",
@@ -32,13 +35,27 @@ const MENU_OPTIONS = [
 
 export default function AccountPopover() {
   const [open, setOpen] = useState(null);
-  const { userData } = useUser();
+  const { userData, updateUserData } = useUser();
+  const navigate = useNavigate();
   const handleOpen = (event) => {
     setOpen(event.currentTarget);
   };
 
   const handleClose = () => {
     setOpen(null);
+  };
+  const handleLogout = () => {
+    updateUserData(null);
+
+    // Close the popover
+    handleClose();
+
+    // Redirect to login page
+    navigate("/login");
+  };
+  const handleMenuItemClick = (path) => {
+    handleClose();
+    navigate(path);
   };
 
   return (
@@ -55,17 +72,20 @@ export default function AccountPopover() {
           }),
         }}
       >
-        <Avatar
-          src={userData.photoURL}
-          alt={userData.displayName}
-          sx={{
-            width: 36,
-            height: 36,
-            border: (theme) => `solid 2px ${theme.palette.background.default}`,
-          }}
-        >
-          {userData.displayName.charAt(0).toUpperCase()}
-        </Avatar>
+        <Badge badgeContent="200" color="error">
+          <Avatar
+            src={userData.photoURL}
+            alt={userData.displayName}
+            sx={{
+              width: 36,
+              height: 36,
+              border: (theme) =>
+                `solid 2px ${theme.palette.background.default}`,
+            }}
+          >
+            {userData.displayName.charAt(0).toUpperCase()}
+          </Avatar>
+        </Badge>
       </IconButton>
 
       <Popover
@@ -95,7 +115,10 @@ export default function AccountPopover() {
         <Divider sx={{ borderStyle: "dashed" }} />
 
         {MENU_OPTIONS.map((option) => (
-          <MenuItem key={option.label} onClick={handleClose}>
+          <MenuItem
+            key={option.label}
+            onClick={() => handleMenuItemClick(option.path)}
+          >
             {option.label}
           </MenuItem>
         ))}
@@ -105,7 +128,7 @@ export default function AccountPopover() {
         <MenuItem
           disableRipple
           disableTouchRipple
-          onClick={handleClose}
+          onClick={handleLogout}
           sx={{ typography: "body2", color: "error.main", py: 1.5 }}
         >
           Logout

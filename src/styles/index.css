@@ -1,5 +1,8 @@
 /* src/index.css */
 @import "locomotive-scroll/src/locomotive-scroll.scss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 body {
   font-family: Arial, sans-serif;

@@ -1,4 +1,4 @@
-// UserContext.js
+// UserContext.jsx
 import React, { createContext, useState, useContext, useEffect } from "react";
 
 const UserContext = createContext();
@@ -11,7 +11,16 @@ export const UserProvider = ({ children }) => {
 
   const updateUserData = (data) => {
     setUserData(data);
-    sessionStorage.setItem("userData", JSON.stringify(data));
+    if (data) {
+      sessionStorage.setItem("userData", JSON.stringify(data));
+    } else {
+      sessionStorage.removeItem("userData");
+    }
+  };
+
+  // The logout function is now part of updateUserData
+  const logout = () => {
+    updateUserData(null);
   };
 
   useEffect(() => {
@@ -21,7 +30,7 @@ export const UserProvider = ({ children }) => {
   }, [userData]);
 
   return (
-    <UserContext.Provider value={{ userData, updateUserData }}>
+    <UserContext.Provider value={{ userData, updateUserData, logout }}>
       {children}
     </UserContext.Provider>
   );

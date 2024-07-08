@@ -1,7 +1,8 @@
-import { useUser } from "../UserContext";
+import { useUser } from "../hooks/UserContext";
 
 export const account = {
   displayName: "",
+  uid: "",
   email: "",
   photoURL: "",
 };
@@ -11,6 +12,7 @@ export const updateAccountData = () => {
 
   if (userData) {
     account.displayName = userData.displayName;
+    account.uid = userData.uid;
     account.email = userData.email;
     account.photoURL = userData.photoURL;
   }
