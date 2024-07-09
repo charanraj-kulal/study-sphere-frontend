@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   TextField,
   Button,
@@ -28,10 +28,7 @@ import { useToast } from "../../hooks/ToastContext";
 import LottieLoader from "../../components/LottieLoader";
 import InfoIcon from "@mui/icons-material/Info";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
-
-//magic Ui
-// import TypingAnimation from "../../components/magicui/typing-animation";
-import ShinyButton from "../../components/magicui/shiny-button";
+import { ConfettiButton } from "../../components/magicui/confetti-button"; // Import ConfettiButton
 
 const StyledForm = styled("form")(({ theme }) => ({
   display: "flex",
@@ -68,6 +65,7 @@ const UploadStudyMaterialForm = ({ currentUser }) => {
   const [isUploading, setIsUploading] = useState(false);
   const [points, setPoints] = useState(0);
   const { showToast } = useToast();
+  const confettiRef = useRef(null); // Create a reference for the confetti
 
   const calculatePoints = () => {
     let totalPoints = 10; // Base points for uploading a PDF
@@ -127,14 +125,18 @@ const UploadStudyMaterialForm = ({ currentUser }) => {
         documentUrl: downloadURL,
         uploadedBy: currentUser.displayName,
         uploaderCourse: currentUser.course,
+        uploaderPhotoUrl: currentUser.photoURL,
+        uploaderUid: currentUser.uid,
         uploadedOn: serverTimestamp(),
         visibility: "private",
+        Approved: "No",
+        downloadCount: 0,
+        star: 0,
       });
 
       // Update user document in Firestore
       const userRef = doc(db, "users", currentUser.uid);
       await updateDoc(userRef, {
-        uploadCount: increment(1),
         points: increment(points),
       });
 
@@ -142,6 +144,8 @@ const UploadStudyMaterialForm = ({ currentUser }) => {
         "success",
         `Document uploaded successfully! You earned ${points} points!`
       );
+      // Trigger confetti effect on successful upload
+      confettiRef.current.fire();
       setFormData({
         documentName: "",
         document: null,
@@ -170,11 +174,9 @@ const UploadStudyMaterialForm = ({ currentUser }) => {
             alignItems: "center",
           }}
         >
-          {/* <TypingAnimation loop> */}
           Earn up to 45 points for each upload! Check out our pointing system
           here
           <ArrowForwardIcon fontSize="small" sx={{ ml: 0.5 }} />
-          {/* </TypingAnimation> */}
         </Typography>
       </PointsInfoMain>
       <PointsInfo>
@@ -264,18 +266,22 @@ const UploadStudyMaterialForm = ({ currentUser }) => {
         }
         label="I agree that the submitted document is genuine. I understand that submitting non-genuine documents may result in being banned from the system."
       />
-      <Button
+      {/* <div style={{ position: "relative", width: "100%" }}> */}
+      <ConfettiButton
         type="submit"
         variant="contained"
         color="primary"
         disabled={isUploading || !agreedToTerms}
+        ref={confettiRef}
+        fullWidth
       >
         {isUploading ? (
           <CircularProgress size={24} />
         ) : (
           `Upload Now and Get ${points} Points`
         )}
-      </Button>
+      </ConfettiButton>
+      {/* </div> */}
     </StyledForm>
   );
 };

@@ -75,6 +75,7 @@ function SignInForm() {
             displayName: data.displayName,
             uid: data.uid,
             course: data.course,
+
             email: data.email,
             photoURL: data.photoURL,
             userRole: data.userRole,

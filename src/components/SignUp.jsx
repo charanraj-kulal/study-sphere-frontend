@@ -89,6 +89,7 @@ function SignUpForm() {
         uploadCount,
         downloadCount,
         points,
+        countOfRejection: 0,
       });
 
       await sendEmailVerification(user);
@@ -137,7 +138,45 @@ function SignUpForm() {
     }
   };
 
-  const courses = ["MTech", "MBA", "MCA"];
+  const courses = [
+    "Associate Degree",
+    "Bachelor of Arts (BA)",
+    "Bachelor of Business Administration (BBA)",
+    "Bachelor of Commerce (BCom)",
+    "Bachelor of Computer Applications (BCA)",
+    "Bachelor of Education (BEd)",
+    "Bachelor of Engineering (BE)",
+    "Bachelor of Fine Arts (BFA)",
+    "Bachelor of Laws (LLB)",
+    "Bachelor of Medicine, Bachelor of Surgery (MBBS)",
+    "Bachelor of Nursing (BN)",
+    "Bachelor of Pharmacy (BPharm)",
+    "Bachelor of Science (BSc)",
+    "Bachelor of Technology (BTech)",
+    "Diploma",
+    "Doctor of Business Administration (DBA)",
+    "Doctor of Education (EdD)",
+    "Doctor of Medicine (MD)",
+    "Doctor of Philosophy (PhD)",
+    "Executive Master of Business Administration (EMBA)",
+    "Juris Doctor (JD)",
+    "Master of Arts (MA)",
+    "Master of Business Administration (MBA)",
+    "Master of Commerce (MCom)",
+    "Master of Computer Applications (MCA)",
+    "Master of Education (MEd)",
+    "Master of Engineering (ME)",
+    "Master of Fine Arts (MFA)",
+    "Master of Laws (LLM)",
+    "Master of Pharmacy (MPharm)",
+    "Master of Public Administration (MPA)",
+    "Master of Public Health (MPH)",
+    "Master of Science (MSc)",
+    "Master of Social Work (MSW)",
+    "Master of Technology (MTech)",
+    "Postgraduate Certificate",
+    "Postgraduate Diploma",
+  ];
 
   return (
     <div className="form-container sign-up-container">
