@@ -10,6 +10,7 @@ export const IndexPage = lazy(() => import("../pages/app"));
 export const Home = lazy(() => import("../pages/Home"));
 export const BlogPage = lazy(() => import("../pages/blog"));
 export const UploadPage = lazy(() => import("../pages/upload"));
+export const DownloadPage = lazy(() => import("../pages/download"));
 export const VerifyPage = lazy(() => import("../pages/verify-studyMaterial"));
 export const UserPage = lazy(() => import("../pages/user"));
 export const LoginPage = lazy(() => import("../pages/SignInSignUpFrom"));
@@ -46,7 +47,7 @@ export default function Router() {
             { path: "user", element: <UserPage /> },
             { path: "verify", element: <VerifyPage /> },
             { path: "upload", element: <UploadPage /> },
-
+            { path: "download", element: <DownloadPage /> },
             { path: "products", element: <ProductsPage /> },
             { path: "blog", element: <BlogPage /> },
           ],
