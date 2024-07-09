@@ -13,9 +13,12 @@ import DialogTitle from "@mui/material/DialogTitle";
 import { updateDoc, doc, increment, deleteDoc } from "firebase/firestore";
 import { db, storage } from "../../firebase";
 import { ref, deleteObject } from "firebase/storage";
+import { useUser } from "../../hooks/UserContext";
+import Iconify from "../../components/iconify";
 
 function VerifyStudyMaterialCard({ material, onApprove, onReject }) {
   const [open, setOpen] = useState(false);
+  const { userData } = useUser();
 
   const handleClickOpen = () => {
     setOpen(true);
@@ -34,6 +37,9 @@ function VerifyStudyMaterialCard({ material, onApprove, onReject }) {
       uploadCount: increment(1),
       points: increment(20),
       countOfRejection: 0,
+    });
+    await updateDoc(doc(db, "users", userData.uid), {
+      contribution: increment(1),
     });
     onApprove(material.id);
     handleClose();
@@ -147,9 +153,17 @@ function VerifyStudyMaterialCard({ material, onApprove, onReject }) {
         </DialogContent>
         <DialogActions>
           <Button onClick={handleReject} color="error" variant="contained">
+            <Iconify
+              icon="fluent:text-change-reject-20-filled"
+              sx={{ width: 20, height: 20, mr: 1 }}
+            />
             Reject
           </Button>
           <Button onClick={handleApprove} color="success" variant="contained">
+            <Iconify
+              icon="material-symbols:order-approve"
+              sx={{ width: 20, height: 20, mr: 1 }}
+            />
             Approve
           </Button>
         </DialogActions>

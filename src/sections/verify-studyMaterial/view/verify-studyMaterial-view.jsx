@@ -2,24 +2,28 @@ import { useState, useEffect } from "react";
 import Container from "@mui/material/Container";
 import Typography from "@mui/material/Typography";
 import Grid from "@mui/material/Unstable_Grid2";
-import Button from "@mui/material/Button";
+import Card from "@mui/material/Card";
 import VerifyStudyMaterialCard from "../verify-studyMaterial-card";
-import VerifyStudyMaterialSkeleton from "../../../components/skeletons/verifyStudyMaterial/VerifyStudyMaterialSkeleton"; // Import the skeleton component
+import VerifyStudyMaterialSkeleton from "../../../components/skeletons/verifyStudyMaterial/VerifyStudyMaterialSkeleton";
+import VerifyStudyMaterialFilters from "../verify-studyMaterialf-filters";
 import { useUser } from "../../../hooks/UserContext";
-import { collection, query, where, getDocs } from "firebase/firestore";
+import { collection, query, where, getDocs, orderBy } from "firebase/firestore";
 import { db } from "../../../firebase";
+import CardNoData from "../CardNoData";
 
 export default function VerifyView() {
   const { userData } = useUser();
 
   const [studyMaterials, setStudyMaterials] = useState([]);
-  const [loading, setLoading] = useState(true); // State to manage loading
+  const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("My domain");
   const [count, setCount] = useState(0);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortBy, setSortBy] = useState("newest");
 
   useEffect(() => {
     const fetchStudyMaterials = async () => {
-      setLoading(true); // Set loading to true when fetching starts
+      setLoading(true);
       const materialsRef = collection(db, "documents");
       let q;
 
@@ -27,10 +31,15 @@ export default function VerifyView() {
         q = query(
           materialsRef,
           where("uploaderCourse", "==", userData.course),
-          where("Approved", "==", "No")
+          where("Approved", "==", "No"),
+          orderBy("uploadedOn", sortBy === "newest" ? "desc" : "asc")
         );
       } else {
-        q = query(materialsRef, where("Approved", "==", "No"));
+        q = query(
+          materialsRef,
+          where("Approved", "==", "No"),
+          orderBy("uploadedOn", sortBy === "newest" ? "desc" : "asc")
+        );
       }
 
       const querySnapshot = await getDocs(q);
@@ -40,13 +49,13 @@ export default function VerifyView() {
       }));
       setStudyMaterials(materials);
       setCount(querySnapshot.size);
-      setLoading(false); // Set loading to false after data is fetched
+      setLoading(false);
     };
 
     if (userData) {
       fetchStudyMaterials();
     }
-  }, [filter, userData]);
+  }, [filter, userData, sortBy]);
 
   const handleApprove = async (id) => {
     const updatedMaterials = studyMaterials.filter(
@@ -64,45 +73,44 @@ export default function VerifyView() {
     setCount(count - 1);
   };
 
+  const filteredMaterials = studyMaterials.filter((material) =>
+    material.documentName.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   if (!userData) {
     return <Typography>Loading user data...</Typography>;
   }
 
   return (
     <Container>
-      <Typography variant="h4" sx={{ mb: 5 }}>
-        Verify Study Materials
+      <Typography variant="h4" sx={{ mb: 3 }}>
+        Verify Study Material
       </Typography>
+      <Card sx={{ ml: 2, p: 4 }}>
+        <VerifyStudyMaterialFilters
+          filterValue={searchQuery}
+          onFilterChange={setSearchQuery}
+          onSortChange={setSortBy}
+          sortBy={sortBy}
+          domainFilter={filter}
+          onDomainFilterChange={setFilter}
+        />
 
-      <div style={{ marginBottom: "16px" }}>
-        <Button
-          variant={filter === "My domain" ? "contained" : "outlined"}
-          onClick={() => setFilter("My domain")}
+        <Typography
+          variant="body1"
+          sx={{ mb: 3, fontWeight: "bold", ml: 2, mt: 4 }}
         >
-          My domain
-        </Button>
-        <Button
-          variant={filter === "All" ? "contained" : "outlined"}
-          onClick={() => setFilter("All")}
-          sx={{ ml: 2 }}
-        >
-          All
-        </Button>
-      </div>
-      <Typography
-        variant="body1"
-        sx={{ mb: 3, fontWeight: "bold", ml: 2, mt: 4 }}
-      >
-        {count.toLocaleString()} results
-      </Typography>
-      <Grid container spacing={3}>
-        {loading
-          ? Array.from(new Array(6)).map((_, index) => (
+          {filteredMaterials.length.toLocaleString()} results
+        </Typography>
+        <Grid container spacing={3}>
+          {loading ? (
+            Array.from(new Array(6)).map((_, index) => (
               <Grid xs={12} sm={6} md={4} key={index}>
                 <VerifyStudyMaterialSkeleton />
               </Grid>
             ))
-          : studyMaterials.map((material) => (
+          ) : filteredMaterials.length > 0 ? (
+            filteredMaterials.map((material) => (
               <Grid xs={12} sm={6} md={4} key={material.id}>
                 <VerifyStudyMaterialCard
                   material={material}
@@ -110,8 +118,14 @@ export default function VerifyView() {
                   onReject={handleReject}
                 />
               </Grid>
-            ))}
-      </Grid>
+            ))
+          ) : (
+            <Grid xs={12}>
+              <CardNoData query={searchQuery} />
+            </Grid>
+          )}
+        </Grid>
+      </Card>
     </Container>
   );
 }
