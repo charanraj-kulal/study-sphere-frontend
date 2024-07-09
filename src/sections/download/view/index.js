@@ -1,1 +1,1 @@
-export { default as VerifyView } from "./verify-studyMaterial-view";
+export { default as DownloadStudyMaterialView } from "./download-study-material-view";

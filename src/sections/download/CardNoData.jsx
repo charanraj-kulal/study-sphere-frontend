@@ -1,6 +1,5 @@
 import PropTypes from "prop-types";
 import Card from "@mui/material/Card";
-import CardContent from "@mui/material/CardContent";
 import Typography from "@mui/material/Typography";
 import Iconify from "../../components/iconify";
 
@@ -25,7 +24,7 @@ export default function CardNoData({ query }) {
       />
 
       <Typography variant="h6" paragraph>
-        Not found
+        No Results Found
       </Typography>
 
       <Typography variant="body2" sx={{ color: "text.secondary" }}>

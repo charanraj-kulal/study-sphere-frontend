@@ -1,6 +1,6 @@
 import { Helmet } from "react-helmet-async";
 
-import { VerifyView } from "../sections/download/view";
+import { DownloadStudyMaterialView } from "../sections/download/view";
 
 // ----------------------------------------------------------------------
 
@@ -11,7 +11,7 @@ export default function ProductsPage() {
         <title> Download Study Material | Study Sphere </title>
       </Helmet>
 
-      <VerifyView />
+      <DownloadStudyMaterialView />
     </>
   );
 }
