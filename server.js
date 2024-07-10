@@ -7,6 +7,8 @@ import axios from "axios";
 import dotenv from "dotenv";
 import { fileURLToPath } from "url";
 import path from "path";
+import nodemailer from "nodemailer";
+import fs from "fs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -20,12 +22,79 @@ import serviceAccount from "./serviceAccountKey.json" assert { type: "json" };
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
 });
-
+const transporter = nodemailer.createTransport({
+  host: process.env.SMTP_HOST,
+  port: process.env.SMTP_PORT,
+  secure: false, // true for 465, false for other ports
+  auth: {
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS,
+  },
+});
 const app = express();
 const port = process.env.PORT || 3000;
 app.use(bodyParser.json());
 app.use(cors({ origin: "http://localhost:5173" })); // Adjust the origin to your frontend's address
 
+//email sending
+app.post("/api/send-welcome-email", async (req, res) => {
+  const { name, email, course, userrole } = req.body;
+
+  // Read the email template
+  const templatePath = path.join(__dirname, "welcome_email.html");
+  let emailTemplate = fs.readFileSync(templatePath, "utf8");
+
+  // Replace placeholders with actual user data
+  emailTemplate = emailTemplate.replace(
+    "User Name           :      Status",
+    `User Name           :      ${name}`
+  );
+  emailTemplate = emailTemplate.replace(
+    "User Course         :      Status",
+    `User Course         :      ${course}`
+  );
+  emailTemplate = emailTemplate.replace(
+    "Role                :      Status",
+    `Role                :      ${userrole === 3 ? "Student" : "Other"}`
+  );
+
+  // Send email
+  try {
+    await transporter.sendMail({
+      // from: '"Study-Sphere" <noreply@studysphere.com>',
+      from: "charanraj9731@gmail.com",
+
+      to: email,
+      subject: "Welcome to Study-Sphere!",
+      html: emailTemplate,
+    });
+
+    res.status(200).json({ message: "Welcome email sent successfully" });
+  } catch (error) {
+    console.error("Error sending email:", error);
+    res.status(500).json({ error: "Failed to send welcome email" });
+  }
+});
+async function sendWelcomeEmail(name, email, course, userrole) {
+  const templatePath = path.join(__dirname, "welcome_email.html");
+  let emailTemplate = fs.readFileSync(templatePath, "utf8");
+
+  // Use template literal to interpolate values
+  const htmlContent = eval("`" + emailTemplate + "`");
+
+  try {
+    await transporter.sendMail({
+      from: '"Study-Sphere" <noreply@studysphere.com>',
+      to: email,
+      subject: "Welcome to Study-Sphere!",
+      html: htmlContent,
+    });
+    console.log("Welcome email sent successfully");
+  } catch (error) {
+    console.error("Error sending welcome email:", error);
+    throw error;
+  }
+}
 app.post("/login", async (req, res) => {
   console.log("Login endpoint hit");
   const { email, password } = req.body;
@@ -78,14 +147,30 @@ app.post("/login", async (req, res) => {
 
         // Ensure `isVerified` status in Firestore matches email verification status
         if (userData.isVerified !== "Yes") {
-          await admin
-            .firestore()
-            .collection("users")
-            .doc(userRecord.uid)
-            .update({
-              isVerified: "Yes",
-            });
-          userData.isVerified = "Yes";
+          try {
+            await admin
+              .firestore()
+              .collection("users")
+              .doc(userRecord.uid)
+              .update({
+                isVerified: "Yes",
+              });
+            userData.isVerified = "Yes";
+
+            // Send welcome email
+            await sendWelcomeEmail(
+              userData.name,
+              email,
+              userData.course,
+              userData.userrole
+            );
+          } catch (error) {
+            console.error(
+              "Error updating verification status or sending welcome email:",
+              error
+            );
+            // You might want to handle this error appropriately
+          }
         }
 
         const token = jwt.sign(

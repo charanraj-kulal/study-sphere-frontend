@@ -343,7 +343,7 @@ export default function UserPage() {
 
         <Button
           variant="contained"
-          color="inherit"
+          sx={{ backgroundColor: "#0A4191" }}
           startIcon={<Iconify icon="eva:plus-fill" />}
           onClick={handleOpenModal}
         >

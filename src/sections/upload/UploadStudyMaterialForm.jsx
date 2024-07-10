@@ -212,7 +212,11 @@ const UploadStudyMaterialForm = ({ currentUser }) => {
           required
         />
         <label htmlFor="raised-button-file">
-          <Button variant="contained" component="span">
+          <Button
+            variant="contained"
+            component="span"
+            sx={{ backgroundColor: "#0A4191" }}
+          >
             Upload PDF Document
           </Button>
         </label>
@@ -249,6 +253,7 @@ const UploadStudyMaterialForm = ({ currentUser }) => {
         type="submit"
         variant="contained"
         color="primary"
+        sx={{ backgroundColor: "#0A4191" }}
         disabled={isUploading || !agreedToTerms}
         ref={confettiRef}
         fullWidth

@@ -47,13 +47,36 @@ export default function VerifyStudyMaterialFilters({
         <Button
           variant={domainFilter === "My domain" ? "contained" : "outlined"}
           onClick={() => onDomainFilterChange("My domain")}
-          sx={{ mr: 1 }}
+          sx={{
+            mr: 1,
+            color: domainFilter === "My domain" ? "#fff" : "#0A4191",
+            backgroundColor:
+              domainFilter === "My domain" ? "#0A4191" : "transparent",
+            borderColor: "#0A4191",
+            "&:hover": {
+              backgroundColor:
+                domainFilter === "My domain"
+                  ? "#08336d"
+                  : "rgba(10, 65, 145, 0.08)",
+              borderColor: "#0A4191",
+            },
+          }}
         >
           My domain
         </Button>
         <Button
           variant={domainFilter === "All" ? "contained" : "outlined"}
           onClick={() => onDomainFilterChange("All")}
+          sx={{
+            color: domainFilter === "All" ? "#fff" : "#0A4191",
+            backgroundColor: domainFilter === "All" ? "#0A4191" : "transparent",
+            borderColor: "#0A4191",
+            "&:hover": {
+              backgroundColor:
+                domainFilter === "All" ? "#08336d" : "rgba(10, 65, 145, 0.08)",
+              borderColor: "#0A4191",
+            },
+          }}
         >
           All
         </Button>

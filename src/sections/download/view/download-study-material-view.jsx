@@ -1,17 +1,31 @@
 import { useState, useEffect } from "react";
 import Container from "@mui/material/Container";
 import Typography from "@mui/material/Typography";
-import Grid from "@mui/material/Grid";
 import Card from "@mui/material/Card";
 import Breadcrumbs from "@mui/material/Breadcrumbs";
 import Link from "@mui/material/Link";
 import Box from "@mui/material/Box";
+import IconButton from "@mui/material/IconButton";
+import Avatar from "@mui/material/Avatar";
+import StarIcon from "@mui/icons-material/Star";
+import GetAppIcon from "@mui/icons-material/GetApp";
+import ShareIcon from "@mui/icons-material/Share";
 import SearchBar from "../searchbar-for-study-material";
 import StudyMaterialCards from "../download-studyMaterial-card";
 import { useUser } from "../../../hooks/UserContext";
-import { collection, query, where, getDocs, orderBy } from "firebase/firestore";
+import {
+  collection,
+  query,
+  where,
+  getDocs,
+  orderBy,
+  doc,
+  updateDoc,
+  increment,
+} from "firebase/firestore";
 import { db } from "../../../firebase";
-import IllustrationImage from "../../../assets/illustrations/illustration_avatar.png"; // Import your illustration image
+import IllustrationGif from "../../../assets/illustrations/illustration_download_pdf.gif";
+import Iconify from "../../../components/iconify";
 
 export default function DownloadStudyMaterialView() {
   const { userData } = useUser();
@@ -19,48 +33,52 @@ export default function DownloadStudyMaterialView() {
   const [studyMaterials, setStudyMaterials] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  const [breadcrumbs, setBreadcrumbs] = useState(["Home", "Study Materials"]);
+  const [breadcrumbs, setBreadcrumbs] = useState(["Dashboard", "Download"]);
+  const [selectedMaterial, setSelectedMaterial] = useState(null);
 
   useEffect(() => {
     const fetchStudyMaterials = async () => {
+      if (!searchQuery) {
+        setStudyMaterials([]);
+        setLoading(false);
+        return;
+      }
+
       setLoading(true);
       const materialsRef = collection(db, "documents");
-      let q = query(
+      const q = query(
         materialsRef,
         where("visibility", "==", "public"),
         where("Approved", "==", "Yes"),
         orderBy("uploadedOn", "desc")
       );
 
-      if (searchQuery) {
-        q = query(
-          materialsRef,
-          where("visibility", "==", "public"),
-          where("Approved", "==", "Yes"),
-          where("documentName", ">=", searchQuery),
-          where("documentName", "<=", searchQuery + "\uf8ff")
-        );
-      }
-
       const querySnapshot = await getDocs(q);
       const materials = querySnapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
       }));
-      setStudyMaterials(
-        materials.filter(
-          (material) =>
-            material.documentName
-              .toLowerCase()
-              .includes(searchQuery.toLowerCase()) ||
-            material.description
-              .toLowerCase()
-              .includes(searchQuery.toLowerCase()) ||
-            material.documentTopics.some((topic) =>
-              topic.toLowerCase().includes(searchQuery.toLowerCase())
-            )
-        )
+
+      const filteredMaterials = materials.filter(
+        (material) =>
+          material.documentName
+            .toLowerCase()
+            .includes(searchQuery.toLowerCase()) ||
+          material.description
+            .toLowerCase()
+            .includes(searchQuery.toLowerCase()) ||
+          material.documentTopics.some((topic) =>
+            topic.toLowerCase().includes(searchQuery.toLowerCase())
+          ) ||
+          material.uploadedBy
+            .toLowerCase()
+            .includes(searchQuery.toLowerCase()) ||
+          material.uploaderCourse
+            .toLowerCase()
+            .includes(searchQuery.toLowerCase())
       );
+
+      setStudyMaterials(filteredMaterials);
       setLoading(false);
     };
 
@@ -69,11 +87,46 @@ export default function DownloadStudyMaterialView() {
 
   const handleBreadcrumbClick = (event, index) => {
     event.preventDefault();
-    // Handle breadcrumb navigation logic here if needed
+    if (index === 0) {
+      // Navigate to Dashboard
+      setBreadcrumbs(["Dashboard", "Download"]);
+      setSelectedMaterial(null);
+    } else if (index === 1) {
+      // Navigate to Download
+      setBreadcrumbs(["Dashboard", "Download"]);
+      setSelectedMaterial(null);
+    }
   };
 
   const handleSearch = (query) => {
     setSearchQuery(query);
+    setLoading(true);
+    setSelectedMaterial(null);
+  };
+
+  const handleCardClick = (material) => {
+    setSelectedMaterial(material);
+    setBreadcrumbs(["Dashboard", "Download", material.documentName]);
+  };
+
+  const handleDownload = async (material) => {
+    // Increment download count in Firestore
+    const docRef = doc(db, "documents", material.id);
+    await updateDoc(docRef, {
+      downloadCount: increment(1),
+    });
+
+    // Trigger download
+    window.open(material.documentUrl, "_blank");
+  };
+  const handleStarRating = async (rating) => {
+    // Implement star rating functionality
+    // Update Firestore with the new rating
+  };
+
+  const handleShare = () => {
+    // Implement share functionality
+    // You can use the Web Share API or create a custom sharing method
   };
 
   if (!userData) {
@@ -87,23 +140,72 @@ export default function DownloadStudyMaterialView() {
           <SearchBar onSearch={handleSearch} />
         </Box>
 
-        <Breadcrumbs aria-label="breadcrumb" sx={{ mb: 3 }}>
+        <Breadcrumbs
+          aria-label="breadcrumb"
+          sx={{ mb: 3 }}
+          separator={
+            <Iconify
+              icon="ic:round-navigate-next"
+              sx={{
+                width: 30,
+                height: 30,
+                color: "text.secondary",
+              }}
+            />
+          }
+        >
           {breadcrumbs.map((breadcrumb, index) => (
             <Link
               key={index}
               color="inherit"
               href="#"
               onClick={(event) => handleBreadcrumbClick(event, index)}
+              sx={{ textDecoration: "none", color: "#0A4191" }}
             >
               {breadcrumb}
             </Link>
           ))}
         </Breadcrumbs>
 
-        {!searchQuery && (
+        {selectedMaterial ? (
+          <Box>
+            <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 2 }}>
+              <IconButton onClick={() => handleStarRating(selectedMaterial)}>
+                <StarIcon />
+              </IconButton>
+              <IconButton onClick={() => handleDownload(selectedMaterial)}>
+                <GetAppIcon />
+              </IconButton>
+              <IconButton onClick={handleShare}>
+                <ShareIcon />
+              </IconButton>
+            </Box>
+            <Typography variant="h5" gutterBottom>
+              {selectedMaterial.documentName}
+            </Typography>
+            <Typography variant="body1" gutterBottom>
+              {selectedMaterial.description}
+            </Typography>
+            <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+              <Avatar src={selectedMaterial.uploaderPhotoUrl} sx={{ mr: 1 }} />
+              <Typography variant="body2">
+                {selectedMaterial.uploadedBy}
+              </Typography>
+            </Box>
+            <Box sx={{ width: "100%", height: "600px" }}>
+              <iframe
+                src={`${selectedMaterial.documentUrl}#toolbar=0&navpanes=0`}
+                width="100%"
+                height="100%"
+                title={selectedMaterial.documentName}
+                style={{ border: "none" }}
+              />
+            </Box>
+          </Box>
+        ) : !searchQuery ? (
           <Box sx={{ textAlign: "center", my: 5 }}>
             <img
-              src={IllustrationImage}
+              src={IllustrationGif}
               alt="Search Illustration"
               style={{ maxWidth: "300px", marginBottom: "20px" }}
             />
@@ -114,19 +216,22 @@ export default function DownloadStudyMaterialView() {
               Search for the study materials you need to excel in your studies.
             </Typography>
           </Box>
+        ) : (
+          <>
+            <Typography variant="body1" sx={{ mb: 3, fontWeight: "bold" }}>
+              {loading
+                ? "Searching..."
+                : `${studyMaterials.length} results found`}
+            </Typography>
+            <StudyMaterialCards
+              studyMaterials={studyMaterials}
+              loading={loading}
+              searchQuery={searchQuery}
+              onCardClick={handleCardClick}
+              onDownload={handleDownload}
+            />
+          </>
         )}
-
-        {searchQuery && (
-          <Typography variant="body1" sx={{ mb: 3, fontWeight: "bold" }}>
-            {studyMaterials.length} results found
-          </Typography>
-        )}
-
-        <StudyMaterialCards
-          studyMaterials={studyMaterials}
-          loading={loading}
-          searchQuery={searchQuery}
-        />
       </Card>
     </Container>
   );

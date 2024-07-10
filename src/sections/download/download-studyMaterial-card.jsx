@@ -8,19 +8,31 @@ import StarIcon from "@mui/icons-material/Star";
 import GetAppIcon from "@mui/icons-material/GetApp";
 import Stack from "@mui/material/Stack";
 import CardNoData from "./CardNoData";
+import SkeletonCard from "../../components/skeletons/downloadStudyMaterial/DownloadStudyMaterialSkeleton";
 import { formatTimeAgo } from "../../utils/timeUtils";
+
+const formatCount = (count) => {
+  if (count >= 1000000) {
+    return `${(count / 1000000).toFixed(1)} M`;
+  } else if (count >= 1000) {
+    return `${(count / 1000).toFixed(1)} K`;
+  }
+  return count.toString();
+};
 
 export default function StudyMaterialCards({
   studyMaterials,
   loading,
   searchQuery,
+  onCardClick,
+  onDownload,
 }) {
   if (loading) {
     return (
       <Grid container spacing={3}>
         {Array.from(new Array(6)).map((_, index) => (
           <Grid item xs={12} key={index}>
-            {/* Skeleton or loading state */}
+            <SkeletonCard />
           </Grid>
         ))}
       </Grid>
@@ -42,7 +54,12 @@ export default function StudyMaterialCards({
               p: 2,
               boxShadow: 3,
               borderRadius: 2,
+              cursor: "pointer",
+              "&:hover": {
+                boxShadow: 6,
+              },
             }}
+            onClick={() => onCardClick(material)}
           >
             <Box
               sx={{
@@ -69,16 +86,25 @@ export default function StudyMaterialCards({
                 scrolling="no"
               />
             </Box>
-            <Box sx={{ flexGrow: 1, display: "flex", flexDirection: "column" }}>
-              <Typography variant="h6" noWrap>
-                {material.documentName}
-              </Typography>
-              <Typography variant="body2" sx={{ mb: 1 }}>
-                {material.description}
-              </Typography>
+            <Box
+              sx={{
+                flexGrow: 1,
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "space-between",
+                ml: 4,
+              }}
+            >
+              <div>
+                <Typography variant="h6" sx={{ mb: 1 }} noWrap>
+                  {material.documentName}.pdf
+                </Typography>
+                <Typography variant="body2" sx={{ mb: 1 }}>
+                  {material.description}
+                </Typography>
+              </div>
               <Box
                 sx={{
-                  mt: "auto",
                   display: "flex",
                   justifyContent: "space-between",
                   alignItems: "flex-end",
@@ -102,17 +128,30 @@ export default function StudyMaterialCards({
                     </Typography>
                   </Stack>
                 </Stack>
-                <Stack direction="row" alignItems="center" spacing={1}>
-                  <IconButton size="small">
-                    <StarIcon fontSize="small" />
-                  </IconButton>
-                  <Typography variant="body2">{material.starCount}</Typography>
-                  <IconButton size="small">
-                    <GetAppIcon fontSize="small" />
-                  </IconButton>
-                  <Typography variant="body2">
-                    {material.downloadCount}
-                  </Typography>
+                <Stack direction="row" alignItems="center">
+                  <Stack direction="row" alignItems="center" marginRight={1}>
+                    <IconButton size="small" sx={{ color: "warning.main" }}>
+                      <StarIcon fontSize="small" />
+                    </IconButton>
+                    <Typography variant="body2" sx={{ fontWeight: "bold" }}>
+                      {formatCount(material.star)}
+                    </Typography>
+                  </Stack>
+                  <Stack direction="row" alignItems="center">
+                    <IconButton
+                      size="small"
+                      sx={{ color: "primary.main" }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onDownload(material);
+                      }}
+                    >
+                      <GetAppIcon fontSize="small" />
+                    </IconButton>
+                    <Typography variant="body2" sx={{ fontWeight: "bold" }}>
+                      {formatCount(material.downloadCount)}
+                    </Typography>
+                  </Stack>
                 </Stack>
               </Box>
             </Box>
