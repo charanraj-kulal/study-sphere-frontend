@@ -32,7 +32,7 @@ const navConfig = [
   },
   {
     title: "download",
-    path: "/dashboard/products",
+    path: "/dashboard/download",
     icon: icon("ic_download"),
   },
   {

@@ -7,7 +7,6 @@ import {
   Typography,
   Box,
   Chip,
-  Autocomplete,
   CircularProgress,
   Alert,
   Tooltip,
@@ -29,6 +28,7 @@ import LottieLoader from "../../components/LottieLoader";
 import InfoIcon from "@mui/icons-material/Info";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import { ConfettiButton } from "../../components/magicui/confetti-button"; // Import ConfettiButton
+import UploadDocumentTopics from "./upload-document-topics"; // Import the new component
 
 const StyledForm = styled("form")(({ theme }) => ({
   display: "flex",
@@ -92,7 +92,7 @@ const UploadStudyMaterialForm = ({ currentUser }) => {
     }
   };
 
-  const handleTopicsChange = (event, newValue) => {
+  const handleTopicsChange = (newValue) => {
     setFormData((prevData) => ({ ...prevData, documentTopics: newValue }));
   };
 
@@ -221,28 +221,7 @@ const UploadStudyMaterialForm = ({ currentUser }) => {
       {(!formData.documentName || !formData.document) && (
         <Alert severity="warning">Document Name and File are required.</Alert>
       )}
-      <Autocomplete
-        multiple
-        id="documentTopics"
-        options={["js", "css", "chemistry", "physics"]}
-        freeSolo
-        renderTags={(value, getTagProps) =>
-          value.map((option, index) => (
-            <Chip
-              variant="outlined"
-              label={option}
-              {...getTagProps({ index })}
-            />
-          ))
-        }
-        renderInput={(params) => (
-          <TextField
-            {...params}
-            variant="outlined"
-            label="Document Topics"
-            placeholder="Add topics"
-          />
-        )}
+      <UploadDocumentTopics
         value={formData.documentTopics}
         onChange={handleTopicsChange}
       />
@@ -266,7 +245,6 @@ const UploadStudyMaterialForm = ({ currentUser }) => {
         }
         label="I agree that the submitted document is genuine. I understand that submitting non-genuine documents may result in being banned from the system."
       />
-      {/* <div style={{ position: "relative", width: "100%" }}> */}
       <ConfettiButton
         type="submit"
         variant="contained"
@@ -281,7 +259,6 @@ const UploadStudyMaterialForm = ({ currentUser }) => {
           `Upload Now and Get ${points} Points`
         )}
       </ConfettiButton>
-      {/* </div> */}
     </StyledForm>
   );
 };
