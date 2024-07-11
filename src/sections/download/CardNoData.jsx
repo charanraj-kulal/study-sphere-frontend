@@ -1,7 +1,8 @@
 import PropTypes from "prop-types";
 import Card from "@mui/material/Card";
 import Typography from "@mui/material/Typography";
-import Iconify from "../../components/iconify";
+import IllustrationBadSearch from "../../assets/illustrations/illustration_bad_search.png";
+import Box from "@mui/material/Box";
 
 export default function CardNoData({ query }) {
   return (
@@ -13,15 +14,23 @@ export default function CardNoData({ query }) {
         boxShadow: (theme) => theme.customShadows.z8,
       }}
     >
-      <Iconify
-        icon="eva:search-fill"
+      <Box
         sx={{
-          width: 40,
-          height: 40,
-          color: "text.secondary",
+          width: "100%",
+          height: 80,
           mb: 3,
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
         }}
-      />
+      >
+        {/* Add your image here */}
+        <img
+          src={IllustrationBadSearch}
+          alt="Search Illustration"
+          style={{ maxWidth: "150px", marginBottom: "10px" }}
+        />
+      </Box>
 
       <Typography variant="h6" paragraph>
         No Results Found

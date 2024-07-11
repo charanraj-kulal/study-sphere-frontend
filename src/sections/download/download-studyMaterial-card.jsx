@@ -3,6 +3,8 @@ import Card from "@mui/material/Card";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Avatar from "@mui/material/Avatar";
+import Iconify from "../../components/iconify/iconify";
+import Button from "@mui/material/Button";
 import IconButton from "@mui/material/IconButton";
 import StarIcon from "@mui/icons-material/Star";
 import GetAppIcon from "@mui/icons-material/GetApp";

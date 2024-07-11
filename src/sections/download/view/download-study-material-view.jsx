@@ -5,11 +5,10 @@ import Card from "@mui/material/Card";
 import Breadcrumbs from "@mui/material/Breadcrumbs";
 import Link from "@mui/material/Link";
 import Box from "@mui/material/Box";
-import IconButton from "@mui/material/IconButton";
+import Button from "@mui/material/Button";
 import Avatar from "@mui/material/Avatar";
-import StarIcon from "@mui/icons-material/Star";
-import GetAppIcon from "@mui/icons-material/GetApp";
-import ShareIcon from "@mui/icons-material/Share";
+import { ThemeProvider, createTheme } from "@mui/material/styles";
+import RalewayWoff2 from "../../../assets/fonts/custom/Imprima/Imprima-Regular.ttf";
 import SearchBar from "../searchbar-for-study-material";
 import StudyMaterialCards from "../download-studyMaterial-card";
 import { useUser } from "../../../hooks/UserContext";
@@ -35,6 +34,26 @@ export default function DownloadStudyMaterialView() {
   const [searchQuery, setSearchQuery] = useState("");
   const [breadcrumbs, setBreadcrumbs] = useState(["Dashboard", "Download"]);
   const [selectedMaterial, setSelectedMaterial] = useState(null);
+
+  const theme = createTheme({
+    typography: {
+      fontFamily: "Imprima",
+    },
+    components: {
+      MuiCssBaseline: {
+        styleOverrides: `
+        @font-face {
+          font-family: 'Raleway';
+          font-style: normal;
+          font-display: swap;
+          font-weight: 400;
+          src: local('Raleway'), local('Raleway-Regular'), url(${RalewayWoff2}) format('woff2');
+          unicodeRange: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF;
+        }
+      `,
+      },
+    },
+  });
 
   useEffect(() => {
     const fetchStudyMaterials = async () => {
@@ -170,18 +189,59 @@ export default function DownloadStudyMaterialView() {
         {selectedMaterial ? (
           <Box>
             <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 2 }}>
-              <IconButton onClick={() => handleStarRating(selectedMaterial)}>
+              {/* <IconButton onClick={() => handleStarRating(selectedMaterial)}>
                 <StarIcon />
-              </IconButton>
-              <IconButton onClick={() => handleDownload(selectedMaterial)}>
-                <GetAppIcon />
-              </IconButton>
-              <IconButton onClick={handleShare}>
-                <ShareIcon />
-              </IconButton>
+              </IconButton> */}
+              <Button variant="outlined" sx={{ borderColor: "#0A4191", mr: 1 }}>
+                <Iconify
+                  icon="tabler:star"
+                  sx={{ color: "#FFD700", width: 20, height: 20 }}
+                  onClick={() => handleStarRating(selectedMaterial)}
+                />
+                <Typography
+                  variant="body2"
+                  sx={{
+                    fontWeight: "bold",
+                    ml: 0.5,
+                    fontSize: 20,
+                    color: "#0A4191",
+                  }}
+                >
+                  {/* {formatCount(material.star)} */}0
+                </Typography>
+              </Button>
+              <Button variant="outlined" sx={{ borderColor: "#0A4191", mr: 1 }}>
+                <Iconify
+                  icon="tabler:cloud-download"
+                  sx={{ color: "#FFD700", width: 20, height: 20 }}
+                  onClick={() => handleDownload(selectedMaterial)}
+                />
+                <Typography
+                  variant="body2"
+                  sx={{
+                    fontWeight: "bold",
+                    ml: 1,
+                    fontSize: 20,
+                    color: "#0A4191",
+                  }}
+                >
+                  {/* {formatCount(material.downloadCount)} */}0
+                </Typography>
+              </Button>
+              <Button variant="outlined" sx={{ borderColor: "#0A4191" }}>
+                <Iconify
+                  icon="tabler:share-3"
+                  sx={{ color: "#FFD700", width: 20, height: 20 }}
+                  onClick={handleShare}
+                />
+              </Button>
             </Box>
-            <Typography variant="h5" gutterBottom>
-              {selectedMaterial.documentName}
+            <Typography
+              variant="h3"
+              gutterBottom
+              sx={{ fontFamily: "Raleway" }}
+            >
+              {selectedMaterial.documentName}.pdf
             </Typography>
             <Typography variant="body1" gutterBottom>
               {selectedMaterial.description}
