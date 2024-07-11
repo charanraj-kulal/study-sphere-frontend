@@ -9,6 +9,7 @@ import { fileURLToPath } from "url";
 import path from "path";
 import nodemailer from "nodemailer";
 import fs from "fs";
+import fetch from "node-fetch";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -35,6 +36,136 @@ const app = express();
 const port = process.env.PORT || 3000;
 app.use(bodyParser.json());
 app.use(cors({ origin: "http://localhost:5173" })); // Adjust the origin to your frontend's address
+
+//download document
+// app.get("/api/document/:documentId", async (req, res) => {
+//   const { documentId } = req.params;
+//   const userId = req.query.userId; // Get the user ID from the query parameter
+
+//   try {
+//     // Fetch the document data from Firestore
+//     const docRef = admin.firestore().collection("documents").doc(documentId);
+//     const doc = await docRef.get();
+
+//     if (!doc.exists) {
+//       return res.status(404).send("Document not found");
+//     }
+
+//     const documentData = doc.data();
+//     const documentUrl = documentData.documentUrl;
+//     const documentName = documentData.documentName || "document";
+
+//     // Check if the user has already downloaded this document
+//     const downloadedUsers = documentData.downloadedUsers || {};
+//     let shouldIncrementCount = false;
+
+//     if (!downloadedUsers[userId]) {
+//       // If the user hasn't downloaded this document before, update the downloadedUsers
+//       shouldIncrementCount = true;
+//       await docRef.update({
+//         [`downloadedUsers.${userId}`]: "Yes",
+//         downloadCount: admin.firestore.FieldValue.increment(1),
+//       });
+//     }
+
+//     // Fetch the file from Firebase Storage
+//     const response = await fetch(documentUrl);
+
+//     if (!response.ok) {
+//       throw new Error(`HTTP error! status: ${response.status}`);
+//     }
+
+//     // Set the appropriate headers for file download
+//     res.setHeader(
+//       "Content-Disposition",
+//       `attachment; filename="${documentName}.pdf"`
+//     );
+//     res.setHeader("Content-Type", "application/pdf");
+
+//     // Pipe the file data to the response
+//     response.body.pipe(res);
+
+//     // Send the updated download count to the client
+//     res.setHeader(
+//       "X-Download-Count",
+//       documentData.downloadCount + (shouldIncrementCount ? 1 : 0)
+//     );
+//   } catch (error) {
+//     console.error("Error downloading file:", error);
+//     res.status(500).send("Error downloading file");
+//   }
+// });
+
+// app.get("/api/document/:documentId", async (req, res) => {
+//   const { documentId } = req.params;
+
+//   try {
+//     const docRef = admin.firestore().collection("documents").doc(documentId);
+//     const doc = await docRef.get();
+
+//     if (!doc.exists) {
+//       return res.status(404).json({ error: "Document not found" });
+//     }
+
+//     const documentData = doc.data();
+//     res.json(documentData);
+//   } catch (error) {
+//     console.error("Error fetching document:", error);
+//     res
+//       .status(500)
+//       .json({ error: "Error fetching document", details: error.message });
+//   }
+// });
+
+app.get("/api/dowload/:documentId", async (req, res) => {
+  const { documentId } = req.params;
+  const userId = req.query.userId;
+
+  try {
+    const docRef = admin.firestore().collection("documents").doc(documentId);
+    const doc = await docRef.get();
+
+    if (!doc.exists) {
+      return res.status(404).send("Document not found");
+    }
+
+    const documentData = doc.data();
+    const documentUrl = documentData.documentUrl;
+    const documentName = documentData.documentName || "document";
+
+    const downloadedUsers = documentData.downloadedUsers || {};
+    let shouldIncrementCount = false;
+
+    if (!downloadedUsers[userId]) {
+      shouldIncrementCount = true;
+      await docRef.update({
+        [`downloadedUsers.${userId}`]: "Yes",
+        downloadCount: admin.firestore.FieldValue.increment(1),
+      });
+    }
+
+    const updatedDoc = await docRef.get();
+    const updatedData = updatedDoc.data();
+    const updatedDownloadCount = updatedData.downloadCount;
+
+    const response = await fetch(documentUrl);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="${documentName}.pdf"`
+    );
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("X-Download-Count", updatedDownloadCount);
+
+    response.body.pipe(res);
+  } catch (error) {
+    console.error("Error downloading file:", error);
+    res.status(500).send("Error downloading file");
+  }
+});
 
 //email sending
 app.post("/api/send-welcome-email", async (req, res) => {

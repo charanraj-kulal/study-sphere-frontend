@@ -13,12 +13,17 @@ import DialogTitle from "@mui/material/DialogTitle";
 import { updateDoc, doc, increment, deleteDoc } from "firebase/firestore";
 import { db, storage } from "../../firebase";
 import { ref, deleteObject } from "firebase/storage";
+
+import { useToast } from "../../hooks/ToastContext";
+import LottieLoader from "../../components/LottieLoader";
 import { useUser } from "../../hooks/UserContext";
 import Iconify from "../../components/iconify";
 
 function VerifyStudyMaterialCard({ material, onApprove, onReject }) {
   const [open, setOpen] = useState(false);
   const { userData } = useUser();
+  const [isDeciding, setIsDeciding] = useState(false);
+  const { showToast } = useToast();
 
   const handleClickOpen = () => {
     setOpen(true);
@@ -29,23 +34,35 @@ function VerifyStudyMaterialCard({ material, onApprove, onReject }) {
   };
 
   const handleApprove = async () => {
-    await updateDoc(doc(db, "documents", material.id), {
-      visibility: "public",
-      Approved: "Yes",
-    });
-    await updateDoc(doc(db, "users", material.uploaderUid), {
-      uploadCount: increment(1),
-      points: increment(20),
-      countOfRejection: 0,
-    });
-    await updateDoc(doc(db, "users", userData.uid), {
-      contribution: increment(1),
-    });
-    onApprove(material.id);
-    handleClose();
+    setIsDeciding(true);
+    try {
+      setIsDeciding(true);
+      await updateDoc(doc(db, "documents", material.id), {
+        visibility: "public",
+        Approved: "Yes",
+      });
+      await updateDoc(doc(db, "users", material.uploaderUid), {
+        uploadCount: increment(1),
+        points: increment(20),
+        countOfRejection: 0,
+      });
+      await updateDoc(doc(db, "users", userData.uid), {
+        contribution: increment(1),
+      });
+      onApprove(material.id);
+      setIsDeciding(false);
+      handleClose();
+      showToast("success", "Document successfully Approved");
+    } catch (error) {
+      console.error("Error Approving document:", error);
+      showToast("error", "Error while Approving this document!!");
+    } finally {
+      setIsDeciding(false);
+    }
   };
 
   const handleReject = async () => {
+    setIsDeciding(true);
     try {
       await updateDoc(doc(db, "users", material.uploaderUid), {
         countOfRejection: increment(1),
@@ -56,8 +73,12 @@ function VerifyStudyMaterialCard({ material, onApprove, onReject }) {
       await deleteObject(storageRef);
       onReject(material.id);
       handleClose();
+      showToast("success", "Document successfully Rejected");
     } catch (error) {
       console.error("Error rejecting document:", error);
+      showToast("error", "Error while rejecting this document!!");
+    } finally {
+      setIsDeciding(false);
     }
   };
 
@@ -140,7 +161,17 @@ function VerifyStudyMaterialCard({ material, onApprove, onReject }) {
           </Stack>
         </Stack>
       </Card>
-      <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
+      <Dialog
+        open={open}
+        onClose={handleClose}
+        maxWidth="md"
+        fullWidth
+        style={{
+          backdropFilter: "blur(3px)",
+          backgroundColor: "rgba(0,0,30,0.4)",
+        }}
+      >
+        {isDeciding && <LottieLoader />}
         <DialogTitle>{material.documentName}</DialogTitle>
         <DialogContent>
           <iframe

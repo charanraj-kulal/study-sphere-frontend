@@ -41,6 +41,16 @@ export default function StudyMaterialCards({
     );
   }
 
+  //star rating calc
+  const calculateAverageRating = (starArray) => {
+    if (!Array.isArray(starArray) || starArray.length === 0) return "0.00";
+    const totalRatings = starArray.reduce(
+      (sum, count, index) => sum + count * (index + 1),
+      0
+    );
+    const totalVotes = starArray.reduce((sum, count) => sum + count, 0);
+    return totalVotes > 0 ? (totalRatings / totalVotes).toFixed(2) : "0.00";
+  };
   if (studyMaterials.length === 0 && searchQuery) {
     return <CardNoData query={searchQuery} />;
   }
@@ -78,16 +88,17 @@ export default function StudyMaterialCards({
                 height="100%"
                 title={`${material.documentName} thumbnail`}
                 style={{
-                  border: "none",
                   pointerEvents: "none",
                   overflow: "hidden",
                   transform: "scale(1.5)",
                   transformOrigin: "center center",
                   borderRadius: 6,
+                  border: "1px solid rgba(0, 0, 0, 0.1)", // Light black border
                 }}
                 scrolling="no"
               />
             </Box>
+
             <Box
               sx={{
                 flexGrow: 1,
@@ -136,7 +147,9 @@ export default function StudyMaterialCards({
                       <StarIcon fontSize="small" />
                     </IconButton>
                     <Typography variant="body2" sx={{ fontWeight: "bold" }}>
-                      {formatCount(material.star)}
+                      {Array.isArray(material.star)
+                        ? calculateAverageRating(material.star)
+                        : "0.00"}
                     </Typography>
                   </Stack>
                   <Stack direction="row" alignItems="center">

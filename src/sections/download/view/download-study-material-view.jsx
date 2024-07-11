@@ -1,61 +1,42 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import Container from "@mui/material/Container";
 import Typography from "@mui/material/Typography";
 import Card from "@mui/material/Card";
-import Breadcrumbs from "@mui/material/Breadcrumbs";
-import Link from "@mui/material/Link";
 import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
-import Avatar from "@mui/material/Avatar";
-import { ThemeProvider, createTheme } from "@mui/material/styles";
-// import RalewayWoff2 from "../../../assets/fonts/custom/Imprima/Imprima-Regular.ttf";
-import RalewayWoff2 from "../../../assets/fonts/custom/LemonMilk/LEMONMILK-Bold.otf";
+import { useToast } from "../../../hooks/ToastContext";
+import LottieLoader from "../../../components/LottieLoader";
 import SearchBar from "../searchbar-for-study-material";
 import StudyMaterialCards from "../download-studyMaterial-card";
 import { useUser } from "../../../hooks/UserContext";
-
+import BreadcrumbsNavigation from "../BreadcrumbsNavigation";
+import SelectedMaterialDetails from "../SelectedMaterialDetails";
 import {
   collection,
   query,
   where,
   getDocs,
   orderBy,
+  getDoc,
   doc,
   updateDoc,
   increment,
 } from "firebase/firestore";
 import { db } from "../../../firebase";
 import IllustrationGif from "../../../assets/illustrations/illustration_download_pdf.gif";
-import Iconify from "../../../components/iconify";
 
 export default function DownloadStudyMaterialView() {
+  const navigate = useNavigate();
   const { userData } = useUser();
 
   const [studyMaterials, setStudyMaterials] = useState([]);
+  const [isProcessing, setIsProcessing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [breadcrumbs, setBreadcrumbs] = useState(["Dashboard", "Download"]);
   const [selectedMaterial, setSelectedMaterial] = useState(null);
-
-  const theme = createTheme({
-    typography: {
-      fontFamily: "Raleway, Arial",
-    },
-    components: {
-      MuiCssBaseline: {
-        styleOverrides: `
-        @font-face {
-          font-family: 'Raleway';
-          font-style: normal;
-          font-display: swap;
-          font-weight: 400;
-          src: local('Raleway'), local('Raleway-Regular'), url(${RalewayWoff2}) format('woff2');
-          unicodeRange: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF;
-        }
-      `,
-      },
-    },
-  });
+  const [starDialogOpen, setStarDialogOpen] = useState(false);
+  const { showToast } = useToast();
 
   useEffect(() => {
     const fetchStudyMaterials = async () => {
@@ -109,11 +90,10 @@ export default function DownloadStudyMaterialView() {
   const handleBreadcrumbClick = (event, index) => {
     event.preventDefault();
     if (index === 0) {
-      // Navigate to Dashboard
+      navigate("/dashboard");
       setBreadcrumbs(["Dashboard", "Download"]);
       setSelectedMaterial(null);
     } else if (index === 1) {
-      // Navigate to Download
       setBreadcrumbs(["Dashboard", "Download"]);
       setSelectedMaterial(null);
     }
@@ -125,30 +105,143 @@ export default function DownloadStudyMaterialView() {
     setSelectedMaterial(null);
   };
 
-  const handleCardClick = (material) => {
-    setSelectedMaterial(material);
-    setBreadcrumbs(["Dashboard", "Download", material.documentName]);
+  const handleCardClick = async (material) => {
+    setIsProcessing(true);
+    try {
+      const docRef = doc(db, "documents", material.id);
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        const updatedMaterial = { id: docSnap.id, ...docSnap.data() };
+        setSelectedMaterial(updatedMaterial);
+        setBreadcrumbs(["Dashboard", "Download", updatedMaterial.documentName]);
+      } else {
+        console.log("No such document!");
+        setSelectedMaterial(material);
+        setBreadcrumbs(["Dashboard", "Download", material.documentName]);
+      }
+    } catch (error) {
+      console.error("Error fetching updated document:", error);
+      setSelectedMaterial(material);
+      setBreadcrumbs(["Dashboard", "Download", material.documentName]);
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
-  const handleDownload = async (material) => {
-    // Increment download count in Firestore
-    const docRef = doc(db, "documents", material.id);
-    await updateDoc(docRef, {
-      downloadCount: increment(1),
-    });
+  //download and update study material
+  const updateMaterialDownloadCount = async (material) => {
+    if (!material || !material.id) {
+      console.error("Invalid material object:", material);
+      showToast("error", "Error: Invalid material data");
+      return;
+    }
 
-    // Trigger download
-    window.open(material.documentUrl, "_blank");
+    try {
+      // Initiate the download
+      const response = await fetch(
+        `http://localhost:3000/api/download/${material.id}?userId=${userData.uid}`
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      // Get the updated download count from the response header
+      const newDownloadCount = parseInt(
+        response.headers.get("X-Download-Count"),
+        10
+      );
+
+      // Update the local state to reflect the new download count
+      setSelectedMaterial((prevMaterial) => ({
+        ...prevMaterial,
+        downloadCount: newDownloadCount,
+      }));
+
+      // Trigger the actual download
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.style.display = "none";
+      a.href = url;
+      a.download = `${material.documentName}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+
+      showToast("success", "Document downloaded successfully");
+    } catch (error) {
+      console.error("Error initiating download:", error);
+      showToast("error", `Failed to initiate download: ${error.message}`);
+    }
   };
   const handleStarRating = async (rating) => {
-    // Implement star rating functionality
-    // Update Firestore with the new rating
+    if (!selectedMaterial || !userData) return;
+
+    const docRef = doc(db, "documents", selectedMaterial.id);
+    setIsProcessing(true);
+    try {
+      const docSnap = await getDoc(docRef);
+      const currentData = docSnap.data();
+
+      let newStarArray = Array.isArray(currentData.star)
+        ? [...currentData.star]
+        : [0, 0, 0, 0, 0];
+      let userRatings = currentData.userRatings || {};
+
+      const previousRating = userRatings[userData.uid];
+      if (previousRating) {
+        newStarArray[previousRating - 1] = Math.max(
+          0,
+          newStarArray[previousRating - 1] - 1
+        );
+      }
+
+      newStarArray[rating - 1] += 1;
+
+      userRatings[userData.uid] = rating;
+
+      await updateDoc(docRef, {
+        star: newStarArray,
+        userRatings: userRatings,
+      });
+
+      setSelectedMaterial((prevMaterial) => ({
+        ...prevMaterial,
+        star: newStarArray,
+        userRatings: userRatings,
+      }));
+
+      showToast(
+        "success",
+        previousRating
+          ? "Your rating has been updated!"
+          : "Thank you for rating!"
+      );
+    } catch (error) {
+      console.error("Error updating rating:", error.message, error.code);
+      showToast("error", `Failed to update rating: ${error.message}`);
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
-  const handleShare = () => {
-    // Implement share functionality
-    // You can use the Web Share API or create a custom sharing method
+  const calculateAverageRating = (starArray) => {
+    if (!Array.isArray(starArray) || starArray.length === 0) {
+      console.warn("Invalid star array:", starArray);
+      return 0;
+    }
+
+    const totalRatings = starArray.reduce(
+      (sum, count, index) => sum + count * (index + 1),
+      0
+    );
+    const totalVotes = starArray.reduce((sum, count) => sum + count, 0);
+
+    return totalVotes > 0 ? (totalRatings / totalVotes).toFixed(2) : 0;
   };
+
+  const handleShare = () => {};
 
   if (!userData) {
     return <Typography>Loading user data...</Typography>;
@@ -156,110 +249,30 @@ export default function DownloadStudyMaterialView() {
 
   return (
     <Container>
+      {isProcessing && <LottieLoader />}
       <Card sx={{ p: 4, mt: 3 }}>
         <Box sx={{ display: "flex", justifyContent: "center", mb: 3 }}>
           <SearchBar onSearch={handleSearch} />
         </Box>
 
-        <Breadcrumbs
-          aria-label="breadcrumb"
-          sx={{ mb: 3 }}
-          separator={
-            <Iconify
-              icon="ic:round-navigate-next"
-              sx={{
-                width: 30,
-                height: 30,
-                color: "text.secondary",
-              }}
-            />
-          }
-        >
-          {breadcrumbs.map((breadcrumb, index) => (
-            <Link
-              key={index}
-              color="inherit"
-              href="#"
-              onClick={(event) => handleBreadcrumbClick(event, index)}
-              sx={{ textDecoration: "none", color: "#0A4191" }}
-            >
-              {breadcrumb}
-            </Link>
-          ))}
-        </Breadcrumbs>
+        <BreadcrumbsNavigation
+          breadcrumbs={breadcrumbs}
+          handleBreadcrumbClick={handleBreadcrumbClick}
+        />
 
         {selectedMaterial ? (
-          <Box>
-            <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 2 }}>
-              {/* <IconButton onClick={() => handleStarRating(selectedMaterial)}>
-                <StarIcon />
-              </IconButton> */}
-              <Button variant="outlined" sx={{ borderColor: "#0A4191", mr: 1 }}>
-                <Iconify
-                  icon="tabler:star"
-                  sx={{ color: "#FFD700", width: 20, height: 20 }}
-                  onClick={() => handleStarRating(selectedMaterial)}
-                />
-                <Typography
-                  variant="body2"
-                  sx={{
-                    fontWeight: "bold",
-                    ml: 0.5,
-                    fontSize: 20,
-                    color: "#0A4191",
-                  }}
-                >
-                  {/* {formatCount(material.star)} */}0
-                </Typography>
-              </Button>
-              <Button variant="outlined" sx={{ borderColor: "#0A4191", mr: 1 }}>
-                <Iconify
-                  icon="tabler:cloud-download"
-                  sx={{ color: "#FFD700", width: 20, height: 20 }}
-                  onClick={() => handleDownload(selectedMaterial)}
-                />
-                <Typography
-                  variant="body2"
-                  sx={{
-                    fontWeight: "bold",
-                    ml: 1,
-                    fontSize: 20,
-                    color: "#0A4191",
-                  }}
-                >
-                  {/* {formatCount(material.downloadCount)} */}0
-                </Typography>
-              </Button>
-              <Button variant="outlined" sx={{ borderColor: "#0A4191" }}>
-                <Iconify
-                  icon="tabler:share-3"
-                  sx={{ color: "#FFD700", width: 20, height: 20 }}
-                  onClick={handleShare}
-                />
-              </Button>
-            </Box>
-            <Typography variant="commonpdfname" gutterBottom>
-              {selectedMaterial.documentName}.pdf
-            </Typography>
-            <Typography variant="body1" gutterBottom>
-              {selectedMaterial.description}
-            </Typography>
-            <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-              <Avatar src={selectedMaterial.uploaderPhotoUrl} sx={{ mr: 1 }} />
-              <Typography variant="body2">
-                {selectedMaterial.uploadedBy}
-              </Typography>
-            </Box>
-            <Box sx={{ width: "100%", height: "600px" }}>
-              <iframe
-                src={`${selectedMaterial.documentUrl}#toolbar=0&navpanes=0`}
-                width="100%"
-                height="100%"
-                title={selectedMaterial.documentName}
-                style={{ border: "none" }}
-              />
-            </Box>
-          </Box>
+          <SelectedMaterialDetails
+            selectedMaterial={selectedMaterial}
+            calculateAverageRating={calculateAverageRating}
+            setStarDialogOpen={setStarDialogOpen}
+            updateMaterialDownloadCount={() =>
+              updateMaterialDownloadCount(selectedMaterial)
+            }
+            handleShare={handleShare}
+            starDialogOpen={starDialogOpen}
+            handleStarRating={handleStarRating}
+            userData={userData}
+          />
         ) : !searchQuery ? (
           <Box sx={{ textAlign: "center", my: 5 }}>
             <img
@@ -283,10 +296,10 @@ export default function DownloadStudyMaterialView() {
             </Typography>
             <StudyMaterialCards
               studyMaterials={studyMaterials}
-              loading={loading}
+              loading={loading || isProcessing}
               searchQuery={searchQuery}
               onCardClick={handleCardClick}
-              onDownload={handleDownload}
+              onDownload={updateMaterialDownloadCount}
             />
           </>
         )}

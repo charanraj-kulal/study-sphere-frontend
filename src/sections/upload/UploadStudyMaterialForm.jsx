@@ -131,7 +131,7 @@ const UploadStudyMaterialForm = ({ currentUser }) => {
         visibility: "private",
         Approved: "No",
         downloadCount: 0,
-        star: 0,
+        star: [0, 0, 0, 0, 0],
       });
 
       // Update user document in Firestore

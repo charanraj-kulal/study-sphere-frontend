@@ -25,18 +25,20 @@ export default function SearchBar({ onSearch }) {
   return (
     <Paper
       sx={{
-        p: "2px 4px",
+        p: "4px 4px",
         display: "flex",
         alignItems: "center",
         width: "100%",
         maxWidth: 600,
         boxShadow: 3,
         borderRadius: 2,
+        border: "1px solid #ddd", // Added border
+        backgroundColor: "#fff", // Ensured background color is white
       }}
     >
       <SearchIcon sx={{ p: "10px" }} />
       <InputBase
-        sx={{ ml: 1, flex: 1 }}
+        sx={{ ml: 1, flex: 1, borderColor: "#00000" }}
         placeholder="Search study materials..."
         inputProps={{ "aria-label": "search study materials" }}
         value={query}
