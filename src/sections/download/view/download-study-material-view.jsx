@@ -8,10 +8,12 @@ import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Avatar from "@mui/material/Avatar";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
-import RalewayWoff2 from "../../../assets/fonts/custom/Imprima/Imprima-Regular.ttf";
+// import RalewayWoff2 from "../../../assets/fonts/custom/Imprima/Imprima-Regular.ttf";
+import RalewayWoff2 from "../../../assets/fonts/custom/LemonMilk/LEMONMILK-Bold.otf";
 import SearchBar from "../searchbar-for-study-material";
 import StudyMaterialCards from "../download-studyMaterial-card";
 import { useUser } from "../../../hooks/UserContext";
+
 import {
   collection,
   query,
@@ -37,7 +39,7 @@ export default function DownloadStudyMaterialView() {
 
   const theme = createTheme({
     typography: {
-      fontFamily: "Imprima",
+      fontFamily: "Raleway, Arial",
     },
     components: {
       MuiCssBaseline: {
@@ -236,11 +238,7 @@ export default function DownloadStudyMaterialView() {
                 />
               </Button>
             </Box>
-            <Typography
-              variant="h3"
-              gutterBottom
-              sx={{ fontFamily: "Raleway" }}
-            >
+            <Typography variant="commonpdfname" gutterBottom>
               {selectedMaterial.documentName}.pdf
             </Typography>
             <Typography variant="body1" gutterBottom>

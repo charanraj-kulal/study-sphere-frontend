@@ -10,30 +10,39 @@ export function pxToRem(value) {
 
 export function responsiveFontSizes({ sm, md, lg }) {
   return {
-    '@media (min-width:600px)': {
+    "@media (min-width:600px)": {
       fontSize: pxToRem(sm),
     },
-    '@media (min-width:900px)': {
+    "@media (min-width:900px)": {
       fontSize: pxToRem(md),
     },
-    '@media (min-width:1200px)': {
+    "@media (min-width:1200px)": {
       fontSize: pxToRem(lg),
     },
   };
 }
 
-export const primaryFont = 'Public Sans, sans-serif';
-export const secondaryFont = 'Barlow, sans-serif';
+export const primaryFont = "Public Sans, sans-serif";
+export const secondaryFont = "Barlow, sans-serif";
+export const customPrimaryFont = "Customfont, sans-serif";
 
 // ----------------------------------------------------------------------
 
 export const typography = {
-  fontFamily: primaryFont,
+  fontFamily: customPrimaryFont,
+
   fontSecondaryFamily: secondaryFont,
   fontWeightRegular: 400,
   fontWeightMedium: 500,
   fontWeightSemiBold: 600,
   fontWeightBold: 700,
+  commonpdfname: {
+    fontFamily: '"LEMONMILK"',
+    fontWeight: 700,
+    lineHeight: 1.5,
+    fontSize: pxToRem(32),
+    ...responsiveFontSizes({ sm: 26, md: 30, lg: 32 }),
+  },
   h1: {
     fontWeight: 800,
     lineHeight: 80 / 64,
@@ -96,12 +105,12 @@ export const typography = {
     fontWeight: 700,
     lineHeight: 1.5,
     fontSize: pxToRem(12),
-    textTransform: 'uppercase',
+    textTransform: "uppercase",
   },
   button: {
     fontWeight: 700,
     lineHeight: 24 / 14,
     fontSize: pxToRem(14),
-    textTransform: 'unset',
+    textTransform: "unset",
   },
 };

@@ -1,0 +1,17 @@
+/* styles/fonts.css */
+@font-face {
+  font-family: "LEMONMILK";
+  src: url("../assets/fonts/custom/LemonMilk/LEMONMILK-Bold.otf")
+    format("opentype");
+  font-weight: bold;
+
+  font-style: normal;
+}
+@font-face {
+  font-family: "Customfont";
+  src: url("../assets/fonts/custom/\/Signika_Negative/static/SignikaNegative-Medium.ttf")
+    format("opentype");
+  font-weight: bold;
+  line-height: 120px;
+  font-style: normal;
+}
