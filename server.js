@@ -33,95 +33,16 @@ const transporter = nodemailer.createTransport({
   },
 });
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 10000;
 app.use(bodyParser.json());
 app.use(cors({ origin: "http://localhost:5173" })); // Adjust the origin to your frontend's address
 
-//download document
-// app.get("/api/document/:documentId", async (req, res) => {
-//   const { documentId } = req.params;
-//   const userId = req.query.userId; // Get the user ID from the query parameter
-
-//   try {
-//     // Fetch the document data from Firestore
-//     const docRef = admin.firestore().collection("documents").doc(documentId);
-//     const doc = await docRef.get();
-
-//     if (!doc.exists) {
-//       return res.status(404).send("Document not found");
-//     }
-
-//     const documentData = doc.data();
-//     const documentUrl = documentData.documentUrl;
-//     const documentName = documentData.documentName || "document";
-
-//     // Check if the user has already downloaded this document
-//     const downloadedUsers = documentData.downloadedUsers || {};
-//     let shouldIncrementCount = false;
-
-//     if (!downloadedUsers[userId]) {
-//       // If the user hasn't downloaded this document before, update the downloadedUsers
-//       shouldIncrementCount = true;
-//       await docRef.update({
-//         [`downloadedUsers.${userId}`]: "Yes",
-//         downloadCount: admin.firestore.FieldValue.increment(1),
-//       });
-//     }
-
-//     // Fetch the file from Firebase Storage
-//     const response = await fetch(documentUrl);
-
-//     if (!response.ok) {
-//       throw new Error(`HTTP error! status: ${response.status}`);
-//     }
-
-//     // Set the appropriate headers for file download
-//     res.setHeader(
-//       "Content-Disposition",
-//       `attachment; filename="${documentName}.pdf"`
-//     );
-//     res.setHeader("Content-Type", "application/pdf");
-
-//     // Pipe the file data to the response
-//     response.body.pipe(res);
-
-//     // Send the updated download count to the client
-//     res.setHeader(
-//       "X-Download-Count",
-//       documentData.downloadCount + (shouldIncrementCount ? 1 : 0)
-//     );
-//   } catch (error) {
-//     console.error("Error downloading file:", error);
-//     res.status(500).send("Error downloading file");
-//   }
-// });
-
-// app.get("/api/document/:documentId", async (req, res) => {
-//   const { documentId } = req.params;
-
-//   try {
-//     const docRef = admin.firestore().collection("documents").doc(documentId);
-//     const doc = await docRef.get();
-
-//     if (!doc.exists) {
-//       return res.status(404).json({ error: "Document not found" });
-//     }
-
-//     const documentData = doc.data();
-//     res.json(documentData);
-//   } catch (error) {
-//     console.error("Error fetching document:", error);
-//     res
-//       .status(500)
-//       .json({ error: "Error fetching document", details: error.message });
-//   }
-// });
-
-app.get("/api/dowload/:documentId", async (req, res) => {
+app.get("/api/download/:documentId", async (req, res) => {
   const { documentId } = req.params;
-  const userId = req.query.userId;
+  const userId = req.query.userId; // Get the user ID from the query parameter
 
   try {
+    // Fetch the document data from Firestore
     const docRef = admin.firestore().collection("documents").doc(documentId);
     const doc = await docRef.get();
 
@@ -133,10 +54,18 @@ app.get("/api/dowload/:documentId", async (req, res) => {
     const documentUrl = documentData.documentUrl;
     const documentName = documentData.documentName || "document";
 
+    // Check if the user has already downloaded this document
+    const userDownloadsRef = admin
+      .firestore()
+      .collection("userDownloads")
+      .doc(userId);
+    const userDownloads = await userDownloadsRef.get();
+
     const downloadedUsers = documentData.downloadedUsers || {};
     let shouldIncrementCount = false;
 
     if (!downloadedUsers[userId]) {
+      // If the user hasn't downloaded this document before, update the downloadedUsers
       shouldIncrementCount = true;
       await docRef.update({
         [`downloadedUsers.${userId}`]: "Yes",
@@ -144,29 +73,33 @@ app.get("/api/dowload/:documentId", async (req, res) => {
       });
     }
 
-    const updatedDoc = await docRef.get();
-    const updatedData = updatedDoc.data();
-    const updatedDownloadCount = updatedData.downloadCount;
-
+    // Fetch the file from Firebase Storage
     const response = await fetch(documentUrl);
+
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
+    // Set the appropriate headers for file download
     res.setHeader(
-      "Content-Disposition",
-      `attachment; filename="${documentName}.pdf"`
+      "X-Download-Count",
+      documentData.downloadCount + (shouldIncrementCount ? 1 : 0)
     );
-    res.setHeader("Content-Type", "application/pdf");
-    res.setHeader("X-Download-Count", updatedDownloadCount);
 
+    // Pipe the file data to the response
     response.body.pipe(res);
+
+    // Update the download count if necessary
+    if (shouldIncrementCount) {
+      await docRef.update({
+        downloadCount: admin.firestore.FieldValue.increment(1),
+      });
+    }
   } catch (error) {
     console.error("Error downloading file:", error);
     res.status(500).send("Error downloading file");
   }
 });
-
 //email sending
 app.post("/api/send-welcome-email", async (req, res) => {
   const { name, email, course, userrole } = req.body;
@@ -412,6 +345,6 @@ app.delete("/api/users/:uid", async (req, res) => {
   }
 });
 
-app.listen(port, () => {
-  console.log(`Server running on port ${port}`);
+app.listen(port, "0.0.0.0", () => {
+  console.log(`Server is running on port ${port}`);
 });

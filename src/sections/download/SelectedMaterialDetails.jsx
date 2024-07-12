@@ -25,56 +25,11 @@ const SelectedMaterialDetails = ({
 
   const handleDownload = async () => {
     try {
-      const response = await fetch(
-        `/api/download/${selectedMaterial.id}?userId=${userData.uid}`,
-        {
-          method: "GET",
-        }
-      );
-
-      if (response.ok) {
-        const updatedCount = response.headers.get("X-Download-Count");
-        if (updatedCount) {
-          setLocalDownloadCount(parseInt(updatedCount, 10));
-        }
-
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.style.display = "none";
-        a.href = url;
-        a.download = `${selectedMaterial.documentName}.pdf`;
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
-        refreshDownloadCount();
-      } else {
-        console.error("Error downloading file");
-      }
+      await updateMaterialDownloadCount();
+      // Update the local state immediately
+      setLocalDownloadCount((prevCount) => prevCount + 1);
     } catch (error) {
       console.error("Error updating download count:", error);
-    }
-  };
-
-  const refreshDownloadCount = async () => {
-    try {
-      const response = await fetch(`/api/document/${selectedMaterial.id}`);
-      if (response.ok) {
-        const contentType = response.headers.get("content-type");
-        if (contentType && contentType.includes("application/json")) {
-          const updatedDocument = await response.json();
-          setLocalDownloadCount(updatedDocument.downloadCount);
-        } else {
-          const text = await response.text();
-          console.error("Unexpected response:", text);
-          throw new Error("Unexpected response from server");
-        }
-      } else {
-        const text = await response.text();
-        console.error("Error response body:", text);
-      }
-    } catch (error) {
-      console.error("Error refreshing download count:", error);
     }
   };
 
