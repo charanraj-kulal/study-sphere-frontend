@@ -37,70 +37,6 @@ const port = process.env.PORT || 10000;
 app.use(bodyParser.json());
 app.use(cors({ origin: "http://localhost:5173" })); // Adjust the origin to your frontend's address
 
-// app.get("/api/download/:documentId", async (req, res) => {
-//   const { documentId } = req.params;
-//   const userId = req.query.userId; // Get the user ID from the query parameter
-
-//   try {
-//     // Fetch the document data from Firestore
-//     const docRef = admin.firestore().collection("documents").doc(documentId);
-//     const doc = await docRef.get();
-
-//     if (!doc.exists) {
-//       return res.status(404).send("Document not found");
-//     }
-
-//     const documentData = doc.data();
-//     const documentUrl = documentData.documentUrl;
-//     const documentName = documentData.documentName || "document";
-
-//     // Check if the user has already downloaded this document
-//     const userDownloadsRef = admin
-//       .firestore()
-//       .collection("userDownloads")
-//       .doc(userId);
-//     const userDownloads = await userDownloadsRef.get();
-
-//     const downloadedUsers = documentData.downloadedUsers || {};
-//     let shouldIncrementCount = false;
-
-//     if (!downloadedUsers[userId]) {
-//       // If the user hasn't downloaded this document before, update the downloadedUsers
-//       shouldIncrementCount = true;
-//       await docRef.update({
-//         [`downloadedUsers.${userId}`]: "Yes",
-//         downloadCount: admin.firestore.FieldValue.increment(1),
-//       });
-//     }
-
-//     // Fetch the file from Firebase Storage
-//     const response = await fetch(documentUrl);
-
-//     if (!response.ok) {
-//       throw new Error(`HTTP error! status: ${response.status}`);
-//     }
-
-//     // Set the appropriate headers for file download
-//     res.setHeader(
-//       "X-Download-Count",
-//       documentData.downloadCount + (shouldIncrementCount ? 1 : 0)
-//     );
-
-//     // Pipe the file data to the response
-//     response.body.pipe(res);
-
-//     // Update the download count if necessary
-//     if (shouldIncrementCount) {
-//       await docRef.update({
-//         downloadCount: admin.firestore.FieldValue.increment(1),
-//       });
-//     }
-//   } catch (error) {
-//     console.error("Error downloading file:", error);
-//     res.status(500).send("Error downloading file");
-//   }
-// });
-
 app.get("/api/download/:documentId", async (req, res) => {
   const { documentId } = req.params;
   const userId = req.query.userId;
@@ -109,33 +45,27 @@ app.get("/api/download/:documentId", async (req, res) => {
     const docRef = admin.firestore().collection("documents").doc(documentId);
 
     // Use a transaction to ensure atomic updates
-    const updatedCount = await admin
-      .firestore()
-      .runTransaction(async (transaction) => {
-        const doc = await transaction.get(docRef);
+    await admin.firestore().runTransaction(async (transaction) => {
+      const doc = await transaction.get(docRef);
 
-        if (!doc.exists) {
-          throw new Error("Document not found");
-        }
+      if (!doc.exists) {
+        throw new Error("Document not found");
+      }
 
-        const documentData = doc.data();
-        const downloadedUsers = documentData.downloadedUsers || {};
-        const currentDownloadCount = documentData.downloadCount || 0;
+      const documentData = doc.data();
+      const downloadedUsers = documentData.downloadedUsers || {};
+      const currentDownloadCount = documentData.downloadCount || 0;
+      if (!downloadedUsers[userId]) {
+        console.log("dwnld");
+        downloadedUsers[userId] = true;
+        const newDownloadCount = currentDownloadCount + 1;
 
-        if (!downloadedUsers[userId]) {
-          downloadedUsers[userId] = true;
-          const newDownloadCount = currentDownloadCount + 1;
-
-          transaction.update(docRef, {
-            downloadedUsers: downloadedUsers,
-            downloadCount: newDownloadCount,
-          });
-
-          return newDownloadCount;
-        }
-
-        return currentDownloadCount;
-      });
+        transaction.update(docRef, {
+          downloadedUsers: downloadedUsers,
+          downloadCount: newDownloadCount,
+        });
+      }
+    });
 
     // Fetch the file from Firebase Storage
     const documentData = (await docRef.get()).data();
@@ -149,15 +79,14 @@ app.get("/api/download/:documentId", async (req, res) => {
     // Set the appropriate headers for file download
     res.setHeader(
       "Content-Disposition",
-      `attachment; filename="${documentData.documentName || "document"}"`
+      `attachment; filename="${documentData.documentName || "document"}.pdf"`
     );
-    res.setHeader("X-Download-Count", updatedCount.toString());
 
     // Pipe the file data to the response
     response.body.pipe(res);
   } catch (error) {
     console.error("Error downloading file:", error);
-    res.status(500).send("Error downloading file");
+    res.status(500).json({ error: error.message || "Error downloading file" });
   }
 });
 //email sending
@@ -231,7 +160,7 @@ app.post("/login", async (req, res) => {
 
   try {
     console.log("Attempting to authenticate with Firebase");
-    const apiKey = import.meta.env.VITE_FIREBASE_API_kEY; // Replace with your actual API key
+    const apiKey = process.env.VITE_FIREBASE_API_kEY; // Replace with your actual API key
     const authResponse = await axios.post(
       `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${apiKey}`,
       {
