@@ -56,7 +56,6 @@ app.get("/api/download/:documentId", async (req, res) => {
       const downloadedUsers = documentData.downloadedUsers || {};
       const currentDownloadCount = documentData.downloadCount || 0;
       if (!downloadedUsers[userId]) {
-        console.log("dwnld");
         downloadedUsers[userId] = true;
         const newDownloadCount = currentDownloadCount + 1;
 

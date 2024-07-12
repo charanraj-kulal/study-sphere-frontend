@@ -1,39 +1,88 @@
-import React from "react";
+import React, { useState } from "react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
-import Tooltip from "@mui/material/Tooltip";
 import Avatar from "@mui/material/Avatar";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import TextField from "@mui/material/TextField";
 import Iconify from "../../components/iconify";
+import { useToast } from "../../hooks/ToastContext";
 import StarRatingDialog from "../../components/starRateHandler/StarRatingDialog";
+import Popover from "@mui/material/Popover";
+import List from "@mui/material/List";
+import ListItem from "@mui/material/ListItem";
+import ListItemIcon from "@mui/material/ListItemIcon";
+import ListItemText from "@mui/material/ListItemText";
+import EmailIcon from "@mui/icons-material/Email";
+import WhatsAppIcon from "@mui/icons-material/WhatsApp";
+import LinkIcon from "@mui/icons-material/Link";
+
+import DownloadIcon from "@mui/icons-material/Download";
+import { QRCodeSVG } from "qrcode.react";
 
 const SelectedMaterialDetails = ({
   selectedMaterial,
   calculateAverageRating,
   setStarDialogOpen,
-  handleShare,
+
   starDialogOpen,
   handleStarRating,
   userData,
   handleDownload,
 }) => {
-  // const handleDownload = async () => {
-  //   if (isDownloadDisabled) return;
+  const [anchorEl, setAnchorEl] = useState(null);
+  const { showToast } = useToast();
 
-  //   try {
-  //     const updatedCount = await updateMaterialDownloadCount(
-  //       selectedMaterial.id,
-  //       userData.uid
-  //     );
-  //     setLocalDownloadCount(updatedCount);
-  //     setIsDownloadDisabled(true);
-  //   } catch (error) {
-  //     console.error("Error updating download count:", error);
-  //   }
-  // };
+  const handleShareClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleShareClose = () => {
+    setAnchorEl(null);
+  };
+
+  const open = Boolean(anchorEl);
+  const id = open ? "share-popover" : undefined;
+
+  const shareUrl = `${window.location.origin}/dashboard/download?documentId=${selectedMaterial.id}`;
+
+  const handleEmailShare = () => {
+    window.location.href = `mailto:?subject=Check out this document&body=I thought you might be interested in this document: ${shareUrl}`;
+    handleShareClose();
+  };
+
+  const handleWhatsAppShare = () => {
+    window.open(`https://wa.me/?text=Check out this document: ${shareUrl}`);
+    handleShareClose();
+  };
+
+  const handleCopyLink = () => {
+    navigator.clipboard.writeText(shareUrl);
+
+    handleShareClose();
+    showToast("success", "Link copied to your clipboard");
+    // You might want to show a toast or some feedback here
+  };
+
+  const handleQrCodeDownload = () => {
+    const svg = document.getElementById("QRCode");
+    const svgData = new XMLSerializer().serializeToString(svg);
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+    const img = new Image();
+    img.onload = () => {
+      canvas.width = img.width;
+      canvas.height = img.height;
+      ctx.drawImage(img, 1, 1);
+      const pngFile = canvas.toDataURL("image/png");
+      const downloadLink = document.createElement("a");
+      downloadLink.download = "Study_sphere_shared_QRCode";
+      downloadLink.href = pngFile;
+      downloadLink.click();
+    };
+    img.src = "data:image/svg+xml;base64," + btoa(svgData);
+  };
 
   return (
     <Box>
@@ -82,13 +131,72 @@ const SelectedMaterialDetails = ({
             {selectedMaterial.downloadCount || 0}
           </Typography>
         </Button>
-        <Button variant="outlined" sx={{ borderColor: "#0A4191" }}>
+        <Button
+          variant="outlined"
+          sx={{ borderColor: "#0A4191" }}
+          onClick={handleShareClick}
+        >
           <Iconify
             icon="tabler:share-3"
             sx={{ color: "#FFD700", width: 20, height: 20 }}
-            onClick={handleShare}
           />
         </Button>
+        <Popover
+          id={id}
+          open={open}
+          anchorEl={anchorEl}
+          onClose={handleShareClose}
+          anchorOrigin={{
+            vertical: "bottom",
+            horizontal: "center",
+          }}
+          transformOrigin={{
+            vertical: "top",
+            horizontal: "center",
+          }}
+        >
+          <List>
+            <ListItem button onClick={handleEmailShare}>
+              <ListItemIcon>
+                <EmailIcon />
+              </ListItemIcon>
+              <ListItemText primary="Email" />
+            </ListItem>
+            <ListItem button onClick={handleWhatsAppShare}>
+              <ListItemIcon>
+                <WhatsAppIcon />
+              </ListItemIcon>
+              <ListItemText primary="WhatsApp" />
+            </ListItem>
+            <ListItem button onClick={handleCopyLink}>
+              <ListItemIcon>
+                <LinkIcon />
+              </ListItemIcon>
+              <ListItemText primary="Copy Link" />
+            </ListItem>
+          </List>
+          <Box
+            sx={{
+              p: 2,
+              // textAlign: "center",
+              alignItems: "center",
+              display: "flex",
+              flexDirection: "column",
+            }}
+          >
+            <Typography variant="subtitle1" gutterBottom>
+              QR Code
+            </Typography>
+            <QRCodeSVG id="QRCode" value={shareUrl} size={128} level="M" />
+            <Button
+              startIcon={<DownloadIcon />}
+              onClick={handleQrCodeDownload}
+              sx={{ mt: 1, backgroundColor: "#0A4191", color: "#ffff", p: -1 }}
+            >
+              Download QR Code
+            </Button>
+          </Box>
+        </Popover>
       </Box>
       <Typography variant="commonpdfname" gutterBottom>
         {selectedMaterial.documentName}.pdf
