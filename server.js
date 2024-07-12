@@ -33,7 +33,7 @@ const transporter = nodemailer.createTransport({
   },
 });
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 10000;
 app.use(bodyParser.json());
 app.use(cors({ origin: "http://localhost:5173" })); // Adjust the origin to your frontend's address
 
