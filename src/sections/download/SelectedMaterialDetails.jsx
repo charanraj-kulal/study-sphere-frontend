@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
+import Tooltip from "@mui/material/Tooltip";
 import Avatar from "@mui/material/Avatar";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
@@ -22,12 +23,23 @@ const SelectedMaterialDetails = ({
   const [localDownloadCount, setLocalDownloadCount] = useState(
     selectedMaterial.downloadCount
   );
+  const [isDownloadDisabled, setIsDownloadDisabled] = useState(false);
+
+  useEffect(() => {
+    setLocalDownloadCount(selectedMaterial.downloadCount);
+    setIsDownloadDisabled(false);
+  }, [selectedMaterial]);
 
   const handleDownload = async () => {
+    if (isDownloadDisabled) return;
+
     try {
-      await updateMaterialDownloadCount();
-      // Update the local state immediately
-      setLocalDownloadCount((prevCount) => prevCount + 1);
+      const updatedCount = await updateMaterialDownloadCount(
+        selectedMaterial.id,
+        userData.uid
+      );
+      setLocalDownloadCount(updatedCount);
+      setIsDownloadDisabled(true);
     } catch (error) {
       console.error("Error updating download count:", error);
     }
@@ -59,27 +71,38 @@ const SelectedMaterialDetails = ({
               : "0.00"}
           </Typography>
         </Button>
-        <Button
-          variant="outlined"
-          sx={{ borderColor: "#0A4191", mr: 1 }}
-          onClick={handleDownload}
+        <Tooltip
+          title={
+            isDownloadDisabled
+              ? "Download restricted for multiple downloads"
+              : ""
+          }
         >
-          <Iconify
-            icon="tabler:cloud-download"
-            sx={{ color: "#FFD700", width: 20, height: 20 }}
-          />
-          <Typography
-            variant="body2"
-            sx={{
-              fontWeight: "bold",
-              ml: 1,
-              fontSize: 20,
-              color: "#0A4191",
-            }}
-          >
-            {localDownloadCount}
-          </Typography>
-        </Button>
+          <span>
+            <Button
+              variant="outlined"
+              sx={{ borderColor: "#0A4191", mr: 1 }}
+              onClick={handleDownload}
+              disabled={isDownloadDisabled}
+            >
+              <Iconify
+                icon="tabler:cloud-download"
+                sx={{ color: "#FFD700", width: 20, height: 20 }}
+              />
+              <Typography
+                variant="body2"
+                sx={{
+                  fontWeight: "bold",
+                  ml: 1,
+                  fontSize: 20,
+                  color: "#0A4191",
+                }}
+              >
+                {localDownloadCount}
+              </Typography>
+            </Button>
+          </span>
+        </Tooltip>
         <Button variant="outlined" sx={{ borderColor: "#0A4191" }}>
           <Iconify
             icon="tabler:share-3"
