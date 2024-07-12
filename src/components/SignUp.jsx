@@ -7,6 +7,7 @@ import {
   onAuthStateChanged,
 } from "firebase/auth";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { getAuth } from "firebase/auth";
 import { auth, db, storage } from "../firebase";
 import Toast from "./ToastLogin";
 import LottieLoader from "./LottieLoader";
@@ -57,9 +58,9 @@ function SignUpForm() {
     const isVerified = "No";
     const points = 0;
     const uploadCount = 0;
-    const downloadCount = 0; // Initial value set to No
+    const downloadCount = 0;
 
-    setIsLoading(true); // Start loading
+    setIsLoading(true);
 
     try {
       const userCredential = await createUserWithEmailAndPassword(
@@ -76,7 +77,6 @@ function SignUpForm() {
         profilePhotoURL = await getDownloadURL(storageRef);
       }
 
-      // Add user document with isVerified set to No
       await setDoc(doc(db, "users", user.uid), {
         name,
         email,
@@ -95,10 +95,10 @@ function SignUpForm() {
       await sendEmailVerification(user);
 
       // Listen for email verification status change
-      onAuthStateChanged(auth, (user) => {
+      onAuthStateChanged(auth, async (user) => {
         if (user && user.emailVerified) {
           // Update isVerified to Yes after email is verified
-          setDoc(
+          await setDoc(
             doc(db, "users", user.uid),
             { isVerified: "Yes" },
             { merge: true }

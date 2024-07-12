@@ -131,7 +131,7 @@ const UploadStudyMaterialForm = ({ currentUser }) => {
         visibility: "private",
         Approved: "No",
         downloadCount: 0,
-        star: 0,
+        star: [0, 0, 0, 0, 0],
       });
 
       // Update user document in Firestore
@@ -212,7 +212,11 @@ const UploadStudyMaterialForm = ({ currentUser }) => {
           required
         />
         <label htmlFor="raised-button-file">
-          <Button variant="contained" component="span">
+          <Button
+            variant="contained"
+            component="span"
+            sx={{ backgroundColor: "#0A4191" }}
+          >
             Upload PDF Document
           </Button>
         </label>
@@ -249,6 +253,7 @@ const UploadStudyMaterialForm = ({ currentUser }) => {
         type="submit"
         variant="contained"
         color="primary"
+        sx={{ backgroundColor: "#0A4191" }}
         disabled={isUploading || !agreedToTerms}
         ref={confettiRef}
         fullWidth

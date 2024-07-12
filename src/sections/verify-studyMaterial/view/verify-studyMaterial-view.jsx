@@ -81,6 +81,8 @@ export default function VerifyView() {
     return <Typography>Loading user data...</Typography>;
   }
 
+  const showNoDataCard = !loading && filteredMaterials.length === 0;
+
   return (
     <Container>
       <Typography variant="h4" sx={{ mb: 3 }}>
@@ -109,7 +111,11 @@ export default function VerifyView() {
                 <VerifyStudyMaterialSkeleton />
               </Grid>
             ))
-          ) : filteredMaterials.length > 0 ? (
+          ) : showNoDataCard ? (
+            <Grid xs={12}>
+              <CardNoData query={searchQuery} />
+            </Grid>
+          ) : (
             filteredMaterials.map((material) => (
               <Grid xs={12} sm={6} md={4} key={material.id}>
                 <VerifyStudyMaterialCard
@@ -119,10 +125,6 @@ export default function VerifyView() {
                 />
               </Grid>
             ))
-          ) : (
-            <Grid xs={12}>
-              <CardNoData query={searchQuery} />
-            </Grid>
           )}
         </Grid>
       </Card>

@@ -62,7 +62,10 @@ const Header = () => {
     <header className="header">
       <div className="container">
         <div className="logo">
-          <img src="/images/logo.png" alt="Study Sphere Logo" />
+          <img
+            src="../src/assets/images/logo/logo.png"
+            alt="Study Sphere Logo"
+          />
         </div>
         <nav>
           <ul>

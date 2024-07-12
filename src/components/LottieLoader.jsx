@@ -15,7 +15,9 @@ const LottieLoader = () => {
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
-        backgroundColor: "rgba(0, 0, 0, 0.5)",
+        // backgroundColor: "rgba(0, 0, 0, 0.5)",
+        backdropFilter: "blur(3px)",
+        backgroundColor: "rgba(0,0,30,0.4)",
         zIndex: 9999,
       }}
     >

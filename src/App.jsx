@@ -1,6 +1,7 @@
 // App.jsx
 import React from "react";
 import "./styles/App.css";
+import "./styles/Font.css";
 import ThemeProvider from "./theme";
 import { UserProvider } from "./hooks/UserContext";
 import RouterComponent from "./routes/sections"; // Import the modified Router

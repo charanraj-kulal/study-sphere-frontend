@@ -44,7 +44,7 @@ export default function UserTableRow({
   const handleDeleteUser = async () => {
     setIsLoading(true);
     try {
-      await axios.delete(`http://localhost:3000/api/users/${id}`);
+      await axios.delete(import.meta.env.VITE_SERVER_URL + `/api/users/${id}`);
       setUsers((prevUsers) => prevUsers.filter((user) => user.id !== id));
       showToast("success", "User deleted successfully");
     } catch (error) {

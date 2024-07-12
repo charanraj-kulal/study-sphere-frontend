@@ -1,9 +1,19 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
+import dotenv from "dotenv";
+// import { fileURLToPath } from "url";
+// import path from "path";
 import { useUser } from "../hooks/UserContext";
 import Toast from "./ToastLogin";
 import LottieLoader from "./LottieLoader";
+
+// require("dotenv").config();
+
+// const __filename = fileURLToPath(import.meta.url);
+// const __dirname = path.dirname(__filename);
+
+// dotenv.config({ path: path.resolve(__dirname, ".env.local") });
 
 function SignInForm() {
   const [state, setState] = useState({ email: "", password: "" });
@@ -61,7 +71,7 @@ function SignInForm() {
     setIsLoading(true);
 
     try {
-      const response = await fetch("http://localhost:3000/login", {
+      const response = await fetch(import.meta.env.VITE_SERVER_URL + "/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
