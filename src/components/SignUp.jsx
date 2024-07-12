@@ -137,33 +137,6 @@ function SignUpForm() {
       setIsLoading(false); // Stop loading regardless of outcome
     }
   };
-  const sendWelcomeEmail = async (name, email, course, userrole) => {
-    try {
-      const response = await fetch(
-        "http://localhost:3000/api/send-welcome-email",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            name,
-            email,
-            course,
-            userrole,
-          }),
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to send welcome email");
-      }
-
-      console.log("Welcome email sent successfully");
-    } catch (error) {
-      console.error("Error sending welcome email:", error);
-    }
-  };
 
   const courses = [
     "Associate Degree",

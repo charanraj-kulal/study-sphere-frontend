@@ -300,7 +300,9 @@ export default function UserPage() {
   const handleDeleteSelected = async () => {
     try {
       for (const userId of selected) {
-        await axios.delete(`http://localhost:3000/api/users/${userId}`);
+        await axios.delete(
+          import.meta.env.VITE_SERVER_URL + `/api/users/${userId}`
+        );
       }
       showToast("success", `${selected.length} user(s) deleted successfully`);
       setUsers((prevUsers) =>

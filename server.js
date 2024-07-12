@@ -24,12 +24,12 @@ admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
 });
 const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,
-  port: process.env.SMTP_PORT,
+  host: import.meta.env.VITE_SMTP_HOST,
+  port: import.meta.env.VITE_SMTP_PORT,
   secure: false, // true for 465, false for other ports
   auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
+    user: import.meta.env.VITE_SMTP_USER,
+    pass: import.meta.env.VITE_SMTP_PASS,
   },
 });
 const app = express();
@@ -238,7 +238,7 @@ app.post("/login", async (req, res) => {
 
   try {
     console.log("Attempting to authenticate with Firebase");
-    const apiKey = process.env.FIREBASE_API_kEY; // Replace with your actual API key
+    const apiKey = import.meta.env.VITE_FIREBASE_API_kEY; // Replace with your actual API key
     const authResponse = await axios.post(
       `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${apiKey}`,
       {

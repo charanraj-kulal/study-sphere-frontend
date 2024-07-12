@@ -139,7 +139,8 @@ export default function DownloadStudyMaterialView() {
     try {
       // Initiate the download
       const response = await fetch(
-        `http://localhost:3000/api/download/${material.id}?userId=${userData.uid}`
+        import.meta.env.VITE_SERVER_URL +
+          `/api/download/${material.id}?userId=${userData.uid}`
       );
 
       if (!response.ok) {
