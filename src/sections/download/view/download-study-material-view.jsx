@@ -129,7 +129,7 @@ export default function DownloadStudyMaterialView() {
   };
 
   //download and update study material
-  const updateMaterialDownloadCount = async (material) => {
+  const handleDownload = async (material) => {
     if (!material || !material.id) {
       console.error("Invalid material object:", material);
       showToast("error", "Error: Invalid material data");
@@ -139,25 +139,12 @@ export default function DownloadStudyMaterialView() {
     try {
       // Initiate the download
       const response = await fetch(
-        import.meta.env.VITE_SERVER_URL +
-          `/api/download/${material.id}?userId=${userData.uid}`
+        `${import.meta.env.VITE_SERVER_URL}/api/download/${material.id}?userId=${userData.uid}`
       );
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-
-      // Get the updated download count from the response header
-      const newDownloadCount = parseInt(
-        response.headers.get("X-Download-Count"),
-        10
-      );
-
-      // Update the local state to reflect the new download count
-      setSelectedMaterial((prevMaterial) => ({
-        ...prevMaterial,
-        downloadCount: newDownloadCount,
-      }));
 
       // Trigger the actual download
       const blob = await response.blob();
@@ -176,6 +163,7 @@ export default function DownloadStudyMaterialView() {
       showToast("error", `Failed to initiate download: ${error.message}`);
     }
   };
+
   const handleStarRating = async (rating) => {
     if (!selectedMaterial || !userData) return;
 
@@ -266,9 +254,7 @@ export default function DownloadStudyMaterialView() {
             selectedMaterial={selectedMaterial}
             calculateAverageRating={calculateAverageRating}
             setStarDialogOpen={setStarDialogOpen}
-            updateMaterialDownloadCount={() =>
-              updateMaterialDownloadCount(selectedMaterial)
-            }
+            handleDownload={handleDownload}
             handleShare={handleShare}
             starDialogOpen={starDialogOpen}
             handleStarRating={handleStarRating}
@@ -300,7 +286,7 @@ export default function DownloadStudyMaterialView() {
               loading={loading || isProcessing}
               searchQuery={searchQuery}
               onCardClick={handleCardClick}
-              onDownload={updateMaterialDownloadCount}
+              onDownload={handleDownload}
             />
           </>
         )}
