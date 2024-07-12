@@ -24,12 +24,15 @@ admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
 });
 const transporter = nodemailer.createTransport({
+
   host: process.env.SMTP_HOST,
   port: process.env.SMTP_PORT,
   secure: false, // true for 465, false for other ports
   auth: {
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASS,
+
+
   },
 });
 const app = express();
@@ -333,6 +336,7 @@ app.delete("/api/users/:uid", async (req, res) => {
     }
   }
 });
+
 
 app.listen(port, "0.0.0.0", () => {
   console.log(`Server is running on port ${port}`);
