@@ -24,12 +24,12 @@ admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
 });
 const transporter = nodemailer.createTransport({
-  host: import.meta.env.VITE_SMTP_HOST,
-  port: import.meta.env.VITE_SMTP_PORT,
+  host: process.env.SMTP_HOST,
+  port: process.env.SMTP_PORT,
   secure: false, // true for 465, false for other ports
   auth: {
-    user: import.meta.env.VITE_SMTP_USER,
-    pass: import.meta.env.VITE_SMTP_PASS,
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS,
   },
 });
 const app = express();
