@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import Container from "@mui/material/Container";
 import Typography from "@mui/material/Typography";
 import Card from "@mui/material/Card";
@@ -27,6 +27,7 @@ import IllustrationGif from "../../../assets/illustrations/illustration_download
 
 export default function DownloadStudyMaterialView() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { userData } = useUser();
 
   const [studyMaterials, setStudyMaterials] = useState([]);
@@ -38,66 +39,71 @@ export default function DownloadStudyMaterialView() {
   const [starDialogOpen, setStarDialogOpen] = useState(false);
   const { showToast } = useToast();
 
-  useEffect(() => {
-    const fetchStudyMaterials = async () => {
-      if (!searchQuery) {
-        setStudyMaterials([]);
-        setLoading(false);
-        return;
+  // useEffect(() => {
+  //   // Parse the document ID from the URL if present
+  //   const urlParams = new URLSearchParams(location.search);
+  //   const documentId = urlParams.get("documentId");
+  //   if (documentId) {
+  //     handleCardClick({ id: documentId });
+  //   }
+  // }, [location]);
+  useEffect(
+    () => {
+      const urlParams = new URLSearchParams(location.search);
+      const documentId = urlParams.get("documentId");
+      if (documentId) {
+        handleCardClick({ id: documentId });
       }
+      const fetchStudyMaterials = async () => {
+        if (!searchQuery) {
+          setStudyMaterials([]);
+          setLoading(false);
+          return;
+        }
 
-      setLoading(true);
-      const materialsRef = collection(db, "documents");
-      const q = query(
-        materialsRef,
-        where("visibility", "==", "public"),
-        where("Approved", "==", "Yes"),
-        orderBy("uploadedOn", "desc")
-      );
+        setLoading(true);
+        const materialsRef = collection(db, "documents");
+        const q = query(
+          materialsRef,
+          where("visibility", "==", "public"),
+          where("Approved", "==", "Yes"),
+          orderBy("uploadedOn", "desc")
+        );
 
-      const querySnapshot = await getDocs(q);
-      const materials = querySnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
+        const querySnapshot = await getDocs(q);
+        const materials = querySnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
 
-      const filteredMaterials = materials.filter(
-        (material) =>
-          material.documentName
-            .toLowerCase()
-            .includes(searchQuery.toLowerCase()) ||
-          material.description
-            .toLowerCase()
-            .includes(searchQuery.toLowerCase()) ||
-          material.documentTopics.some((topic) =>
-            topic.toLowerCase().includes(searchQuery.toLowerCase())
-          ) ||
-          material.uploadedBy
-            .toLowerCase()
-            .includes(searchQuery.toLowerCase()) ||
-          material.uploaderCourse
-            .toLowerCase()
-            .includes(searchQuery.toLowerCase())
-      );
+        const filteredMaterials = materials.filter(
+          (material) =>
+            material.documentName
+              .toLowerCase()
+              .includes(searchQuery.toLowerCase()) ||
+            material.description
+              .toLowerCase()
+              .includes(searchQuery.toLowerCase()) ||
+            material.documentTopics.some((topic) =>
+              topic.toLowerCase().includes(searchQuery.toLowerCase())
+            ) ||
+            material.uploadedBy
+              .toLowerCase()
+              .includes(searchQuery.toLowerCase()) ||
+            material.uploaderCourse
+              .toLowerCase()
+              .includes(searchQuery.toLowerCase())
+        );
 
-      setStudyMaterials(filteredMaterials);
-      setLoading(false);
-    };
+        setStudyMaterials(filteredMaterials);
+        setLoading(false);
+      };
 
-    fetchStudyMaterials();
-  }, [searchQuery]);
-
-  const handleBreadcrumbClick = (event, index) => {
-    event.preventDefault();
-    if (index === 0) {
-      navigate("/dashboard");
-      setBreadcrumbs(["Dashboard", "Download"]);
-      setSelectedMaterial(null);
-    } else if (index === 1) {
-      setBreadcrumbs(["Dashboard", "Download"]);
-      setSelectedMaterial(null);
-    }
-  };
+      fetchStudyMaterials();
+    },
+    [searchQuery],
+    [location]
+  );
 
   const handleSearch = (query) => {
     setSearchQuery(query);
@@ -114,20 +120,36 @@ export default function DownloadStudyMaterialView() {
         const updatedMaterial = { id: docSnap.id, ...docSnap.data() };
         setSelectedMaterial(updatedMaterial);
         setBreadcrumbs(["Dashboard", "Download", updatedMaterial.documentName]);
+        // Update URL without redirecting
+        navigate(`/dashboard/download?documentId=${material.id}`, {
+          replace: true,
+        });
       } else {
         console.log("No such document!");
-        setSelectedMaterial(material);
-        setBreadcrumbs(["Dashboard", "Download", material.documentName]);
+        showToast("error", "Document not found");
       }
     } catch (error) {
       console.error("Error fetching updated document:", error);
-      setSelectedMaterial(material);
-      setBreadcrumbs(["Dashboard", "Download", material.documentName]);
+      showToast("error", "Error fetching document");
     } finally {
       setIsProcessing(false);
     }
   };
 
+  const handleBreadcrumbClick = (event, index) => {
+    event.preventDefault();
+    if (index === 0) {
+      navigate("/dashboard");
+      setBreadcrumbs(["Dashboard", "Download"]);
+      setSelectedMaterial(null);
+      // Remove documentId from URL
+    } else if (index === 1) {
+      setBreadcrumbs(["Dashboard", "Download"]);
+      setSelectedMaterial(null);
+      // Remove documentId from URL
+      navigate("/dashboard/download", { replace: true });
+    }
+  };
   //download and update study material
   const handleDownload = async (material) => {
     if (!material || !material.id) {
