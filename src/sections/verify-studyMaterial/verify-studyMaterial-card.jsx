@@ -18,6 +18,7 @@ import { useToast } from "../../hooks/ToastContext";
 import LottieLoader from "../../components/LottieLoader";
 import { useUser } from "../../hooks/UserContext";
 import Iconify from "../../components/iconify";
+import { formatTimeAgo } from "../../utils/timeUtils";
 
 function VerifyStudyMaterialCard({ material, onApprove, onReject }) {
   const [open, setOpen] = useState(false);
@@ -40,11 +41,12 @@ function VerifyStudyMaterialCard({ material, onApprove, onReject }) {
       await updateDoc(doc(db, "documents", material.id), {
         visibility: "public",
         Approved: "Yes",
+        verifiedOn: serverTimestamp(),
       });
       await updateDoc(doc(db, "users", material.uploaderUid), {
         uploadCount: increment(1),
         points: increment(20),
-        countOfRejection: 0,
+        countOfApprove: 1,
       });
       await updateDoc(doc(db, "users", userData.uid), {
         contribution: increment(1),
@@ -129,7 +131,7 @@ function VerifyStudyMaterialCard({ material, onApprove, onReject }) {
         </Box>
         <Box sx={{ flexGrow: 1 }}>
           <Typography variant="subtitle1" noWrap sx={{ mb: 1 }}>
-            {material.documentName}
+            {material.documentName}.pdf
           </Typography>
           <Typography
             variant="body2"
@@ -156,7 +158,8 @@ function VerifyStudyMaterialCard({ material, onApprove, onReject }) {
               sx={{ color: "text.secondary" }}
               noWrap
             >
-              {material.uploaderCourse}
+              {material.uploaderCourse} •{" "}
+              {formatTimeAgo(material.uploadedOn.toDate())}
             </Typography>
           </Stack>
         </Stack>

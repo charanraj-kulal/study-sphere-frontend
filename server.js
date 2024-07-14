@@ -24,15 +24,12 @@ admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
 });
 const transporter = nodemailer.createTransport({
-
   host: process.env.SMTP_HOST,
   port: process.env.SMTP_PORT,
   secure: false, // true for 465, false for other ports
   auth: {
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASS,
-
-
   },
 });
 const app = express();
@@ -46,18 +43,29 @@ app.get("/api/download/:documentId", async (req, res) => {
 
   try {
     const docRef = admin.firestore().collection("documents").doc(documentId);
+    const userRef = admin.firestore().collection("users").doc(userId);
 
     // Use a transaction to ensure atomic updates
     await admin.firestore().runTransaction(async (transaction) => {
       const doc = await transaction.get(docRef);
+      const userDoc = await transaction.get(userRef);
 
       if (!doc.exists) {
         throw new Error("Document not found");
       }
+      if (!userDoc.exists) {
+        throw new Error("User not found");
+      }
 
       const documentData = doc.data();
+      const userData = userDoc.data();
       const downloadedUsers = documentData.downloadedUsers || {};
       const currentDownloadCount = documentData.downloadCount || 0;
+      const userPoints = userData.points || 0;
+      const userDownloadCount = userData.downloadCount || 0;
+      const userDownloadedDocs = userData.downloadedDocuments || [];
+
+      // Check if the user has already downloaded this document
       if (!downloadedUsers[userId]) {
         downloadedUsers[userId] = true;
         const newDownloadCount = currentDownloadCount + 1;
@@ -66,6 +74,19 @@ app.get("/api/download/:documentId", async (req, res) => {
           downloadedUsers: downloadedUsers,
           downloadCount: newDownloadCount,
         });
+
+        // Check if this is a new document for the user
+        if (!userDownloadedDocs.includes(documentId)) {
+          const newUserDownloadCount = userDownloadCount + 1;
+          const newUserPoints = userPoints + 10;
+          userDownloadedDocs.push(documentId);
+
+          transaction.update(userRef, {
+            downloadCount: newUserDownloadCount,
+            downloadedDocuments: userDownloadedDocs,
+            points: newUserPoints,
+          });
+        }
       }
     });
 
@@ -335,7 +356,6 @@ app.delete("/api/users/:uid", async (req, res) => {
     }
   }
 });
-
 
 app.listen(port, "0.0.0.0", () => {
   console.log(`Server is running on port ${port}`);

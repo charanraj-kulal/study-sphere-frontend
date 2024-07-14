@@ -37,7 +37,7 @@ const navConfig = [
   },
   {
     title: "leaderboard",
-    path: "/dashboard/products",
+    path: "/dashboard/leaderboard",
     icon: icon("ic_leaderboard"),
   },
   {

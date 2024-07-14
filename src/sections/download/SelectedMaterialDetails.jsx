@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
@@ -6,6 +6,11 @@ import Avatar from "@mui/material/Avatar";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import TextField from "@mui/material/TextField";
+import Dialog from "@mui/material/Dialog";
+import DialogActions from "@mui/material/DialogActions";
+import DialogContent from "@mui/material/DialogContent";
+import DialogContentText from "@mui/material/DialogContentText";
+import DialogTitle from "@mui/material/DialogTitle";
 import Iconify from "../../components/iconify";
 import { useToast } from "../../hooks/ToastContext";
 import StarRatingDialog from "../../components/starRateHandler/StarRatingDialog";
@@ -17,22 +22,44 @@ import ListItemText from "@mui/material/ListItemText";
 import EmailIcon from "@mui/icons-material/Email";
 import WhatsAppIcon from "@mui/icons-material/WhatsApp";
 import LinkIcon from "@mui/icons-material/Link";
-
 import DownloadIcon from "@mui/icons-material/Download";
+import BookmarkIcon from "@mui/icons-material/Bookmark";
+import BookmarkBorderIcon from "@mui/icons-material/BookmarkBorder";
+import ReportIcon from "@mui/icons-material/Report";
 import { QRCodeSVG } from "qrcode.react";
+import {
+  doc,
+  updateDoc,
+  arrayUnion,
+  arrayRemove,
+  increment,
+  getDoc,
+  deleteDoc,
+} from "firebase/firestore";
+import { ref, deleteObject } from "firebase/storage";
+import { db, storage } from "../../firebase";
 
 const SelectedMaterialDetails = ({
   selectedMaterial,
   calculateAverageRating,
   setStarDialogOpen,
-
   starDialogOpen,
   handleStarRating,
   userData,
   handleDownload,
 }) => {
   const [anchorEl, setAnchorEl] = useState(null);
+  const [menuAnchorEl, setMenuAnchorEl] = useState(null);
+  const [isSaved, setIsSaved] = useState(false);
   const { showToast } = useToast();
+  const [reportDialogOpen, setReportDialogOpen] = useState(false);
+
+  useEffect(() => {
+    // Check if the current document is saved by the user
+    if (userData && userData.savedDocuments) {
+      setIsSaved(userData.savedDocuments.includes(selectedMaterial.id));
+    }
+  }, [userData, selectedMaterial]);
 
   const handleShareClick = (event) => {
     setAnchorEl(event.currentTarget);
@@ -42,8 +69,128 @@ const SelectedMaterialDetails = ({
     setAnchorEl(null);
   };
 
+  const handleMenuClick = (event) => {
+    setMenuAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setMenuAnchorEl(null);
+  };
+  const handleSaveToggle = async () => {
+    if (!userData || !userData.uid) {
+      showToast("error", "You must be logged in to save documents");
+      return;
+    }
+
+    const userRef = doc(db, "users", userData.uid);
+    try {
+      if (isSaved) {
+        await updateDoc(userRef, {
+          savedDocuments: arrayRemove(selectedMaterial.id),
+        });
+        setIsSaved(false);
+        showToast("success", "Document removed from saved items");
+      } else {
+        await updateDoc(userRef, {
+          savedDocuments: arrayUnion(selectedMaterial.id),
+        });
+        setIsSaved(true);
+        showToast("success", "Document saved successfully");
+      }
+    } catch (error) {
+      console.error("Error updating saved documents:", error);
+      showToast("error", "Failed to update saved documents");
+    }
+    handleMenuClose();
+  };
+
+  const handleReport = () => {
+    setReportDialogOpen(true);
+    handleMenuClose();
+  };
+
+  const handleReportConfirm = async () => {
+    if (!userData || !userData.uid) {
+      showToast("error", "You must be logged in to report documents");
+      setReportDialogOpen(false);
+      return;
+    }
+
+    try {
+      const docRef = doc(db, "documents", selectedMaterial.id);
+      const userRef = doc(db, "users", selectedMaterial.uploaderUid);
+      console.log(userRef);
+      const reporterRef = doc(db, "users", userData.uid);
+
+      const docSnap = await getDoc(docRef);
+      const documentData = docSnap.data();
+
+      if (
+        documentData.reportedBy &&
+        documentData.reportedBy.includes(userData.uid)
+      ) {
+        showToast("error", "You have already reported this document");
+        setReportDialogOpen(false);
+        return;
+      }
+
+      // Update document report count and add reporter to the list
+      await updateDoc(docRef, {
+        reportCount: increment(1),
+        reportedBy: arrayUnion(userData.uid),
+      });
+
+      // Update uploader's report count
+      await updateDoc(userRef, {
+        reportCount: increment(1),
+      });
+
+      // Add reported document to reporter's list
+      await updateDoc(reporterRef, {
+        reportedDocuments: arrayUnion(selectedMaterial.id),
+      });
+
+      // Check if document report count reaches 5
+      if (documentData.reportCount >= 4) {
+        // It will become 5 after this report
+        // Delete the document from Firestore
+        await deleteDoc(docRef);
+
+        // Delete the file from Firebase Storage
+        const storageRef = ref(storage, `documents/${selectedMaterial.id}`);
+        await deleteObject(storageRef);
+
+        showToast("error", "Document has been removed due to multiple reports");
+        // You might want to navigate the user away from this page or update the UI
+      }
+
+      // Check if uploader's report count reaches 8
+      const uploaderSnap = await getDoc(userRef);
+      const uploaderData = uploaderSnap.data();
+      if (uploaderData.reportCount >= 7) {
+        // It will become 8 after this report
+        await updateDoc(userRef, {
+          status: "banned",
+        });
+        showToast(
+          "error",
+          "The uploader has been banned due to multiple reports"
+        );
+      }
+
+      showToast("success", "Document reported successfully");
+    } catch (error) {
+      console.error("Error reporting document:", error);
+      showToast("error", "Failed to report document");
+    }
+
+    setReportDialogOpen(false);
+  };
+
   const open = Boolean(anchorEl);
-  const id = open ? "share-popover" : undefined;
+  const menuOpen = Boolean(menuAnchorEl);
+  const shareId = open ? "share-popover" : undefined;
+  const menuId = menuOpen ? "menu-popover" : undefined;
 
   const shareUrl = `${window.location.origin}/dashboard/download?documentId=${selectedMaterial.id}`;
 
@@ -133,7 +280,7 @@ const SelectedMaterialDetails = ({
         </Button>
         <Button
           variant="outlined"
-          sx={{ borderColor: "#0A4191" }}
+          sx={{ borderColor: "#0A4191", mr: 1 }}
           onClick={handleShareClick}
         >
           <Iconify
@@ -141,8 +288,17 @@ const SelectedMaterialDetails = ({
             sx={{ color: "#FFD700", width: 20, height: 20 }}
           />
         </Button>
+        <Button
+          variant="outlined"
+          sx={{ borderColor: "#0A4191" }}
+          onClick={handleMenuClick}
+        >
+          <Iconify icon="gg:more-vertical" sx={{ color: "#FFD700" }} />
+        </Button>
+
+        {/* popover of share  */}
         <Popover
-          id={id}
+          id={shareId}
           open={open}
           anchorEl={anchorEl}
           onClose={handleShareClose}
@@ -197,6 +353,88 @@ const SelectedMaterialDetails = ({
             </Button>
           </Box>
         </Popover>
+
+        {/* popover of menu  */}
+
+        <Popover
+          id={menuId}
+          open={menuOpen}
+          anchorEl={menuAnchorEl}
+          onClose={handleMenuClose}
+          anchorOrigin={{
+            vertical: "bottom",
+            horizontal: "right",
+          }}
+          transformOrigin={{
+            vertical: "top",
+            horizontal: "right",
+          }}
+        >
+          <List>
+            <ListItem button onClick={handleSaveToggle}>
+              <Box>
+                {isSaved ? (
+                  <Iconify
+                    icon="material-symbols:bookmark"
+                    sx={{
+                      color: "#0000FF",
+                      width: 20,
+                      height: 20,
+                      mr: 1,
+                      mt: 0.7,
+                    }}
+                  />
+                ) : (
+                  <Iconify
+                    icon="material-symbols:bookmark-outline"
+                    sx={{ width: 20, height: 20, mr: 1, mt: 0.7 }}
+                  />
+                )}
+              </Box>
+
+              <ListItemText
+                primary={isSaved ? "Saved" : "Save"}
+                primaryTypographyProps={{
+                  color: isSaved ? "#0000FF" : "inherit",
+                }}
+              />
+            </ListItem>
+            <ListItem button onClick={handleReport}>
+              <Iconify
+                icon="ic:outline-report"
+                sx={{ color: "#FF0000", width: 20, height: 20, mr: 1 }}
+              />
+              <ListItemText
+                primary="Report"
+                primaryTypographyProps={{ color: "error" }}
+              />
+            </ListItem>
+          </List>
+        </Popover>
+
+        {/* Report dialog  */}
+
+        <Dialog
+          open={reportDialogOpen}
+          onClose={() => setReportDialogOpen(false)}
+          aria-labelledby="alert-dialog-title"
+          aria-describedby="alert-dialog-description"
+        >
+          <DialogTitle id="alert-dialog-title">{"Report Document"}</DialogTitle>
+          <DialogContent>
+            <DialogContentText id="alert-dialog-description">
+              Are you sure you want to report "{selectedMaterial.documentName}"?
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setReportDialogOpen(false)} color="primary">
+              Cancel
+            </Button>
+            <Button onClick={handleReportConfirm} color="primary" autoFocus>
+              Confirm
+            </Button>
+          </DialogActions>
+        </Dialog>
       </Box>
       <Typography variant="commonpdfname" gutterBottom>
         {selectedMaterial.documentName}.pdf
