@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Stack from "@mui/material/Stack";
 import Container from "@mui/material/Container";
 import Typography from "@mui/material/Typography";
@@ -14,6 +14,7 @@ import {
 import { db } from "../../../firebase";
 import LeaderboardTable from "../leaderboard-table-rows";
 import TopRankCard from "../top-rank-cards";
+import { ConfettiButton } from "../../../components/magicui/confetti-button"; // Import the ConfettiButton
 
 import rank1Image from "../../../assets/images/medals/1_medal.png";
 import rank2Image from "../../../assets/images/medals/2_medal.png";
@@ -21,6 +22,7 @@ import rank3Image from "../../../assets/images/medals/3_medal.png";
 
 export default function LeaderboardView() {
   const [topUsers, setTopUsers] = useState([]);
+  const confettiRef = useRef(null);
 
   useEffect(() => {
     const fetchTopUsers = async () => {
@@ -41,6 +43,11 @@ export default function LeaderboardView() {
         }));
 
         setTopUsers(data);
+
+        // Trigger confetti effect after data is loaded
+        if (confettiRef.current) {
+          confettiRef.current.fire();
+        }
       } catch (error) {
         console.error("Error fetching top users:", error);
       }
@@ -89,6 +96,11 @@ export default function LeaderboardView() {
       </Box>
 
       <LeaderboardTable />
+
+      {/* Hidden ConfettiButton to trigger the effect */}
+      <ConfettiButton ref={confettiRef} style={{ display: "none" }}>
+        Hidden Confetti Trigger
+      </ConfettiButton>
     </Container>
   );
 }
