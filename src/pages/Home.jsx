@@ -1,16 +1,18 @@
 // src/pages/Home.jsx
-import React from "react";
-import Header from "../components/Header";
-import HeroSection from "../components/HeroSection";
-import Features from "../components/Features";
-import AboutUs from "../components/AboutUs";
-import Domain from "../components/Domains";
 
-import Footer from "../components/Footer";
+import React from "react";
+
+import Header from "../components/landing-page/Header";
+import HeroSection from "../components/landing-page/HeroSection";
+import Features from "../components/landing-page/Features";
+import AboutUs from "../components/landing-page/AboutUs";
+import Domain from "../components/landing-page/Domains";
+
+import Footer from "../components/landing-page/Footer";
 
 const Home = () => {
   return (
-    <div>
+    <div style={{ backgroundColor: "#000000" }}>
       <Header />
       <HeroSection />
       <Features />
@@ -20,5 +22,4 @@ const Home = () => {
     </div>
   );
 };
-
 export default Home;
