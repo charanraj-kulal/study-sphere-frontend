@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Box,
   Typography,
@@ -10,16 +10,38 @@ import {
 import { styled } from "@mui/system";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import FeatureImage from "../../assets/images/landingpage_illustrations/feature_gif.gif";
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 
+gsap.registerPlugin(ScrollTrigger);
 const StyledFeaturesSection = styled("section")(({ theme }) => ({
   background: "#fff",
-  padding: "100px 0 50px",
+  paddingTop: "80px",
+  paddingBottom: "50px",
   display: "flex",
-  justifyContent: "center",
+  flexDirection: "column",
   alignItems: "center",
   scrollMarginTop: "80px",
 }));
 
+const SectionTitle = styled(Typography)(({ theme }) => ({
+  fontFamily: "Pacifico, cursive",
+  color: "#0033a0",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  margin: "0 0 30px 0",
+  padding: "20px 0",
+  width: "30%",
+  background: "#fff",
+  "&::before, &::after": {
+    content: '""',
+    flex: 1,
+    height: 2,
+    borderBottom: "2px solid #0033a0",
+    margin: "0px 15px",
+  },
+}));
 const StyledContainer = styled(Container)(({ theme }) => ({
   display: "flex",
   justifyContent: "space-between",
@@ -102,6 +124,10 @@ const features = [
 
 const Features = () => {
   const [expanded, setExpanded] = useState(null);
+  const sectionRef = useRef(null);
+  const imageRef = useRef(null);
+  const textRef = useRef(null);
+  const accordionRefs = useRef([]);
 
   const handleHover = (panel) => () => {
     setExpanded(panel);
@@ -112,6 +138,53 @@ const Features = () => {
   };
 
   useEffect(() => {
+    const section = sectionRef.current;
+    const image = imageRef.current.querySelector("img");
+    const textElements = textRef.current.querySelectorAll("h2");
+    const accordions = accordionRefs.current;
+
+    gsap.set(image, { scale: 0.8, opacity: 0, rotation: -5 });
+    gsap.set(textElements, { y: 50, opacity: 0 });
+    gsap.set(accordions, { y: 30, opacity: 0 });
+
+    const tl = gsap.timeline({
+      scrollTrigger: {
+        trigger: section,
+        start: "top center",
+        end: "center center",
+        scrub: 1,
+      },
+    });
+
+    tl.to(image, {
+      scale: 1,
+      opacity: 1,
+      rotation: 0,
+      duration: 1,
+      ease: "power2.out",
+    })
+      .to(
+        textElements,
+        {
+          y: 0,
+          opacity: 1,
+          duration: 0.5,
+          ease: "power2.out",
+        },
+        "-=0.5"
+      )
+      .to(
+        accordions,
+        {
+          y: 0,
+          opacity: 1,
+          stagger: 0.1,
+          duration: 0.5,
+          ease: "power2.out",
+        },
+        "-=0.3"
+      );
+
     const hash = window.location.hash;
     if (hash === "#features") {
       const featuresSection = document.getElementById("features");
@@ -119,58 +192,62 @@ const Features = () => {
         featuresSection.scrollIntoView({ behavior: "smooth" });
       }
     }
-  }, []);
 
+    return () => {
+      tl.kill();
+    };
+  }, []);
   return (
-    <section id="features">
-      <StyledFeaturesSection>
-        <StyledContainer>
-          <FeaturesImageStyled>
-            <img
-              src={FeatureImage}
-              alt="Features Illustration"
-              style={{ maxWidth: "80%", height: "auto" }}
-            />
-          </FeaturesImageStyled>
-          <FeaturesText>
-            <Typography
-              variant="h2"
-              gutterBottom
-              sx={{ fontWeight: "bold", mb: 3 }}
+    <StyledFeaturesSection id="features" ref={sectionRef}>
+      <SectionTitle variant="h4">Discover Our Amazing Features</SectionTitle>
+
+      <StyledContainer>
+        <FeaturesImageStyled ref={imageRef}>
+          <img
+            src={FeatureImage}
+            alt="Features Illustration"
+            style={{ maxWidth: "80%", height: "auto" }}
+          />
+        </FeaturesImageStyled>
+        <FeaturesText ref={textRef}>
+          <Typography
+            variant="h2"
+            gutterBottom
+            sx={{ fontWeight: "bold", mb: 3 }}
+          >
+            Features
+          </Typography>
+          {features.map((feature, index) => (
+            <StyledAccordion
+              key={index}
+              expanded={expanded === `panel${index}`}
+              onMouseEnter={handleHover(`panel${index}`)}
+              onMouseLeave={handleLeave}
+              ref={(el) => (accordionRefs.current[index] = el)}
             >
-              Features
-            </Typography>
-            {features.map((feature, index) => (
-              <StyledAccordion
-                key={index}
-                expanded={expanded === `panel${index}`}
-                onMouseEnter={handleHover(`panel${index}`)}
-                onMouseLeave={handleLeave}
+              <StyledAccordionSummary
+                expandIcon={<ExpandMoreIcon />}
+                aria-controls={`panel${index}a-content`}
+                id={`panel${index}a-header`}
               >
-                <StyledAccordionSummary
-                  expandIcon={<ExpandMoreIcon />}
-                  aria-controls={`panel${index}a-content`}
-                  id={`panel${index}a-header`}
+                <Typography
+                  component="span"
+                  sx={{ fontFamily: "Graduate, sans-serif", mr: 2 }}
                 >
-                  <Typography
-                    component="span"
-                    sx={{ fontFamily: "Graduate, sans-serif", mr: 2 }}
-                  >
-                    {index + 1}.
-                  </Typography>
-                  <FeatureTitle variant="h6">{feature.title}</FeatureTitle>
-                </StyledAccordionSummary>
-                <StyledAccordionDetails
-                  className={expanded === `panel${index}` ? "expanded" : ""}
-                >
-                  <Typography>{feature.description}</Typography>
-                </StyledAccordionDetails>
-              </StyledAccordion>
-            ))}
-          </FeaturesText>
-        </StyledContainer>
-      </StyledFeaturesSection>
-    </section>
+                  {index + 1}.
+                </Typography>
+                <FeatureTitle variant="h6">{feature.title}</FeatureTitle>
+              </StyledAccordionSummary>
+              <StyledAccordionDetails
+                className={expanded === `panel${index}` ? "expanded" : ""}
+              >
+                <Typography>{feature.description}</Typography>
+              </StyledAccordionDetails>
+            </StyledAccordion>
+          ))}
+        </FeaturesText>
+      </StyledContainer>
+    </StyledFeaturesSection>
   );
 };
 

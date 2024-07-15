@@ -39,7 +39,7 @@ const HeroTitle = styled(Typography)(({ theme }) => ({
   fontSize: "3rem",
   fontWeight: "bold",
   marginBottom: "20px",
-  fontFamily: "Telegraf, sans-serif",
+
   [theme.breakpoints.down("sm")]: {
     fontSize: "2.5rem",
   },
@@ -48,7 +48,6 @@ const HeroTitle = styled(Typography)(({ theme }) => ({
 const HeroSubtitle = styled(Typography)(({ theme }) => ({
   fontSize: "1.25rem",
   marginBottom: "30px",
-  fontFamily: "Telegraf, sans-serif",
 }));
 
 const StyledButton = styled(Button)(({ theme }) => ({
@@ -71,6 +70,7 @@ const StyledButton = styled(Button)(({ theme }) => ({
 const StyledHeroImage = styled("img")(({ theme }) => ({
   maxWidth: "80%",
   height: "auto",
+  marginLeft: "20%",
   // marginLeft: 90,
   [theme.breakpoints.down("md")]: {
     width: "80%",
@@ -121,7 +121,7 @@ const HeroSection = () => {
             <HeroTitle variant="h1">
               Welcome to{" "}
               <Box component="span" sx={{ color: "#0033a0" }}>
-                Sphere
+                Study
               </Box>{" "}
               <Box component="span" sx={{ color: "#fdbf2d;" }}>
                 Sphere
