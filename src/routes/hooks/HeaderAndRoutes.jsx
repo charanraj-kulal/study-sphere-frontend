@@ -1,7 +1,7 @@
 // HeaderAndRoutes.jsx
 import React from "react";
 import { useLocation } from "react-router-dom";
-import Header from "../../components/Header";
+import Header from "../../components/landing-page/Header";
 import RouterComponent from "../../routes/sections"; // Import the modified Router
 
 const HeaderAndRoutes = () => {

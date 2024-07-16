@@ -470,13 +470,19 @@
 }
 
 .glitch::before {
-  animation: paths 5s step-end infinite, opacity 5s step-end infinite,
-    font 8s step-end infinite, movement 10s step-end infinite;
+  animation:
+    paths 5s step-end infinite,
+    opacity 5s step-end infinite,
+    font 8s step-end infinite,
+    movement 10s step-end infinite;
 }
 
 .glitch::after {
-  animation: paths 5s step-end infinite, opacity 5s step-end infinite,
-    font 7s step-end infinite, movement 8s step-end infinite;
+  animation:
+    paths 5s step-end infinite,
+    opacity 5s step-end infinite,
+    font 7s step-end infinite,
+    movement 8s step-end infinite;
 }
 
 .hero-container {
@@ -513,24 +519,6 @@
   margin: 20px 0;
 }
 
-.btn-login {
-  display: inline-block;
-  padding: 10px 20px;
-  background-color: #fdbf2d;
-  color: #0033a0;
-  font-weight: bold;
-  text-transform: uppercase;
-  text-decoration: none;
-  border: none;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-
-.btn-login:hover {
-  background-color: #0033a0;
-  color: #fdbf2d;
-}
-
 .hero-image {
   flex: 1;
   display: flex;
@@ -540,7 +528,7 @@
 
 .hero-image img {
   max-width: 100%;
-  height: auto;
+  height: 600;
 }
 
 /* Typewriter effect */
@@ -652,4 +640,125 @@
     clip: rect(32px, 9999px, 34px, 0);
     transform: skew(0.9deg);
   }
+}
+
+.btn-container {
+  --btn-bg: #fdbf2d;
+  --btn-hover-bg: #0033a0;
+  --text-color: #0033a0;
+  --text-hover-color: #fdbf2d;
+  margin-left: -20px;
+}
+
+.btn-login {
+  --width: 180px;
+  --height: 60px;
+  border: 0;
+  position: relative;
+  min-width: var(--width);
+  min-height: var(--height);
+  border-radius: var(--height);
+  color: var(--text-color);
+  font-family: "Montserrat", sans-serif;
+  font-weight: bold;
+  background: transparent;
+  cursor: pointer;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0 1rem;
+}
+
+.btn-login .text,
+.btn-login .icon-container {
+  position: relative;
+  z-index: 2;
+  transition: color 500ms ease;
+}
+
+.btn-login .icon-container {
+  --icon-size: 25px;
+  position: relative;
+  width: var(--icon-size);
+  height: var(--icon-size);
+  margin-left: 15px;
+  transition: transform 500ms ease;
+}
+
+.btn-login .icon {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: var(--icon-size);
+  height: var(--icon-size);
+  transition:
+    transform 500ms ease,
+    opacity 250ms ease;
+}
+
+.btn-login .icon--left {
+  transform: translateX(-200%);
+  opacity: 0;
+}
+
+.btn-login .icon svg {
+  width: 100%;
+  height: 100%;
+  fill: currentColor;
+  transition: fill 500ms ease;
+}
+
+.btn-login::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--btn-bg);
+  border-radius: var(--height);
+  z-index: 1;
+  transition: transform 500ms ease;
+}
+
+.btn-login::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--btn-hover-bg);
+  border-radius: var(--height);
+  z-index: 1;
+  opacity: 0;
+  transition: opacity 500ms ease;
+}
+
+.btn-login:hover::before {
+  opacity: 1;
+}
+
+.btn-login:hover::after {
+  transform: translateX(100%);
+}
+
+.btn-login:hover .icon-container {
+  transform: translateX(125%);
+}
+
+.btn-login:hover .icon--left {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+.btn-login:hover .icon--right {
+  transform: translateX(200%);
+  opacity: 0;
+}
+
+.btn-login:hover,
+.btn-login:hover .icon svg {
+  color: var(--text-hover-color);
 }

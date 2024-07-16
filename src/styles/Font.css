@@ -15,3 +15,11 @@
   line-height: 120px;
   font-style: normal;
 }
+@font-face {
+  font-family: "Pacifico";
+  src: url("../assets/fonts/custom/Pacifico/Pacifico-Regular.ttf")
+    format("opentype");
+  font-weight: bold;
+  line-height: 120px;
+  font-style: normal;
+}
