@@ -113,6 +113,26 @@ app.get("/api/download/:documentId", async (req, res) => {
   }
 });
 //email sending
+app.post("/api/send-contact-email", async (req, res) => {
+  const { name, email, subject, message } = req.body;
+
+  try {
+    // Send mail with defined transport object
+    let info = await transporter.sendMail({
+      from: `"${name}" <${email}>`,
+      to: "webhookstudio@gmail.com",
+      subject: subject,
+      text: message,
+      html: `<p>${message}</p>`,
+    });
+
+    console.log("Message sent: %s", info.messageId);
+    res.status(200).send("Email sent successfully");
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Error sending email");
+  }
+});
 app.post("/api/send-welcome-email", async (req, res) => {
   const { name, email, course, userrole } = req.body;
 
@@ -137,8 +157,8 @@ app.post("/api/send-welcome-email", async (req, res) => {
   // Send email
   try {
     await transporter.sendMail({
-      // from: '"Study-Sphere" <noreply@studysphere.com>',
-      from: "charanraj9731@gmail.com",
+      from: '"Study-Sphere" <noreply@studysphere.com>',
+      // from: "charanraj9731@gmail.com",
 
       to: email,
       subject: "Welcome to Study-Sphere!",

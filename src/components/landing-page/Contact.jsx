@@ -11,16 +11,17 @@ import { styled } from "@mui/system";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
+import COntactUsImage from "../../assets/images/landingpage_illustrations/contact-us.gif";
+
 gsap.registerPlugin(ScrollTrigger);
 
 const StyledContactSection = styled("section")(({ theme }) => ({
   background: "#fff",
-  paddingTop: "80px",
+  paddingTop: "120px", // Increased top padding
   paddingBottom: "50px",
   minHeight: "100vh",
   position: "relative",
 }));
-
 const SectionTitle = styled(Typography)(({ theme }) => ({
   fontFamily: "Pacifico, cursive",
   color: "#0033a0",
@@ -39,15 +40,14 @@ const SectionTitle = styled(Typography)(({ theme }) => ({
   },
 }));
 
-const ImagePlaceholder = styled(Box)(({ theme }) => ({
-  width: "100%",
-  height: "400px",
-  backgroundColor: "#f0f0f0",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  [theme.breakpoints.up("md")]: {
-    height: "600px",
+const ContactUsImageStyled = styled(Box)(({ theme }) => ({
+  width: "80%",
+  height: "auto",
+  overflow: "hidden",
+  "& img": {
+    width: "100%",
+    height: "auto",
+    transformOrigin: "center center",
   },
 }));
 
@@ -96,28 +96,44 @@ const ContactUs = () => {
   const [errors, setErrors] = useState({});
 
   useEffect(() => {
-    // GSAP animations
+    const section = sectionRef.current;
+    const image = imageRef.current.querySelector("img");
+    const formElements = formRef.current.querySelectorAll("form > *");
+
+    gsap.set(image, { scale: 0.8, opacity: 0, rotation: -5 });
+    gsap.set(formElements, { y: 30, opacity: 0 });
+
     const tl = gsap.timeline({
       scrollTrigger: {
-        trigger: sectionRef.current,
+        trigger: section,
         start: "top center",
-        end: "bottom center",
-        scrub: 0.5,
+        end: "center center",
+        scrub: 1,
       },
     });
 
-    tl.fromTo(
-      imageRef.current,
-      { opacity: 0, scale: 0.8 },
-      { opacity: 1, scale: 1, duration: 0.5 }
-    ).fromTo(
-      formRef.current,
-      { x: 50, opacity: 0 },
-      { x: 0, opacity: 1, duration: 0.5 },
-      "-=0.3"
+    tl.to(image, {
+      scale: 1,
+      opacity: 1,
+      rotation: 0,
+      duration: 1,
+      ease: "power2.out",
+    }).to(
+      formElements,
+      {
+        y: 0,
+        opacity: 1,
+        stagger: 0.1,
+        duration: 0.5,
+        ease: "power2.out",
+      },
+      "-=0.5"
     );
-  }, []);
 
+    return () => {
+      tl.kill();
+    };
+  }, []);
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
@@ -136,23 +152,54 @@ const ContactUs = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (validateForm()) {
-      console.log("Form data:", formData);
-      alert("Form submitted successfully!");
+      try {
+        const response = await fetch(
+          import.meta.env.VITE_SERVER_URL + "/api/send-contact-email",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              name: formData.name,
+              email: formData.email,
+              subject: formData.subject,
+              message: formData.message,
+            }),
+          }
+        );
+
+        if (response.ok) {
+          alert("Message sent successfully!");
+          // Clear the form
+          setFormData({
+            name: "",
+            email: "",
+            subject: "",
+            message: "",
+          });
+        } else {
+          throw new Error("Failed to send message");
+        }
+      } catch (error) {
+        console.error("Error:", error);
+        alert("Failed to send message. Please try again.");
+      }
     }
   };
 
   return (
-    <StyledContactSection id="contact-us" ref={sectionRef}>
+    <StyledContactSection id="contact" ref={sectionRef}>
       <SectionTitle variant="h4">Contact Us</SectionTitle>
       <Container>
         <Grid container spacing={4}>
           <Grid item xs={12} md={6}>
-            <ImagePlaceholder ref={imageRef}>
-              <Typography>Image Placeholder</Typography>
-            </ImagePlaceholder>
+            <ContactUsImageStyled ref={imageRef}>
+              <img src={COntactUsImage} alt="Students" />
+            </ContactUsImageStyled>
           </Grid>
           <Grid item xs={12} md={6}>
             <FormContainer ref={formRef}>
