@@ -26,6 +26,11 @@ const navConfig = [
     icon: icon("ic_user"),
   },
   {
+    title: "students",
+    path: "/dashboard/students",
+    icon: icon("ic_students"),
+  },
+  {
     title: "upload",
     path: "/dashboard/upload",
     icon: icon("ic_upload"),
@@ -54,16 +59,6 @@ const navConfig = [
     title: "reports",
     path: "/dashboard/blog",
     icon: icon("ic_reports"),
-  },
-  {
-    title: "login",
-    path: "/login",
-    icon: icon("ic_lock"),
-  },
-  {
-    title: "Not found",
-    path: "/404",
-    icon: icon("ic_disabled"),
   },
 ];
 

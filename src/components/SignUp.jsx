@@ -14,6 +14,8 @@ import LottieLoader from "./LottieLoader";
 
 import IconButton from "@mui/material/IconButton";
 import Typography from "@mui/material/Typography";
+import { FormControl, InputLabel, Select, MenuItem } from "@mui/material";
+import { styled } from "@mui/material/styles";
 
 import Iconify from "./iconify";
 
@@ -21,11 +23,19 @@ function SignUpForm() {
   const [state, setState] = useState({
     name: "",
     email: "",
+    collegeName: "",
     password: "",
     course: "",
     profilePhoto: null,
   });
-
+  const CenteredSelect = styled(Select)({
+    "& .MuiSelect-select": {
+      paddingRight: "24px", // Adjust padding for the dropdown icon
+    },
+    "& .MuiMenu-paper": {
+      maxHeight: "300px", // Adjust the maximum height of the dropdown
+    },
+  });
   const [toast, setToast] = useState({
     visible: false,
     type: "",
@@ -33,6 +43,69 @@ function SignUpForm() {
   });
 
   const [isLoading, setIsLoading] = useState(false);
+  const colleges = [
+    "Acharya Institute of Graduate Studies, Bangalore",
+    "Akshaya College, Puttur",
+    "Alvas College, Moodbidre",
+    "Besant Women's College, Mangalore",
+    "BMS Institute of Technology and Management, Bangalore",
+    "Canara College, Mangalore",
+    "Carmel Degree College, Modankap, Bantwal",
+    "Cauvery College, Gonikoppal",
+    "East West Institute of Technology, Bangalore",
+    "Field Marshal KM Cariappa College, Madikeri(FMC Madikeri)",
+    "Government First Grade College for Women, Mangalore",
+    "Government First Grade College, Bettampady",
+    "Government First Grade College, Madikeri",
+    "Government First Grade College, Mangalore",
+    "Government First Grade College, Sullia",
+    "Government First Grade College, Uppinangady",
+    "Government First Grade College, Virajpet",
+    "Govinda Dasa College - [GDC],Surathkal",
+    "Kristu Jayanti College, Autonomous, Bangalore",
+    "Mangalore Institute of Technology & Engineering (MITE), Moodbidre",
+    "Mangalore University",
+    "Maps College, Mangalore",
+    "Meredian College, Mangalore",
+    "Milagres College, Mangalore",
+    "MGM Degree college, Kushalnagar",
+    "Nehru Memorial College, Sullia",
+    "NMAM Institute of Technology, Karkala",
+    "Nirmala College of Information Technology",
+    "P. A. First Grade College, Mangalore",
+    "Padua Degree College, Mangalore",
+    "PES University, Bangalore",
+    "Sacred Heart College, Madanthyar",
+    "SCS First Grade College, Mangalore",
+    "SDM College of Business Management, Mangalore",
+    "Sharada College. Devinagara, Talapady, Mangalore",
+    "Shree Devi College, Mangalore",
+    "Shree Devi Institute of Technology, Mangalore",
+    "Sri Bhuvanendra College, Karkala",
+    "Sri Dharmasthala Manjunatheshwara College, Ujire",
+    "Sri Dhavala College, Moodbidre",
+    "Sri Mahaveera College, Moodabidri",
+    "Sri Rama First Grade College, Kalladka",
+    "Sri Ramakrishna College, Mangalore",
+    "Sri Venkataramana Swamy College, Bantwal",
+    "Srinivas College Pandeshwar",
+    "Srinivas College, Pandeshwar",
+    "Srinivas Institute of Technology (SIT)",
+    "St Aloysius College (Autonomous), Mangaluru",
+    "St Aloysius Institute of Management & Information Technology (AIMIT), Mangalore",
+    "St Joseph Engineering College, Mangalore",
+    "St Philomena College, Puttur",
+    "St. Agnes College (Autonomous), Mangaluru",
+    "St. Anne's Degree College, Virajpet",
+    "St. Raymond's College, Vamajoor",
+    "University College, Mangalore",
+    "Vidyarashmi Vidyalaya, Savanoor",
+    "Vijaya College, Mulki",
+    "Vivekananda Degree College, Puttur",
+    "Yenepoya Institute of Arts, Science, Commerce and Management",
+    "Yenepoya Institute of Arts, Science, Commerce and Management, Mangalore",
+    "Yenepoya(Deemed-to-be-University), Bangalore",
+  ];
 
   const handleChange = (evt) => {
     const { name, value, files } = evt.target;
@@ -52,7 +125,7 @@ function SignUpForm() {
   const handleOnSubmit = async (evt) => {
     evt.preventDefault();
 
-    const { name, email, password, course, profilePhoto } = state;
+    const { name, email, collegeName, password, course, profilePhoto } = state;
     const userrole = 3;
     const status = "active";
     const isVerified = "No";
@@ -80,6 +153,7 @@ function SignUpForm() {
       await setDoc(doc(db, "users", user.uid), {
         name,
         email,
+        collegeName,
         course,
         userId: user.uid,
         userrole,
@@ -116,8 +190,10 @@ function SignUpForm() {
       setState({
         name: "",
         email: "",
+        collegeName: "",
         password: "",
         course: "",
+
         profilePhoto: null,
       });
     } catch (error) {
@@ -206,6 +282,55 @@ function SignUpForm() {
             onChange={handleChange}
             placeholder="Email"
           />
+          <select
+            name="collegeName"
+            value={state.collegeName}
+            onChange={handleChange}
+          >
+            <option value="">Select Your College</option>
+            {colleges.map((collegeName, index) => (
+              <option key={index} value={collegeName}>
+                {collegeName}
+              </option>
+            ))}
+          </select>
+          {/* <FormControl fullWidth>
+            <InputLabel id="college-select-label">
+              Select Your College
+            </InputLabel>
+            <CenteredSelect
+              labelId="college-select-label"
+              name="collegeName"
+              value={state.collegeName}
+              onChange={handleChange}
+              label="Select Your College"
+              MenuProps={{
+                anchorOrigin: {
+                  vertical: "bottom",
+                  horizontal: "center",
+                },
+                transformOrigin: {
+                  vertical: "top",
+                  horizontal: "center",
+                },
+                getContentAnchorEl: null,
+                PaperProps: {
+                  style: {
+                    maxHeight: "300px", // Adjust the maximum height of the dropdown
+                  },
+                },
+              }}
+            >
+              <MenuItem value="">
+                <em>Select Your College</em>
+              </MenuItem>
+              {colleges.map((collegeName, index) => (
+                <MenuItem key={index} value={collegeName}>
+                  {collegeName}
+                </MenuItem>
+              ))}
+            </CenteredSelect>
+          </FormControl> */}
           <input
             type="password"
             name="password"
