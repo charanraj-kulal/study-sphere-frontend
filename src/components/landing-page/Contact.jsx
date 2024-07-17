@@ -197,11 +197,7 @@ const ContactUs = () => {
       <Container>
         <Grid container spacing={4}>
           <Grid item xs={12} md={6}>
-            <ContactUsImageStyled ref={imageRef}>
-              <img src={COntactUsImage} alt="Students" />
-            </ContactUsImageStyled>
-          </Grid>
-          <Grid item xs={12} md={6}>
+            {" "}
             <FormContainer ref={formRef}>
               <form onSubmit={handleSubmit}>
                 <StyledTextField
@@ -248,6 +244,11 @@ const ContactUs = () => {
                 </StyledButton>
               </form>
             </FormContainer>
+          </Grid>
+          <Grid item xs={12} md={6}>
+            <ContactUsImageStyled ref={imageRef}>
+              <img src={COntactUsImage} alt="Students" />
+            </ContactUsImageStyled>
           </Grid>
         </Grid>
       </Container>

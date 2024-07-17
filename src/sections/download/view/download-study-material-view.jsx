@@ -51,8 +51,12 @@ export default function DownloadStudyMaterialView() {
     () => {
       const urlParams = new URLSearchParams(location.search);
       const documentId = urlParams.get("documentId");
+      const searchParam = urlParams.get("search");
       if (documentId) {
         handleCardClick({ id: documentId });
+      }
+      if (searchParam) {
+        setSearchQuery(searchParam);
       }
       const fetchStudyMaterials = async () => {
         if (!searchQuery) {
@@ -109,8 +113,10 @@ export default function DownloadStudyMaterialView() {
     setSearchQuery(query);
     setLoading(true);
     setSelectedMaterial(null);
+    navigate(`/dashboard/download?search=${encodeURIComponent(query)}`, {
+      replace: true,
+    });
   };
-
   const handleCardClick = async (material) => {
     setIsProcessing(true);
     try {
@@ -263,7 +269,7 @@ export default function DownloadStudyMaterialView() {
       {isProcessing && <LottieLoader />}
       <Card sx={{ p: 4, mt: 3 }}>
         <Box sx={{ display: "flex", justifyContent: "center", mb: 3 }}>
-          <SearchBar onSearch={handleSearch} />
+          <SearchBar onSearch={handleSearch} initialQuery={searchQuery} />
         </Box>
 
         <BreadcrumbsNavigation

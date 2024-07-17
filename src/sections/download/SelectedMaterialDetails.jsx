@@ -1,11 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
 import Avatar from "@mui/material/Avatar";
-import Card from "@mui/material/Card";
-import CardContent from "@mui/material/CardContent";
-import TextField from "@mui/material/TextField";
+
 import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
@@ -14,6 +12,8 @@ import DialogTitle from "@mui/material/DialogTitle";
 import Iconify from "../../components/iconify";
 import { useToast } from "../../hooks/ToastContext";
 import StarRatingDialog from "../../components/starRateHandler/StarRatingDialog";
+import YouTubeSuggestions from "./YouTubeSuggestions";
+
 import Popover from "@mui/material/Popover";
 import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
@@ -23,9 +23,10 @@ import EmailIcon from "@mui/icons-material/Email";
 import WhatsAppIcon from "@mui/icons-material/WhatsApp";
 import LinkIcon from "@mui/icons-material/Link";
 import DownloadIcon from "@mui/icons-material/Download";
-import BookmarkIcon from "@mui/icons-material/Bookmark";
-import BookmarkBorderIcon from "@mui/icons-material/BookmarkBorder";
-import ReportIcon from "@mui/icons-material/Report";
+import CommentSection from "./CommentSection";
+import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
+// import Draggable from "react-draggable";
+
 import { QRCodeSVG } from "qrcode.react";
 import {
   doc,
@@ -38,7 +39,6 @@ import {
 } from "firebase/firestore";
 import { ref, deleteObject } from "firebase/storage";
 import { db, storage } from "../../firebase";
-
 const SelectedMaterialDetails = ({
   selectedMaterial,
   calculateAverageRating,
@@ -48,11 +48,57 @@ const SelectedMaterialDetails = ({
   userData,
   handleDownload,
 }) => {
+  const containerRef = useRef(null);
+  const dividerRef = useRef(null);
+  const [pdfWidth, setPdfWidth] = useState(75);
+
   const [anchorEl, setAnchorEl] = useState(null);
   const [menuAnchorEl, setMenuAnchorEl] = useState(null);
   const [isSaved, setIsSaved] = useState(false);
   const { showToast } = useToast();
   const [reportDialogOpen, setReportDialogOpen] = useState(false);
+
+  useEffect(() => {
+    const container = containerRef.current;
+    const divider = dividerRef.current;
+
+    if (!container || !divider) return;
+
+    let isDragging = false;
+    let startX, startWidth;
+
+    const onMouseDown = (e) => {
+      e.preventDefault();
+      isDragging = true;
+      startX = e.clientX;
+      startWidth = container.getBoundingClientRect().width * (pdfWidth / 100);
+      window.addEventListener("mousemove", onMouseMove);
+      window.addEventListener("mouseup", onMouseUp);
+    };
+
+    const onMouseMove = (e) => {
+      if (!isDragging) return;
+      const delta = e.clientX - startX;
+      const containerWidth = container.getBoundingClientRect().width;
+      const newWidth = ((startWidth + delta) / containerWidth) * 100;
+      const clampedWidth = Math.max(20, Math.min(95, newWidth));
+      setPdfWidth(clampedWidth);
+    };
+
+    const onMouseUp = () => {
+      isDragging = false;
+      window.removeEventListener("mousemove", onMouseMove);
+      window.removeEventListener("mouseup", onMouseUp);
+    };
+
+    divider.addEventListener("mousedown", onMouseDown);
+
+    return () => {
+      divider.removeEventListener("mousedown", onMouseDown);
+      window.removeEventListener("mousemove", onMouseMove);
+      window.removeEventListener("mouseup", onMouseUp);
+    };
+  }, [pdfWidth]);
 
   useEffect(() => {
     // Check if the current document is saved by the user
@@ -64,6 +110,11 @@ const SelectedMaterialDetails = ({
   const handleShareClick = (event) => {
     setAnchorEl(event.currentTarget);
   };
+
+  // const handleDrag = (e, ui) => {
+  //   const newPdfWidth = Math.max(20, Math.min(95, pdfWidth - ui.deltaX / 10));
+  //   setPdfWidth(newPdfWidth);
+  // };
 
   const handleShareClose = () => {
     setAnchorEl(null);
@@ -419,6 +470,10 @@ const SelectedMaterialDetails = ({
           onClose={() => setReportDialogOpen(false)}
           aria-labelledby="alert-dialog-title"
           aria-describedby="alert-dialog-description"
+          sx={{
+            backdropFilter: "blur(3px)",
+            backgroundColor: "rgba(0,0,30,0.4)",
+          }}
         >
           <DialogTitle id="alert-dialog-title">{"Report Document"}</DialogTitle>
           <DialogContent>
@@ -452,81 +507,43 @@ const SelectedMaterialDetails = ({
         onRate={handleStarRating}
         currentRating={selectedMaterial?.userRatings?.[userData.uid] || 0}
       />
-      <Box sx={{ display: "flex", width: "100%", height: "600px" }}>
-        <Card
-          sx={{
-            width: "75%",
-            height: "100%",
-            borderRadius: 2,
-            overflow: "hidden",
-            boxShadow: 3,
-            border: 1,
-            borderColor: "#000000",
-          }}
-        >
-          <iframe
-            src={`${selectedMaterial.documentUrl}#toolbar=0&navpanes=0`}
-            width="100%"
-            height="100%"
-            title={selectedMaterial.documentName}
-            style={{ border: "none" }}
-          />
-        </Card>
-        <Card
-          sx={{
-            width: "25%",
-            ml: 3,
-            borderRadius: 2,
-            border: "1px solid #ccc",
-            overflow: "auto",
-            height: "100%",
-            boxShadow: 3,
-
-            borderColor: "#000000",
-          }}
-        >
-          <CardContent>
-            <Typography variant="h6" gutterBottom>
-              Comments
-            </Typography>
-            <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-              <TextField
-                label="Add a comment"
-                multiline
-                rows={4}
-                variant="outlined"
-                fullWidth
+      <Box sx={{ height: "600px", width: "100%" }}>
+        <PanelGroup direction="horizontal">
+          <Panel defaultSize={pdfWidth} minSize={20}>
+            <Box
+              sx={{
+                height: "100%",
+                borderRadius: 2,
+                overflow: "hidden",
+                boxShadow: 3,
+                border: 1,
+                borderColor: "#000000",
+              }}
+            >
+              <iframe
+                src={`${selectedMaterial.documentUrl}#toolbar=0&navpanes=0`}
+                width="100%"
+                height="100%"
+                title={selectedMaterial.documentName}
+                style={{ border: "none" }}
               />
-              <Button variant="contained" color="primary">
-                Submit
-              </Button>
-              {/* Example comments */}
-              <Box sx={{ display: "flex", alignItems: "flex-start", mt: 2 }}>
-                <Avatar sx={{ mr: 2 }}>A</Avatar>
-                <Box>
-                  <Typography variant="body2" fontWeight="bold">
-                    Alice
-                  </Typography>
-                  <Typography variant="body2">
-                    Great material! Helped me a lot.
-                  </Typography>
-                </Box>
-              </Box>
-              <Box sx={{ display: "flex", alignItems: "flex-start", mt: 2 }}>
-                <Avatar sx={{ mr: 2 }}>B</Avatar>
-                <Box>
-                  <Typography variant="body2" fontWeight="bold">
-                    Bob
-                  </Typography>
-                  <Typography variant="body2">
-                    Very informative and well-organized.
-                  </Typography>
-                </Box>
-              </Box>
             </Box>
-          </CardContent>
-        </Card>
+          </Panel>
+          <PanelResizeHandle />
+          <Panel>
+            <Box sx={{ height: "100%", ml: 1 }}>
+              <CommentSection
+                documentId={selectedMaterial.id}
+                currentUser={userData}
+              />
+            </Box>
+          </Panel>
+        </PanelGroup>
       </Box>
+      <YouTubeSuggestions
+        documentName={selectedMaterial.documentName}
+        documentTopics={selectedMaterial.documentTopics || []}
+      />
     </Box>
   );
 };

@@ -10,7 +10,14 @@ import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import DialogTitle from "@mui/material/DialogTitle";
-import { updateDoc, doc, increment, deleteDoc } from "firebase/firestore";
+import TextField from "@mui/material/TextField";
+import {
+  updateDoc,
+  doc,
+  increment,
+  deleteDoc,
+  serverTimestamp,
+} from "firebase/firestore";
 import { db, storage } from "../../firebase";
 import { ref, deleteObject } from "firebase/storage";
 
@@ -22,6 +29,8 @@ import { formatTimeAgo } from "../../utils/timeUtils";
 
 function VerifyStudyMaterialCard({ material, onApprove, onReject }) {
   const [open, setOpen] = useState(false);
+  const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
+  const [rejectionReason, setRejectionReason] = useState("");
   const { userData } = useUser();
   const [isDeciding, setIsDeciding] = useState(false);
   const { showToast } = useToast();
@@ -34,10 +43,18 @@ function VerifyStudyMaterialCard({ material, onApprove, onReject }) {
     setOpen(false);
   };
 
+  const handleRejectDialogOpen = () => {
+    setRejectDialogOpen(true);
+  };
+
+  const handleRejectDialogClose = () => {
+    setRejectDialogOpen(false);
+    setRejectionReason("");
+  };
+
   const handleApprove = async () => {
     setIsDeciding(true);
     try {
-      setIsDeciding(true);
       await updateDoc(doc(db, "documents", material.id), {
         visibility: "public",
         Approved: "Yes",
@@ -64,6 +81,10 @@ function VerifyStudyMaterialCard({ material, onApprove, onReject }) {
   };
 
   const handleReject = async () => {
+    if (!rejectionReason.trim()) {
+      showToast("error", "Please provide a reason for rejection");
+      return;
+    }
     setIsDeciding(true);
     try {
       await updateDoc(doc(db, "users", material.uploaderUid), {
@@ -73,8 +94,9 @@ function VerifyStudyMaterialCard({ material, onApprove, onReject }) {
       await deleteDoc(doc(db, "documents", material.id));
       const storageRef = ref(storage, material.documentUrl);
       await deleteObject(storageRef);
-      onReject(material.id);
+      onReject(material.id, rejectionReason);
       handleClose();
+      handleRejectDialogClose();
       showToast("success", "Document successfully Rejected");
     } catch (error) {
       console.error("Error rejecting document:", error);
@@ -186,7 +208,11 @@ function VerifyStudyMaterialCard({ material, onApprove, onReject }) {
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleReject} color="error" variant="contained">
+          <Button
+            onClick={handleRejectDialogOpen}
+            color="error"
+            variant="contained"
+          >
             <Iconify
               icon="fluent:text-change-reject-20-filled"
               sx={{ width: 20, height: 20, mr: 1 }}
@@ -199,6 +225,35 @@ function VerifyStudyMaterialCard({ material, onApprove, onReject }) {
               sx={{ width: 20, height: 20, mr: 1 }}
             />
             Approve
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog open={rejectDialogOpen} onClose={handleRejectDialogClose}>
+        <DialogTitle>Reject Document</DialogTitle>
+        <DialogContent>
+          <Typography>
+            Are you sure you want to reject this document?
+          </Typography>
+          <TextField
+            autoFocus
+            margin="dense"
+            id="rejection-reason"
+            label="Reason for Rejection"
+            type="text"
+            fullWidth
+            variant="outlined"
+            value={rejectionReason}
+            onChange={(e) => setRejectionReason(e.target.value)}
+            required
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleRejectDialogClose} color="primary">
+            Cancel
+          </Button>
+          <Button onClick={handleReject} color="error">
+            Reject
           </Button>
         </DialogActions>
       </Dialog>
