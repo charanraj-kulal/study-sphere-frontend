@@ -46,6 +46,7 @@ export default function Router() {
           ),
           children: [
             { element: <IndexPage />, index: true },
+
             { path: "user", element: <UserPage /> },
             { path: "students", element: <StudentsPage /> },
             { path: "verify", element: <VerifyPage /> },
