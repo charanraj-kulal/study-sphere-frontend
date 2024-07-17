@@ -119,6 +119,10 @@ const YouTubeSuggestions = ({ documentName, documentTopics }) => {
         open={!!selectedVideo}
         onClose={() => setSelectedVideo(null)}
         maxWidth="md"
+        sx={{
+          backdropFilter: "blur(3px)",
+          backgroundColor: "rgba(0,0,30,0.4)",
+        }}
         fullWidth
       >
         {selectedVideo && (

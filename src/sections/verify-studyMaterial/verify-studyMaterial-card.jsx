@@ -60,10 +60,29 @@ function VerifyStudyMaterialCard({ material, onApprove, onReject }) {
         Approved: "Yes",
         verifiedOn: serverTimestamp(),
       });
+      const response = await fetch(
+        import.meta.env.VITE_SERVER_URL + "/api/approve-document",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            documentId: material.id,
+            userEmail: material.uploaderEmail,
+            documentName: material.documentName,
+            docupDate: material.uploadedOn,
+            verifiedBy: userData.displayName,
+            verifiedOn: material.verifiedOn,
+          }),
+        }
+      );
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
+      }
+
       await updateDoc(doc(db, "users", material.uploaderUid), {
         uploadCount: increment(1),
         points: increment(20),
-        countOfApprove: 1,
+        countOfApprove: increment(1),
       });
       await updateDoc(doc(db, "users", userData.uid), {
         contribution: increment(1),
@@ -91,6 +110,25 @@ function VerifyStudyMaterialCard({ material, onApprove, onReject }) {
         countOfRejection: increment(1),
         points: increment(-45),
       });
+      const response = await fetch(
+        import.meta.env.VITE_SERVER_URL + "/api/reject-document",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            documentId: material.id,
+            userEmail: material.uploaderEmail,
+            documentName: material.documentName,
+            verifiedBy: userData.displayName,
+            verifiedOn: material.verifiedOn,
+            rejectionReason,
+          }),
+        }
+      );
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
+      }
+
       await deleteDoc(doc(db, "documents", material.id));
       const storageRef = ref(storage, material.documentUrl);
       await deleteObject(storageRef);
@@ -230,6 +268,7 @@ function VerifyStudyMaterialCard({ material, onApprove, onReject }) {
       </Dialog>
 
       <Dialog open={rejectDialogOpen} onClose={handleRejectDialogClose}>
+        {isDeciding && <LottieLoader />}
         <DialogTitle>Reject Document</DialogTitle>
         <DialogContent>
           <Typography>

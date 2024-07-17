@@ -59,69 +59,19 @@ export default function VerifyView() {
   }, [filter, userData, sortBy]);
 
   const handleApprove = async (id) => {
-    try {
-      const material = studyMaterials.find((m) => m.id === id);
-      const response = await fetch(
-        import.meta.env.VITE_SERVER_URL + "/api/approve-document",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            documentId: id,
-            userEmail: material.uploaderEmail,
-            documentName: material.documentName,
-            docupDate: material.uploadedOn,
-            verifiedBy: userData.displayName,
-            verifiedOn: material.verifiedOn,
-          }),
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error("Network response was not ok");
-      }
-
-      const updatedMaterials = studyMaterials.filter(
-        (material) => material.id !== id
-      );
-      setStudyMaterials(updatedMaterials);
-      setCount(count - 1);
-    } catch (error) {
-      console.error("Error approving document:", error);
-      // Handle error (e.g., show an error message to the user)
-    }
+    const updatedMaterials = studyMaterials.filter(
+      (material) => material.id !== id
+    );
+    setStudyMaterials(updatedMaterials);
+    setCount(count - 1);
   };
 
-  const handleReject = async (id, rejectionReason) => {
-    try {
-      const material = studyMaterials.find((m) => m.id === id);
-      const response = await fetch(
-        import.meta.env.VITE_SERVER_URL + "/api/reject-document",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            documentId: id,
-            userEmail: material.uploaderEmail,
-            documentName: material.documentName,
-            rejectionReason,
-          }),
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error("Network response was not ok");
-      }
-
-      const updatedMaterials = studyMaterials.filter(
-        (material) => material.id !== id
-      );
-      setStudyMaterials(updatedMaterials);
-      setCount(count - 1);
-    } catch (error) {
-      console.error("Error rejecting document:", error);
-      // Handle error (e.g., show an error message to the user)
-    }
+  const handleReject = async (id) => {
+    const updatedMaterials = studyMaterials.filter(
+      (material) => material.id !== id
+    );
+    setStudyMaterials(updatedMaterials);
+    setCount(count - 1);
   };
   const filteredMaterials = studyMaterials.filter((material) =>
     material.documentName.toLowerCase().includes(searchQuery.toLowerCase())
