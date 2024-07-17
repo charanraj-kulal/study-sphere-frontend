@@ -127,6 +127,8 @@ const UploadStudyMaterialForm = ({ currentUser }) => {
         uploaderCourse: currentUser.course,
         uploaderPhotoUrl: currentUser.photoURL,
         uploaderUid: currentUser.uid,
+        uploaderEmail: currentUser.email,
+
         uploadedOn: serverTimestamp(),
         visibility: "private",
         Approved: "No",

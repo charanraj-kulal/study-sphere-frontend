@@ -10,7 +10,14 @@ import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import DialogTitle from "@mui/material/DialogTitle";
-import { updateDoc, doc, increment, deleteDoc } from "firebase/firestore";
+import TextField from "@mui/material/TextField";
+import {
+  updateDoc,
+  doc,
+  increment,
+  deleteDoc,
+  serverTimestamp,
+} from "firebase/firestore";
 import { db, storage } from "../../firebase";
 import { ref, deleteObject } from "firebase/storage";
 
@@ -22,6 +29,8 @@ import { formatTimeAgo } from "../../utils/timeUtils";
 
 function VerifyStudyMaterialCard({ material, onApprove, onReject }) {
   const [open, setOpen] = useState(false);
+  const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
+  const [rejectionReason, setRejectionReason] = useState("");
   const { userData } = useUser();
   const [isDeciding, setIsDeciding] = useState(false);
   const { showToast } = useToast();
@@ -34,19 +43,46 @@ function VerifyStudyMaterialCard({ material, onApprove, onReject }) {
     setOpen(false);
   };
 
+  const handleRejectDialogOpen = () => {
+    setRejectDialogOpen(true);
+  };
+
+  const handleRejectDialogClose = () => {
+    setRejectDialogOpen(false);
+    setRejectionReason("");
+  };
+
   const handleApprove = async () => {
     setIsDeciding(true);
     try {
-      setIsDeciding(true);
       await updateDoc(doc(db, "documents", material.id), {
         visibility: "public",
         Approved: "Yes",
         verifiedOn: serverTimestamp(),
       });
+      const response = await fetch(
+        import.meta.env.VITE_SERVER_URL + "/api/approve-document",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            documentId: material.id,
+            userEmail: material.uploaderEmail,
+            documentName: material.documentName,
+            docupDate: material.uploadedOn,
+            verifiedBy: userData.displayName,
+            verifiedOn: material.verifiedOn,
+          }),
+        }
+      );
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
+      }
+
       await updateDoc(doc(db, "users", material.uploaderUid), {
         uploadCount: increment(1),
         points: increment(20),
-        countOfApprove: 1,
+        countOfApprove: increment(1),
       });
       await updateDoc(doc(db, "users", userData.uid), {
         contribution: increment(1),
@@ -64,17 +100,41 @@ function VerifyStudyMaterialCard({ material, onApprove, onReject }) {
   };
 
   const handleReject = async () => {
+    if (!rejectionReason.trim()) {
+      showToast("error", "Please provide a reason for rejection");
+      return;
+    }
     setIsDeciding(true);
     try {
       await updateDoc(doc(db, "users", material.uploaderUid), {
         countOfRejection: increment(1),
         points: increment(-45),
       });
+      const response = await fetch(
+        import.meta.env.VITE_SERVER_URL + "/api/reject-document",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            documentId: material.id,
+            userEmail: material.uploaderEmail,
+            documentName: material.documentName,
+            verifiedBy: userData.displayName,
+            verifiedOn: material.verifiedOn,
+            rejectionReason,
+          }),
+        }
+      );
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
+      }
+
       await deleteDoc(doc(db, "documents", material.id));
       const storageRef = ref(storage, material.documentUrl);
       await deleteObject(storageRef);
-      onReject(material.id);
+      onReject(material.id, rejectionReason);
       handleClose();
+      handleRejectDialogClose();
       showToast("success", "Document successfully Rejected");
     } catch (error) {
       console.error("Error rejecting document:", error);
@@ -186,7 +246,11 @@ function VerifyStudyMaterialCard({ material, onApprove, onReject }) {
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleReject} color="error" variant="contained">
+          <Button
+            onClick={handleRejectDialogOpen}
+            color="error"
+            variant="contained"
+          >
             <Iconify
               icon="fluent:text-change-reject-20-filled"
               sx={{ width: 20, height: 20, mr: 1 }}
@@ -199,6 +263,36 @@ function VerifyStudyMaterialCard({ material, onApprove, onReject }) {
               sx={{ width: 20, height: 20, mr: 1 }}
             />
             Approve
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog open={rejectDialogOpen} onClose={handleRejectDialogClose}>
+        {isDeciding && <LottieLoader />}
+        <DialogTitle>Reject Document</DialogTitle>
+        <DialogContent>
+          <Typography>
+            Are you sure you want to reject this document?
+          </Typography>
+          <TextField
+            autoFocus
+            margin="dense"
+            id="rejection-reason"
+            label="Reason for Rejection"
+            type="text"
+            fullWidth
+            variant="outlined"
+            value={rejectionReason}
+            onChange={(e) => setRejectionReason(e.target.value)}
+            required
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleRejectDialogClose} color="primary">
+            Cancel
+          </Button>
+          <Button onClick={handleReject} color="error">
+            Reject
           </Button>
         </DialogActions>
       </Dialog>

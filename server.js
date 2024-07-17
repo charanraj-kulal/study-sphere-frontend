@@ -377,6 +377,205 @@ app.delete("/api/users/:uid", async (req, res) => {
   }
 });
 
+async function sendApprovalEmail(
+  userEmail,
+  documentName,
+  verifiedBy,
+  verifiedOn,
+  uploadedOn
+) {
+  console.log(
+    `Sending approval email to ${userEmail} for document: ${documentName}`
+  );
+
+  const templatePath = path.join(__dirname, "approved_email.html");
+  let emailTemplate = fs.readFileSync(templatePath, "utf8");
+
+  // Format only the verifiedOn date
+  const formatDate = (dateInput) => {
+    if (!dateInput) return "N/A";
+
+    let date = new Date(dateInput);
+
+    // Check if the date is valid
+    if (isNaN(date.getTime())) return "N/A";
+
+    return date.toLocaleString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    });
+  };
+
+  const formattedVerifiedOn = formatDate(verifiedOn);
+
+  // Replace placeholders with actual data
+  emailTemplate = emailTemplate.replace(/docname/g, documentName || "N/A");
+  emailTemplate = emailTemplate.replace(/dtofup/g, uploadedOn || "N/A"); // Use uploadedOn directly
+  emailTemplate = emailTemplate.replace(/verifierName/g, verifiedBy || "N/A");
+  emailTemplate = emailTemplate.replace(/Verified/g, formattedVerifiedOn);
+
+  // Remove the extra "Approved" text (if present in the template)
+  emailTemplate = emailTemplate.replace(
+    "Approved On        :  Approved",
+    "Approved On        :"
+  );
+
+  try {
+    const info = await transporter.sendMail({
+      from: '"Study-Sphere" <noreply@studysphere.com>',
+      to: userEmail,
+      subject: `Your document  ${documentName} has been approved!`,
+      html: emailTemplate,
+    });
+
+    console.log(
+      "Approval email sent successfully. Message ID:",
+      info.messageId
+    );
+  } catch (error) {
+    console.error("Error sending approval email:", error);
+    throw error;
+  }
+}
+
+app.post("/api/approve-document", async (req, res) => {
+  const { documentId, userEmail, documentName, verifiedBy } = req.body;
+
+  try {
+    console.log(`Approving document: ${documentId} for user: ${userEmail}`);
+
+    const verifiedOn = new Date().toISOString();
+
+    // Fetch the document from Firestore to get the uploadedOn date
+    const docRef = admin.firestore().collection("documents").doc(documentId);
+    const docSnapshot = await docRef.get();
+    const uploadedOn = docSnapshot.data().uploadedOn;
+
+    // Update the document in Firestore
+    await docRef.update({
+      Approved: "Yes",
+      verifiedBy: verifiedBy,
+      verifiedOn: verifiedOn,
+    });
+
+    console.log("Firestore update successful");
+
+    // Send approval email with correct dates
+    await sendApprovalEmail(
+      userEmail,
+      documentName,
+      verifiedBy,
+      verifiedOn,
+      uploadedOn
+    );
+
+    console.log("Approval email sent successfully");
+
+    res.status(200).json({ message: "Document approved and email sent" });
+  } catch (error) {
+    console.error("Error in /api/approve-document:", error);
+    res
+      .status(500)
+      .json({ error: "Failed to approve document", details: error.message });
+  }
+});
+async function sendRejectionEmail(
+  userEmail,
+  documentName,
+  verifiedBy,
+  verifiedOn,
+  rejectionReason
+) {
+  console.log(
+    `Sending rejection email to ${userEmail} for document: ${documentName}`
+  );
+
+  const templatePath = path.join(__dirname, "rejected_email.html");
+  let emailTemplate = fs.readFileSync(templatePath, "utf8");
+
+  // Format the verifiedOn date
+  const formatDate = (dateInput) => {
+    if (!dateInput) return "N/A";
+    let date = new Date(dateInput);
+    if (isNaN(date.getTime())) return "N/A";
+    return date.toLocaleString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    });
+  };
+
+  const formattedVerifiedOn = formatDate(verifiedOn);
+
+  // Replace placeholders with actual data
+  emailTemplate = emailTemplate.replace(/docname/g, documentName || "N/A");
+  emailTemplate = emailTemplate.replace(/reason/g, rejectionReason || "N/A");
+  emailTemplate = emailTemplate.replace(/verifierName/g, verifiedBy || "N/A");
+  emailTemplate = emailTemplate.replace(/Verified/g, formattedVerifiedOn);
+
+  try {
+    const info = await transporter.sendMail({
+      from: '"Study-Sphere" <noreply@studysphere.com>',
+      to: userEmail,
+      subject: `Your document  ${documentName} has been rejected`,
+      html: emailTemplate,
+    });
+
+    console.log(
+      "Rejection email sent successfully. Message ID:",
+      info.messageId
+    );
+  } catch (error) {
+    console.error("Error sending rejection email:", error);
+    throw error;
+  }
+}
+
+app.post("/api/reject-document", async (req, res) => {
+  const { documentId, userEmail, documentName, verifiedBy, rejectionReason } =
+    req.body;
+
+  try {
+    console.log(`Rejecting document: ${documentId} for user: ${userEmail}`);
+
+    const verifiedOn = new Date().toISOString();
+
+    // Update the document in Firestore
+    await admin.firestore().collection("documents").doc(documentId).update({
+      Approved: "Rejected",
+      rejectionReason: rejectionReason,
+      verifiedBy: verifiedBy,
+      verifiedOn: verifiedOn,
+    });
+
+    console.log("Firestore update successful");
+
+    // Send rejection email
+    await sendRejectionEmail(
+      userEmail,
+      documentName,
+      verifiedBy,
+      verifiedOn,
+      rejectionReason
+    );
+
+    console.log("Rejection email sent successfully");
+
+    res.status(200).json({ message: "Document rejected and email sent" });
+  } catch (error) {
+    console.error("Error in /api/reject-document:", error);
+    res
+      .status(500)
+      .json({ error: "Failed to reject document", details: error.message });
+  }
+});
 app.listen(port, "0.0.0.0", () => {
   console.log(`Server is running on port ${port}`);
 });

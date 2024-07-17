@@ -1,0 +1,13 @@
+mongodb+srv://employee:<password>@studyusers.ple9hfu.mongodb.net/?retryWrites=true&w=majority&appName=StudyUsers
+
+VITE_FIREBASE_API_kEY=AIzaSyC_zbw6QLjNBrLsAiorx69sMymR42BxDbs
+
+# email auths
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=charanraj9731@gmail.com
+SMTP_PASS=tqtxrhzrygukftrx
+
+VITE_SERVER_URL=http://localhost:10000
+
+VITE_YOUTUBE_API=AIzaSyCk-1NlUU_UsyoPB4UIwQjUOxY-EjZTK8E

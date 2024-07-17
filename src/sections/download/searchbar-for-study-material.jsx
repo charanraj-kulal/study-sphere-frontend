@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import InputBase from "@mui/material/InputBase";
 import Paper from "@mui/material/Paper";
 import SearchIcon from "@mui/icons-material/Search";
@@ -6,8 +6,12 @@ import InputAdornment from "@mui/material/InputAdornment";
 import Iconify from "../../components/iconify";
 import debounce from "lodash/debounce";
 
-export default function SearchBar({ onSearch }) {
-  const [query, setQuery] = useState("");
+export default function SearchBar({ onSearch, initialQuery = "" }) {
+  const [query, setQuery] = useState(initialQuery);
+
+  useEffect(() => {
+    setQuery(initialQuery);
+  }, [initialQuery]);
 
   const debouncedSearch = useCallback(
     debounce((value) => {
@@ -32,8 +36,8 @@ export default function SearchBar({ onSearch }) {
         maxWidth: 600,
         boxShadow: 3,
         borderRadius: 2,
-        border: "1px solid #ddd", // Added border
-        backgroundColor: "#fff", // Ensured background color is white
+        border: "1px solid #ddd",
+        backgroundColor: "#fff",
       }}
     >
       <SearchIcon sx={{ p: "10px" }} />
