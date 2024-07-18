@@ -17,6 +17,7 @@
   flex-direction: column;
   font-family: "Montserrat", sans-serif;
   height: 100vh;
+  padding: 20%;
   margin: -20px 0 50px;
 }
 
@@ -113,6 +114,7 @@
   width: 768px;
   max-width: 100%;
   min-height: 480px;
+  padding: 18%;
 }
 
 .login-page .form-container {

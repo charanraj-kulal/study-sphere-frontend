@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import PropTypes from "prop-types";
 import axios from "axios";
 import Stack from "@mui/material/Stack";
@@ -16,7 +15,6 @@ import Label from "../../components/label";
 import Iconify from "../../components/iconify";
 import { useToast } from "../../hooks/ToastContext";
 import LottieLoader from "../../components/LottieLoader";
-import UserDetailsDialog from "./user-details-dialog";
 
 export default function UserTableRow({
   selected,
@@ -25,7 +23,7 @@ export default function UserTableRow({
   email,
   avatarUrl,
   course,
-  role,
+  collegeName,
   isVerified,
   status,
   handleClick,
@@ -34,20 +32,11 @@ export default function UserTableRow({
   const [open, setOpen] = useState(null);
   const { showToast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const navigate = useNavigate();
+
   const handleOpenMenu = (event) => {
     setOpen(event.currentTarget);
   };
-  const handleOpenDialog = () => {
-    setDialogOpen(true);
-  };
-  const handleRowClick = () => {
-    navigate(`/dashboard/profile/${id.toString()}`);
-  };
-  const handleCloseDialog = () => {
-    setDialogOpen(false);
-  };
+
   const handleCloseMenu = () => {
     setOpen(null);
   };
@@ -69,13 +58,7 @@ export default function UserTableRow({
 
   return (
     <React.Fragment>
-      <TableRow
-        hover
-        tabIndex={-1}
-        role="checkbox"
-        selected={selected}
-        onClick={handleRowClick}
-      >
+      <TableRow hover tabIndex={-1} role="checkbox" selected={selected}>
         {isLoading && (
           <TableCell colSpan={7}>
             <LottieLoader />
@@ -100,15 +83,7 @@ export default function UserTableRow({
             </TableCell>
             <TableCell>{email}</TableCell>
             <TableCell>{course}</TableCell>
-            <TableCell>
-              {role === 3
-                ? "Student"
-                : role === 2
-                  ? "Lecturer"
-                  : role === 1
-                    ? "Admin"
-                    : "Unknown Role"}
-            </TableCell>
+            <TableCell>{collegeName}</TableCell>
             <TableCell align="center">{isVerified ? "Yes" : "No"}</TableCell>
             <TableCell>
               <Label color={(status === "banned" && "error") || "success"}>
@@ -125,11 +100,6 @@ export default function UserTableRow({
           </>
         )}
       </TableRow>
-      {/* <UserDetailsDialog
-        open={dialogOpen}
-        onClose={handleCloseDialog}
-        userId={id.toString()}
-      /> */}
 
       <Popover
         open={!!open}
@@ -162,7 +132,7 @@ UserTableRow.propTypes = {
   isVerified: PropTypes.bool,
   name: PropTypes.string,
   email: PropTypes.string, // Add this line
-  role: PropTypes.number,
+  collegeName: PropTypes.string,
   selected: PropTypes.bool,
   status: PropTypes.string,
   setUsers: PropTypes.func.isRequired,
