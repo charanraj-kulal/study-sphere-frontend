@@ -164,6 +164,7 @@ function SignUpForm() {
         downloadCount,
         points,
         countOfRejection: 0,
+        countOfApprove: 0,
       });
 
       await sendEmailVerification(user);

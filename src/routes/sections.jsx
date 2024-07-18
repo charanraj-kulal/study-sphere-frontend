@@ -4,6 +4,7 @@ import { Outlet, Navigate, useRoutes } from "react-router-dom";
 import DashboardLayout from "../layouts/dashboard";
 import SkeletonLoader from "../components/SkeletonLoader";
 import ProtectedRoute from "../components/ProtectedRoute";
+import DashboardRedirect from "./components/dashboard-redirect";
 
 // Lazy load your components
 export const IndexPage = lazy(() => import("../pages/app"));
@@ -16,6 +17,7 @@ export const UserPage = lazy(() => import("../pages/user"));
 export const StudentsPage = lazy(() => import("../pages/students"));
 export const LeaderboardPage = lazy(() => import("../pages/leaderboard"));
 export const LoginPage = lazy(() => import("../pages/SignInSignUpFrom"));
+export const UserProfilePage = lazy(() => import("../pages/UserProfile"));
 // export const LoginPage = lazy(() => import("../pages/login"));
 
 export const ProductsPage = lazy(() => import("../pages/products"));
@@ -45,8 +47,8 @@ export default function Router() {
             </DashboardLayout>
           ),
           children: [
-            { element: <IndexPage />, index: true },
-
+            { element: <DashboardRedirect />, index: true },
+            { path: "dashboard", element: <IndexPage /> },
             { path: "user", element: <UserPage /> },
             { path: "students", element: <StudentsPage /> },
             { path: "verify", element: <VerifyPage /> },
@@ -55,6 +57,7 @@ export default function Router() {
             { path: "leaderboard", element: <LeaderboardPage /> },
             { path: "products", element: <ProductsPage /> },
             { path: "blog", element: <BlogPage /> },
+            { path: "profile/:userId", element: <UserProfilePage /> },
           ],
         },
       ],

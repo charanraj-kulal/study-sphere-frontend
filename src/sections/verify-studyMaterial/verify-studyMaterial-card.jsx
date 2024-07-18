@@ -17,6 +17,7 @@ import {
   increment,
   deleteDoc,
   serverTimestamp,
+  arrayUnion,
 } from "firebase/firestore";
 import { db, storage } from "../../firebase";
 import { ref, deleteObject } from "firebase/storage";
@@ -83,6 +84,7 @@ function VerifyStudyMaterialCard({ material, onApprove, onReject }) {
         uploadCount: increment(1),
         points: increment(20),
         countOfApprove: increment(1),
+        uploadedDoc: arrayUnion(material.id),
       });
       await updateDoc(doc(db, "users", userData.uid), {
         contribution: increment(1),
