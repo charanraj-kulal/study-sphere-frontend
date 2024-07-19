@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import PropTypes from "prop-types";
 import axios from "axios";
 import Stack from "@mui/material/Stack";
@@ -32,6 +33,7 @@ export default function UserTableRow({
   const [open, setOpen] = useState(null);
   const { showToast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleOpenMenu = (event) => {
     setOpen(event.currentTarget);
@@ -40,7 +42,9 @@ export default function UserTableRow({
   const handleCloseMenu = () => {
     setOpen(null);
   };
-
+  const handleRowClick = () => {
+    navigate(`/dashboard/profile/${id.toString()}`);
+  };
   const handleDeleteUser = async () => {
     setIsLoading(true);
     try {
@@ -73,7 +77,13 @@ export default function UserTableRow({
                 onChange={(event) => handleClick(event, id)}
               />
             </TableCell>
-            <TableCell component="th" scope="row" padding="none">
+            <TableCell
+              component="th"
+              scope="row"
+              padding="none"
+              onClick={handleRowClick}
+              sx={{ cursor: "pointer" }}
+            >
               <Stack direction="row" alignItems="center" spacing={2}>
                 <Avatar alt={name} src={avatarUrl} />
                 <Typography variant="subtitle2" noWrap>

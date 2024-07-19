@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Table,
   TableBody,
@@ -19,6 +20,7 @@ import rank3Image from "../../assets/images/medals/3_badge.png";
 
 const LeaderboardTable = () => {
   const [leaderboardData, setLeaderboardData] = useState([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchLeaderboardData = async () => {
@@ -45,6 +47,11 @@ const LeaderboardTable = () => {
 
     fetchLeaderboardData();
   }, []);
+
+  const handleRowClick = (userId) => {
+    navigate(`/dashboard/profile/${userId}`);
+  };
+
   const getRankDisplay = (rank) => {
     switch (rank) {
       case 1:
@@ -94,7 +101,11 @@ const LeaderboardTable = () => {
         </TableHead>
         <TableBody>
           {leaderboardData.map((user) => (
-            <TableRow key={user.id}>
+            <TableRow
+              key={user.id}
+              onClick={() => handleRowClick(user.id)}
+              style={{ cursor: "pointer" }}
+            >
               <TableCell>
                 <div
                   style={{

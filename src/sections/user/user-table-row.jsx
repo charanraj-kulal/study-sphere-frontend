@@ -69,13 +69,7 @@ export default function UserTableRow({
 
   return (
     <React.Fragment>
-      <TableRow
-        hover
-        tabIndex={-1}
-        role="checkbox"
-        selected={selected}
-        onClick={handleRowClick}
-      >
+      <TableRow hover tabIndex={-1} role="checkbox" selected={selected}>
         {isLoading && (
           <TableCell colSpan={7}>
             <LottieLoader />
@@ -90,7 +84,13 @@ export default function UserTableRow({
                 onChange={(event) => handleClick(event, id)}
               />
             </TableCell>
-            <TableCell component="th" scope="row" padding="none">
+            <TableCell
+              component="th"
+              scope="row"
+              padding="none"
+              onClick={handleRowClick}
+              sx={{ cursor: "pointer" }}
+            >
               <Stack direction="row" alignItems="center" spacing={2}>
                 <Avatar alt={name} src={avatarUrl} />
                 <Typography variant="subtitle2" noWrap>

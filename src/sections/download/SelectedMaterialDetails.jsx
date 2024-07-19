@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
@@ -282,6 +283,13 @@ const SelectedMaterialDetails = ({
     img.src = "data:image/svg+xml;base64," + btoa(svgData);
   };
 
+  //user profile navigate
+  const navigate = useNavigate();
+
+  const handleUserClick = (userId) => {
+    navigate(`/dashboard/profile/${userId}`);
+  };
+
   return (
     <Box>
       <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 2 }}>
@@ -485,7 +493,7 @@ const SelectedMaterialDetails = ({
             <Button onClick={() => setReportDialogOpen(false)} color="primary">
               Cancel
             </Button>
-            <Button onClick={handleReportConfirm} color="primary" autoFocus>
+            <Button onClick={handleReportConfirm} color="error" autoFocus>
               Confirm
             </Button>
           </DialogActions>
@@ -497,7 +505,10 @@ const SelectedMaterialDetails = ({
       <Typography variant="body1" gutterBottom>
         {selectedMaterial.description}
       </Typography>
-      <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+      <Box
+        sx={{ display: "flex", alignItems: "center", mb: 2, cursor: "pointer" }}
+        onClick={() => handleUserClick(userData.uid)}
+      >
         <Avatar src={selectedMaterial.uploaderPhotoUrl} sx={{ mr: 1 }} />
         <Typography variant="body2">{selectedMaterial.uploadedBy}</Typography>
       </Box>
