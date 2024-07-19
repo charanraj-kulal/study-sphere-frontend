@@ -1,4 +1,5 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Card,
   CardContent,
@@ -8,6 +9,7 @@ import {
   Box,
 } from "@mui/material";
 import { keyframes } from "@emotion/react";
+
 import styled from "@emotion/styled";
 
 const neonBoxShadowChange = keyframes`
@@ -73,6 +75,11 @@ const ContentWrapper = styled(Box)`
 `;
 
 const TopRankCard = ({ user, rank, medalImage }) => {
+  const navigate = useNavigate();
+
+  const handleCardClick = (userId) => {
+    navigate(`/dashboard/profile/${userId}`);
+  };
   return (
     <StyledCard
       rank={rank}
@@ -80,6 +87,8 @@ const TopRankCard = ({ user, rank, medalImage }) => {
         width: rank === 1 ? "100%" : "90%",
         height: "100%",
       }}
+      onClick={() => handleCardClick(user.id)}
+      style={{ cursor: "pointer" }}
     >
       <ContentWrapper>
         <CardContent
