@@ -12,25 +12,15 @@ PostSearch.propTypes = {
   posts: PropTypes.array.isRequired,
 };
 
-export default function PostSearch({ posts }) {
+export default function PostSearch({ posts, onSearch }) {
   return (
     <Autocomplete
       sx={{ width: 280 }}
       autoHighlight
       popupIcon={null}
-      slotProps={{
-        paper: {
-          sx: {
-            width: 320,
-            [`& .${autocompleteClasses.option}`]: {
-              typography: "body2",
-            },
-          },
-        },
-      }}
       options={posts}
       getOptionLabel={(post) => post.title}
-      isOptionEqualToValue={(option, value) => option.id === value.id}
+      onChange={(event, value) => onSearch(value ? value.title : "")}
       renderInput={(params) => (
         <TextField
           {...params}

@@ -1,4 +1,7 @@
+import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "../../firebase"; // Adjust the import path as needed
 
 import Box from "@mui/material/Box";
 import Link from "@mui/material/Link";
@@ -11,23 +14,50 @@ import Typography from "@mui/material/Typography";
 
 import { fDate } from "../../utils/format-time";
 import { fShortenNumber } from "../../utils/format-number";
-
 import Iconify from "../../components/iconify";
 import SvgColor from "../../components/svg-color";
 
 // ----------------------------------------------------------------------
 
-export default function PostCard({ post, index }) {
-  const { cover, title, view, comment, share, author, createdAt } = post;
+export default function PostCard({ post, index, onCardClick }) {
+  const {
+    id,
+    title,
+    content,
+
+    blogPostDate,
+    viewCount,
+    commentCount,
+    shareCount,
+    blogPosterUid,
+  } = post;
+
+  const [authorAvatar, setAuthorAvatar] = useState(null);
+
+  useEffect(() => {
+    const fetchAuthorAvatar = async () => {
+      try {
+        const userDoc = await getDoc(doc(db, "users", blogPosterUid));
+        if (userDoc.exists()) {
+          setAuthorAvatar(userDoc.data().profilePhotoURL);
+        }
+      } catch (error) {
+        console.error("Error fetching author avatar:", error);
+      }
+    };
+
+    fetchAuthorAvatar();
+  }, [blogPosterUid]);
 
   const latestPostLarge = index === 0;
-
   const latestPost = index === 1 || index === 2;
+
+  const coverImage = `../../src/assets/images/covers/cover_${(index % 24) + 1}.jpg`;
 
   const renderAvatar = (
     <Avatar
-      alt={author.name}
-      src={author.avatarUrl}
+      alt="Author Avatar"
+      src={authorAvatar}
       sx={{
         zIndex: 9,
         width: 32,
@@ -47,7 +77,8 @@ export default function PostCard({ post, index }) {
   );
 
   const renderTitle = (
-    <Link
+    <Typography
+      onClick={() => onCardClick(post)}
       color="inherit"
       variant="subtitle2"
       underline="hover"
@@ -55,6 +86,7 @@ export default function PostCard({ post, index }) {
         height: 44,
         overflow: "hidden",
         WebkitLineClamp: 2,
+        cursor: "pointer",
         display: "-webkit-box",
         WebkitBoxOrient: "vertical",
         ...(latestPostLarge && { typography: "h5", height: 60 }),
@@ -64,7 +96,7 @@ export default function PostCard({ post, index }) {
       }}
     >
       {title}
-    </Link>
+    </Typography>
   );
 
   const renderInfo = (
@@ -79,9 +111,9 @@ export default function PostCard({ post, index }) {
       }}
     >
       {[
-        { number: comment, icon: "eva:message-circle-fill" },
-        { number: view, icon: "eva:eye-fill" },
-        { number: share, icon: "eva:share-fill" },
+        { number: commentCount || 0, icon: "eva:message-circle-fill" },
+        { number: viewCount || 0, icon: "eva:eye-fill" },
+        { number: shareCount || 0, icon: "eva:share-fill" },
       ].map((info, _index) => (
         <Stack
           key={_index}
@@ -106,7 +138,7 @@ export default function PostCard({ post, index }) {
     <Box
       component="img"
       alt={title}
-      src={cover}
+      src={coverImage}
       sx={{
         top: 0,
         width: 1,
@@ -130,14 +162,14 @@ export default function PostCard({ post, index }) {
         }),
       }}
     >
-      {fDate(createdAt)}
+      {fDate(blogPostDate.toDate())}
     </Typography>
   );
 
   const renderShape = (
     <SvgColor
       color="paper"
-      src="assets/icons/shape-avatar.svg"
+      src="/assets/icons/shape-avatar.svg"
       sx={{
         width: 80,
         height: 36,
@@ -207,4 +239,5 @@ export default function PostCard({ post, index }) {
 PostCard.propTypes = {
   post: PropTypes.object.isRequired,
   index: PropTypes.number,
+  onCardClick: PropTypes.func.isRequired,
 };
