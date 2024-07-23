@@ -39,8 +39,8 @@ const CommentSection = ({ blogId, currentUser }) => {
   const [replyingTo, setReplyingTo] = useState(null);
   const [deleteCommentId, setDeleteCommentId] = useState(null);
   const commentRefs = useRef({});
-  const { userData } = useUser();
-  const currentUserUid = userData.uid;
+  // const { userData } = useUser();
+  // const currentUserUid = userData.uid;
 
   useEffect(() => {
     const q = query(
@@ -64,9 +64,9 @@ const CommentSection = ({ blogId, currentUser }) => {
     try {
       const commentData = {
         text: newComment,
-        userId: userData.uid,
-        userName: userData.displayName,
-        userPhotoUrl: userData.photoURL,
+        userId: currentUser.uid,
+        userName: currentUser.displayName,
+        userPhotoUrl: currentUser.photoURL,
         timestamp: new Date(),
         likes: [],
         replies: [],
@@ -102,13 +102,13 @@ const CommentSection = ({ blogId, currentUser }) => {
 
   const handleLike = async (comment) => {
     const commentRef = doc(db, `blogs/${blogId}/comments`, comment.id);
-    if (comment.likes.includes(currentUserUid)) {
+    if (comment.likes.includes(currentUser.uid)) {
       await updateDoc(commentRef, {
-        likes: arrayRemove(currentUserUid),
+        likes: arrayRemove(currentUser.uid),
       });
     } else {
       await updateDoc(commentRef, {
-        likes: arrayUnion(currentUserUid),
+        likes: arrayUnion(currentUser.uid),
       });
     }
   };
@@ -163,7 +163,7 @@ const CommentSection = ({ blogId, currentUser }) => {
         display: "flex",
         flexDirection: "column",
         alignItems:
-          comment.userId === currentUserUid ? "flex-end" : "flex-start",
+          comment.userId === currentUser.uid ? "flex-end" : "flex-start",
         mt: 2,
         width: "100%",
         "@keyframes blink": {
@@ -201,7 +201,7 @@ const CommentSection = ({ blogId, currentUser }) => {
           display: "flex",
           alignItems: "flex-start",
           flexDirection:
-            comment.userId === currentUserUid ? "row-reverse" : "row",
+            comment.userId === currentUser.uid ? "row-reverse" : "row",
           maxWidth: "80%",
         }}
       >
@@ -226,7 +226,7 @@ const CommentSection = ({ blogId, currentUser }) => {
           </Typography>
           <Typography variant="body2">{comment.text}</Typography>
           <Box sx={{ display: "flex", alignItems: "center", mt: 1 }}>
-            {comment.userId !== currentUserUid && (
+            {comment.userId !== currentUser.uid && (
               <IconButton size="small" onClick={() => handleReply(comment)}>
                 <ReplyIcon fontSize="small" />
               </IconButton>
@@ -234,7 +234,7 @@ const CommentSection = ({ blogId, currentUser }) => {
             <IconButton size="small" onClick={() => handleLike(comment)}>
               <Iconify
                 icon={
-                  comment.likes.includes(currentUserUid)
+                  comment.likes.includes(currentUser.uid)
                     ? "flat-color-icons:like"
                     : "icon-park-twotone:like"
                 }
@@ -242,7 +242,7 @@ const CommentSection = ({ blogId, currentUser }) => {
                   width: 20,
                   height: 20,
                   mr: -1,
-                  color: comment.likes.includes(currentUserUid)
+                  color: comment.likes.includes(currentUser.uid)
                     ? undefined
                     : "inherit",
                 }}
@@ -251,7 +251,7 @@ const CommentSection = ({ blogId, currentUser }) => {
             <Typography variant="caption" sx={{ ml: 1 }}>
               {comment.likes.length} likes
             </Typography>
-            {comment.userId === currentUserUid && (
+            {comment.userId === currentUser.uid && (
               <IconButton size="small" onClick={() => handleDelete(comment.id)}>
                 <DeleteIcon fontSize="small" color="error" />
               </IconButton>

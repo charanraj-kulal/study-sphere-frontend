@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import Stack from "@mui/material/Stack";
 import Button from "@mui/material/Button";
@@ -7,6 +7,7 @@ import Grid from "@mui/material/Unstable_Grid2";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
+import { Portal } from "@mui/material";
 import ShareIcon from "@mui/icons-material/Share";
 import { useUser } from "../../../hooks/UserContext";
 
@@ -22,7 +23,7 @@ import {
   setDoc,
   arrayUnion,
 } from "firebase/firestore";
-import { db, auth } from "../../../firebase";
+import { db } from "../../../firebase";
 
 import Iconify from "../../../components/iconify";
 import PostCard from "../post-card";
@@ -60,12 +61,19 @@ export default function BlogView() {
   const [breadcrumbs, setBreadcrumbs] = useState(["Dashboard", "Blog"]);
   const [loading, setLoading] = useState(true);
   const [anchorEl, setAnchorEl] = useState(null);
+  const shareButtonRef = useRef(null);
   const open = Boolean(anchorEl);
   const shareId = open ? "share-popover" : undefined;
   const { userData } = useUser();
   const [posts, setPosts] = useState([]);
+  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
 
-  const handleShare = async (event) => {
+  useEffect(() => {
+    if (shareButtonRef.current) {
+      setAnchorEl(shareButtonRef.current);
+    }
+  }, []);
+  const handleShare = async () => {
     const userId = userData.uid;
     const blogRef = doc(db, "blogs", selectedBlog.id);
 
@@ -82,15 +90,17 @@ export default function BlogView() {
           });
         }
       }
-      setAnchorEl(event.currentTarget);
+      // console.log("Setting anchorEl", shareButtonRef.current);
+      // setAnchorEl(shareButtonRef.current);
+      setIsPopoverOpen(true);
     } catch (error) {
       console.error("Error updating share count:", error);
     }
   };
-  const handleShareClose = () => {
-    setAnchorEl(null);
-  };
 
+  const handleShareClose = () => {
+    setIsPopoverOpen(false);
+  };
   const shareUrl = `${window.location.origin}/dashboard/blog?blogId=${blogId}`;
 
   const handleEmailShare = () => {
@@ -139,7 +149,7 @@ export default function BlogView() {
       setSearchTerm(decodeURIComponent(searchParam));
     }
 
-    fetchPosts();
+    // fetchPosts();
   }, [location]);
 
   const fetchPosts = async () => {
@@ -166,6 +176,9 @@ export default function BlogView() {
       setLoading(false);
     }
   };
+  useEffect(() => {
+    fetchPosts();
+  }, [location]);
   const handleCardClick = async (blog) => {
     setLoading(true);
     try {
@@ -302,6 +315,7 @@ export default function BlogView() {
             >
               <Typography variant="h4">{selectedBlog.title}</Typography>
               <Button
+                ref={shareButtonRef}
                 startIcon={<ShareIcon />}
                 onClick={handleShare}
                 variant="contained"
@@ -316,10 +330,7 @@ export default function BlogView() {
               />
             </Card>
             <Box sx={{ mt: 4 }}>
-              <CommentSection
-                blogId={selectedBlog.id}
-                currentUser={auth.currentUser}
-              />
+              <CommentSection blogId={selectedBlog.id} currentUser={userData} />
             </Box>
           </Box>
         ) : (
@@ -377,67 +388,73 @@ export default function BlogView() {
                 }}
               />
             )}
-            <Popover
-              id={shareId}
-              open={open}
-              anchorEl={anchorEl}
-              onClose={handleShareClose}
-              anchorOrigin={{
-                vertical: "bottom",
-                horizontal: "center",
-              }}
-              transformOrigin={{
-                vertical: "top",
-                horizontal: "center",
-              }}
-            >
-              <List>
-                <ListItem button onClick={handleEmailShare}>
-                  <ListItemIcon>
-                    <EmailIcon />
-                  </ListItemIcon>
-                  <ListItemText primary="Email" />
-                </ListItem>
-                <ListItem button onClick={handleWhatsAppShare}>
-                  <ListItemIcon>
-                    <WhatsAppIcon />
-                  </ListItemIcon>
-                  <ListItemText primary="WhatsApp" />
-                </ListItem>
-                <ListItem button onClick={handleCopyLink}>
-                  <ListItemIcon>
-                    <LinkIcon />
-                  </ListItemIcon>
-                  <ListItemText primary="Copy Link" />
-                </ListItem>
-              </List>
-              <Box
-                sx={{
-                  p: 2,
-                  alignItems: "center",
-                  display: "flex",
-                  flexDirection: "column",
+            <Portal>
+              <Popover
+                id={shareId}
+                open={isPopoverOpen}
+                anchorEl={anchorEl}
+                onClose={handleShareClose}
+                anchorOrigin={{
+                  vertical: "bottom",
+                  horizontal: "center",
+                }}
+                transformOrigin={{
+                  vertical: "top",
+                  horizontal: "center",
                 }}
               >
-                <Typography variant="subtitle1" gutterBottom>
-                  QR Code
-                </Typography>
-                <QRCodeSVG id="QRCode" value={shareUrl} size={128} level="M" />
-                <Button
-                  startIcon={<DownloadIcon />}
-                  onClick={handleQrCodeDownload}
+                <List>
+                  <ListItem button onClick={handleEmailShare}>
+                    <ListItemIcon>
+                      <EmailIcon />
+                    </ListItemIcon>
+                    <ListItemText primary="Email" />
+                  </ListItem>
+                  <ListItem button onClick={handleWhatsAppShare}>
+                    <ListItemIcon>
+                      <WhatsAppIcon />
+                    </ListItemIcon>
+                    <ListItemText primary="WhatsApp" />
+                  </ListItem>
+                  <ListItem button onClick={handleCopyLink}>
+                    <ListItemIcon>
+                      <LinkIcon />
+                    </ListItemIcon>
+                    <ListItemText primary="Copy Link" />
+                  </ListItem>
+                </List>
+                <Box
                   sx={{
-                    mt: 1,
-                    backgroundColor: "#0A4191",
-                    color: "#ffff",
-                    p: 1,
+                    p: 2,
+                    alignItems: "center",
+                    display: "flex",
+                    flexDirection: "column",
                   }}
                 >
-                  Download QR Code
-                </Button>
-              </Box>
-            </Popover>
-
+                  <Typography variant="subtitle1" gutterBottom>
+                    QR Code
+                  </Typography>
+                  <QRCodeSVG
+                    id="QRCode"
+                    value={shareUrl}
+                    size={128}
+                    level="M"
+                  />
+                  <Button
+                    startIcon={<DownloadIcon />}
+                    onClick={handleQrCodeDownload}
+                    sx={{
+                      mt: 1,
+                      backgroundColor: "#0A4191",
+                      color: "#ffff",
+                      p: 1,
+                    }}
+                  >
+                    Download QR Code
+                  </Button>
+                </Box>
+              </Popover>
+            </Portal>
             {/* //new post dialog  */}
             <Dialog
               open={openNewPost}
