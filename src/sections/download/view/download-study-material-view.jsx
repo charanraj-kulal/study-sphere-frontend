@@ -39,14 +39,6 @@ export default function DownloadStudyMaterialView() {
   const [starDialogOpen, setStarDialogOpen] = useState(false);
   const { showToast } = useToast();
 
-  // useEffect(() => {
-  //   // Parse the document ID from the URL if present
-  //   const urlParams = new URLSearchParams(location.search);
-  //   const documentId = urlParams.get("documentId");
-  //   if (documentId) {
-  //     handleCardClick({ id: documentId });
-  //   }
-  // }, [location]);
   useEffect(
     () => {
       const urlParams = new URLSearchParams(location.search);

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
@@ -58,6 +59,9 @@ const SelectedMaterialDetails = ({
   const [isSaved, setIsSaved] = useState(false);
   const { showToast } = useToast();
   const [reportDialogOpen, setReportDialogOpen] = useState(false);
+  const [summary, setSummary] = useState("");
+  const [summaryDialogOpen, setSummaryDialogOpen] = useState(false);
+  const [isSummaryLoading, setIsSummaryLoading] = useState(false);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -117,6 +121,69 @@ const SelectedMaterialDetails = ({
   //   setPdfWidth(newPdfWidth);
   // };
 
+  //get summary
+  const generateSummary = async (text, maxRetries = 3) => {
+    const API_URL =
+      "https://api-inference.huggingface.co/models/facebook/bart-large-cnn";
+    const API_KEY = import.meta.env.VITE_HUGGING_FACE_API_KEY;
+    const MAX_INPUT_LENGTH = 1024;
+
+    for (let attempt = 0; attempt < maxRetries; attempt++) {
+      try {
+        const truncatedText = text.slice(0, MAX_INPUT_LENGTH);
+        const response = await axios.post(
+          API_URL,
+          {
+            inputs: truncatedText,
+            parameters: { max_length: 150 },
+          },
+          { headers: { Authorization: `Bearer ${API_KEY}` } }
+        );
+        return response.data[0].summary_text;
+      } catch (error) {
+        console.error(`Attempt ${attempt + 1} failed:`, error);
+        if (error.response) {
+          console.error("Error response:", error.response.data);
+        }
+        if (attempt === maxRetries - 1) {
+          throw new Error(
+            "Failed to generate summary after multiple attempts."
+          );
+        }
+        await new Promise((resolve) =>
+          setTimeout(resolve, Math.pow(2, attempt) * 1000)
+        );
+      }
+    }
+  };
+  const handleGenerateSummary = async () => {
+    setIsSummaryLoading(true);
+    try {
+      const response = await fetch(
+        `http://localhost:10000/api/get-pdf-text/${selectedMaterial.id}`
+      );
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Error response:", errorText);
+        throw new Error(
+          `Failed to fetch PDF text: ${response.status} ${response.statusText}`
+        );
+      }
+      const responseText = await response.text();
+      console.log("Raw response:", responseText);
+      const { text } = JSON.parse(responseText);
+
+      // Generate summary
+      const summary = await generateSummary(text);
+      setSummary(summary);
+      setSummaryDialogOpen(true);
+    } catch (error) {
+      console.error("Error generating summary:", error);
+      showToast("error", "Failed to generate summary");
+    } finally {
+      setIsSummaryLoading(false);
+    }
+  };
   const handleShareClose = () => {
     setAnchorEl(null);
   };
@@ -296,6 +363,18 @@ const SelectedMaterialDetails = ({
         <Button
           variant="outlined"
           sx={{ borderColor: "#0A4191", mr: 1 }}
+          onClick={handleGenerateSummary}
+          disabled={isSummaryLoading}
+        >
+          <Iconify
+            icon="mdi:text-box-check-outline"
+            sx={{ color: "#FFD700", width: 20, height: 20, mr: 1 }}
+          />
+          {isSummaryLoading ? "Generating..." : "Generate Summary"}
+        </Button>
+        <Button
+          variant="outlined"
+          sx={{ borderColor: "#0A4191", mr: 1 }}
           onClick={() => setStarDialogOpen(true)}
         >
           <Iconify
@@ -355,6 +434,27 @@ const SelectedMaterialDetails = ({
           <Iconify icon="gg:more-vertical" sx={{ color: "#FFD700" }} />
         </Button>
 
+        {/* dialog for summary  */}
+        <Dialog
+          open={summaryDialogOpen}
+          onClose={() => setSummaryDialogOpen(false)}
+          aria-labelledby="summary-dialog-title"
+          aria-describedby="summary-dialog-description"
+          maxWidth="md"
+          fullWidth
+        >
+          <DialogTitle id="summary-dialog-title">Document Summary</DialogTitle>
+          <DialogContent>
+            <DialogContentText id="summary-dialog-description">
+              {summary}
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setSummaryDialogOpen(false)} color="primary">
+              Close
+            </Button>
+          </DialogActions>
+        </Dialog>
         {/* popover of share  */}
         <Popover
           id={shareId}

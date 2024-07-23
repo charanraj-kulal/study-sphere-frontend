@@ -37,6 +37,30 @@ const port = process.env.PORT || 10000;
 app.use(bodyParser.json());
 app.use(cors({ origin: "http://localhost:5173" })); // Adjust the origin to your frontend's address
 
+//summary end point
+app.get("/api/get-pdf-text/:documentId", async (req, res) => {
+  const { documentId } = req.params;
+  try {
+    const docRef = admin.firestore().collection("documents").doc(documentId);
+    const doc = await docRef.get();
+    if (!doc.exists) {
+      return res.status(404).json({ error: "Document not found" });
+    }
+    const { documentUrl } = doc.data();
+
+    const response = await fetch(documentUrl);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    const text = await response.text();
+    res.json({ text });
+  } catch (error) {
+    console.error("Error fetching PDF:", error);
+    res.status(500).json({ error: "Failed to fetch PDF" });
+  }
+});
+
+//download end point
 app.get("/api/download/:documentId", async (req, res) => {
   const { documentId } = req.params;
   const userId = req.query.userId;
