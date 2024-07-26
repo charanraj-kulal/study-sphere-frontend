@@ -362,7 +362,12 @@ const SelectedMaterialDetails = ({
       <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 2 }}>
         <Button
           variant="outlined"
-          sx={{ borderColor: "#0A4191", mr: 1 }}
+          sx={{
+            borderColor: "#0A4191",
+            mr: 1,
+            position: "relative",
+            color: "#0A4191",
+          }}
           onClick={handleGenerateSummary}
           disabled={isSummaryLoading}
         >
@@ -371,6 +376,21 @@ const SelectedMaterialDetails = ({
             sx={{ color: "#FFD700", width: 20, height: 20, mr: 1 }}
           />
           {isSummaryLoading ? "Generating..." : "Generate Summary"}
+          <Box
+            component="span"
+            sx={{
+              color: "green",
+              fontSize: "0.4rem",
+              padding: "0.5px 6px 0.5px",
+              borderRadius: "10px",
+              border: "1px solid green",
+              marginLeft: "4px",
+              position: "relative",
+              top: "-8px",
+            }}
+          >
+            BETA
+          </Box>
         </Button>
         <Button
           variant="outlined"
