@@ -28,7 +28,7 @@ const NewPostForm = ({ onClose }) => {
       });
       console.log("Document written with ID: ", docRef.id);
       onClose();
-      onPostAdded(); // Call this function to refresh the posts
+      // onPostAdded(); // Call this function to refresh the posts
     } catch (error) {
       console.error("Error adding document: ", error);
     }

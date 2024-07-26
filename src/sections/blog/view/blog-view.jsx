@@ -20,7 +20,7 @@ import {
   getDoc,
   updateDoc,
   increment,
-  setDoc,
+  deleteDoc,
   arrayUnion,
 } from "firebase/firestore";
 import { db } from "../../../firebase";
@@ -34,6 +34,8 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
+  DialogContentText,
+  DialogActions,
   Popover,
   List,
   ListItem,
@@ -44,17 +46,17 @@ import {
 import EmailIcon from "@mui/icons-material/Email";
 import WhatsAppIcon from "@mui/icons-material/WhatsApp";
 import LinkIcon from "@mui/icons-material/Link";
+import DeleteIcon from "@mui/icons-material/Delete";
 import DownloadIcon from "@mui/icons-material/Download";
 import { QRCodeSVG } from "qrcode.react";
 import CommentSection from "../CommentSection";
 import BreadcrumbsNavigation from "../BreadcrumbsNavigation";
 
 export default function BlogView() {
-  const { blogId } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
   const [openNewPost, setOpenNewPost] = useState(false);
-
+  const [blogId, setBlogId] = useState(null);
   const [sortOption, setSortOption] = useState("latest");
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedBlog, setSelectedBlog] = useState(null);
@@ -67,12 +69,8 @@ export default function BlogView() {
   const { userData } = useUser();
   const [posts, setPosts] = useState([]);
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
-  useEffect(() => {
-    if (shareButtonRef.current) {
-      setAnchorEl(shareButtonRef.current);
-    }
-  }, []);
   const handleShare = async () => {
     const userId = userData.uid;
     const blogRef = doc(db, "blogs", selectedBlog.id);
@@ -90,8 +88,7 @@ export default function BlogView() {
           });
         }
       }
-      // console.log("Setting anchorEl", shareButtonRef.current);
-      // setAnchorEl(shareButtonRef.current);
+      setAnchorEl(shareButtonRef.current);
       setIsPopoverOpen(true);
     } catch (error) {
       console.error("Error updating share count:", error);
@@ -101,7 +98,9 @@ export default function BlogView() {
   const handleShareClose = () => {
     setIsPopoverOpen(false);
   };
-  const shareUrl = `${window.location.origin}/dashboard/blog?blogId=${blogId}`;
+  const shareUrl = selectedBlog
+    ? `${window.location.origin}/dashboard/blog?blogId=${selectedBlog.id}`
+    : "";
 
   const handleEmailShare = () => {
     window.location.href = `mailto:?subject=Check out this blog post&body=I thought you might be interested in this blog post: ${shareUrl}`;
@@ -137,19 +136,18 @@ export default function BlogView() {
     };
     img.src = "data:image/svg+xml;base64," + btoa(svgData);
   };
+
   useEffect(() => {
     const urlParams = new URLSearchParams(location.search);
     const blogIdFromUrl = urlParams.get("blogId");
     const searchParam = urlParams.get("search");
 
     if (blogIdFromUrl) {
-      handleCardClick({ id: blogIdFromUrl });
+      setBlogId(blogIdFromUrl);
     }
     if (searchParam) {
       setSearchTerm(decodeURIComponent(searchParam));
     }
-
-    // fetchPosts();
   }, [location]);
 
   const fetchPosts = async () => {
@@ -179,26 +177,37 @@ export default function BlogView() {
   useEffect(() => {
     fetchPosts();
   }, [location]);
-  const handleCardClick = async (blog) => {
-    setLoading(true);
-    try {
-      const blogDoc = await getDoc(doc(db, "blogs", blog.id));
-      if (blogDoc.exists()) {
-        setSelectedBlog({ id: blogDoc.id, ...blogDoc.data() });
-        setBreadcrumbs(["Dashboard", "Blog", blogDoc.data().title]);
-        navigate(`/dashboard/blog?blogId=${blog.id}`, { replace: true });
-        incrementViewCount(blog.id);
-      } else {
-        console.log("No such document!");
+  useEffect(() => {
+    const fetchBlog = async () => {
+      if (!blogId) return;
+
+      setLoading(true);
+      try {
+        const blogDoc = await getDoc(doc(db, "blogs", blogId));
+        if (blogDoc.exists()) {
+          setSelectedBlog({ id: blogDoc.id, ...blogDoc.data() });
+          setBreadcrumbs(["Dashboard", "Blog", blogDoc.data().title]);
+          incrementViewCount(blogId);
+        } else {
+          console.log("No such document!");
+          // Show error toast
+        }
+      } catch (error) {
+        console.error("Error fetching blog:", error);
         // Show error toast
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      console.error("Error fetching blog:", error);
-      // Show error toast
-    } finally {
-      setLoading(false);
-    }
+    };
+
+    fetchBlog();
+  }, [blogId]);
+
+  const handleCardClick = (blog) => {
+    setBlogId(blog.id);
+    navigate(`/dashboard/blog?blogId=${blog.id}`, { replace: true });
   };
+
   const incrementViewCount = async (blogId) => {
     if (!userData || !userData.uid) {
       console.error("User data is not available");
@@ -241,9 +250,19 @@ export default function BlogView() {
   const sortPosts = (posts, option) => {
     switch (option) {
       case "latest":
-        return [...posts].sort(
-          (a, b) => b.blogPostDate.seconds - a.blogPostDate.seconds
-        );
+        return [...posts].sort((a, b) => {
+          const dateA =
+            a.blogPostDate instanceof Date
+              ? a.blogPostDate
+              : a.blogPostDate.toDate();
+          const dateB =
+            b.blogPostDate instanceof Date
+              ? b.blogPostDate
+              : b.blogPostDate.toDate();
+
+          return dateB - dateA;
+        });
+
       case "popular":
         return [...posts].sort((a, b) => b.viewCount - a.viewCount);
       case "oldest":
@@ -274,29 +293,36 @@ export default function BlogView() {
     });
   };
 
-  //save new post
-  const handleNewPost = async () => {
-    e.preventDefault();
+  // delete blog
+  const handleDeleteClick = () => {
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteCancel = () => {
+    setDeleteDialogOpen(false);
+  };
+
+  const handleDeleteConfirm = async () => {
     try {
-      const docRef = await addDoc(collection(db, "blogs"), {
-        title,
-        content,
-        blogPostDate: serverTimestamp(),
-        blogPosterUid: userData.uid,
-        viewCount: 0,
-        shareCount: 0,
-        commentCount: 0,
-        reportCount: 0,
-      });
-      console.log("Document written with ID: ", docRef.id);
-      setOpenNewPost(false);
+      await deleteDoc(doc(db, "blogs", selectedBlog.id));
+      setSelectedBlog(null);
+      fetchPosts();
+      navigate("/dashboard/blog", { replace: true });
+      // You might want to show a success message here
     } catch (error) {
-      console.error("Error adding document: ", error);
+      console.error("Error deleting blog:", error);
+      // You might want to show an error message here
+    } finally {
+      setDeleteDialogOpen(false);
     }
   };
+
   const displayedPosts = filterPosts(sortPosts(posts, sortOption), searchTerm);
   return (
     <Container>
+      <Typography variant="h4" sx={{ mb: 5 }}>
+        Blog
+      </Typography>
       <Card sx={{ p: 4, mt: 3 }}>
         <BreadcrumbsNavigation
           breadcrumbs={breadcrumbs}
@@ -314,15 +340,33 @@ export default function BlogView() {
               }}
             >
               <Typography variant="h4">{selectedBlog.title}</Typography>
-              <Button
-                ref={shareButtonRef}
-                startIcon={<ShareIcon />}
-                onClick={handleShare}
-                variant="contained"
-              >
-                Share
-              </Button>
+              <Box>
+                <Button
+                  ref={shareButtonRef}
+                  startIcon={<ShareIcon />}
+                  onClick={handleShare}
+                  variant="contained"
+                  sx={{ mr: 2 }}
+                >
+                  Share
+                </Button>
+                {selectedBlog.blogPosterUid === userData.uid && (
+                  <Button
+                    startIcon={<DeleteIcon />}
+                    onClick={handleDeleteClick}
+                    variant="contained"
+                    color="error"
+                  >
+                    Delete
+                  </Button>
+                )}
+              </Box>
             </Box>
+            <Typography variant="subtitle1" sx={{ mb: 2 }}>
+              {selectedBlog.blogPosterName}
+              {selectedBlog.blogPosterRole &&
+                ` (${selectedBlog.blogPosterRole})`}
+            </Typography>
             <Card sx={{ p: 3, mb: 3 }}>
               <Typography
                 variant="body1"
@@ -332,6 +376,92 @@ export default function BlogView() {
             <Box sx={{ mt: 4 }}>
               <CommentSection blogId={selectedBlog.id} currentUser={userData} />
             </Box>
+
+            {/* share popover  */}
+            <Popover
+              id={shareId}
+              open={isPopoverOpen}
+              anchorEl={anchorEl}
+              onClose={handleShareClose}
+              anchorOrigin={{
+                vertical: "bottom",
+                horizontal: "center",
+              }}
+              transformOrigin={{
+                vertical: "top",
+                horizontal: "center",
+              }}
+            >
+              <List>
+                <ListItem button onClick={handleEmailShare}>
+                  <ListItemIcon>
+                    <EmailIcon />
+                  </ListItemIcon>
+                  <ListItemText primary="Email" />
+                </ListItem>
+                <ListItem button onClick={handleWhatsAppShare}>
+                  <ListItemIcon>
+                    <WhatsAppIcon />
+                  </ListItemIcon>
+                  <ListItemText primary="WhatsApp" />
+                </ListItem>
+                <ListItem button onClick={handleCopyLink}>
+                  <ListItemIcon>
+                    <LinkIcon />
+                  </ListItemIcon>
+                  <ListItemText primary="Copy Link" />
+                </ListItem>
+              </List>
+              <Box
+                sx={{
+                  p: 2,
+                  alignItems: "center",
+                  display: "flex",
+                  flexDirection: "column",
+                }}
+              >
+                <Typography variant="subtitle1" gutterBottom>
+                  QR Code
+                </Typography>
+                <QRCodeSVG id="QRCode" value={shareUrl} size={128} level="M" />
+                <Button
+                  startIcon={<DownloadIcon />}
+                  onClick={handleQrCodeDownload}
+                  sx={{
+                    mt: 1,
+                    backgroundColor: "#0A4191",
+                    color: "#ffff",
+                    p: 1,
+                  }}
+                >
+                  Download QR Code
+                </Button>
+              </Box>
+            </Popover>
+
+            {/* delete dialog  */}
+            <Dialog
+              open={deleteDialogOpen}
+              onClose={handleDeleteCancel}
+              aria-labelledby="alert-dialog-title"
+              aria-describedby="alert-dialog-description"
+            >
+              <DialogTitle id="alert-dialog-title">
+                {"Confirm Delete"}
+              </DialogTitle>
+              <DialogContent>
+                <DialogContentText id="alert-dialog-description">
+                  Are you sure you want to delete this blog post? This action
+                  cannot be undone.
+                </DialogContentText>
+              </DialogContent>
+              <DialogActions>
+                <Button onClick={handleDeleteCancel}>Cancel</Button>
+                <Button onClick={handleDeleteConfirm} autoFocus color="error">
+                  Delete
+                </Button>
+              </DialogActions>
+            </Dialog>
           </Box>
         ) : (
           <>
@@ -341,8 +471,7 @@ export default function BlogView() {
               justifyContent="space-between"
               mb={5}
             >
-              <Typography variant="h4">Blog</Typography>
-
+              <Typography variant="h4">Blogs</Typography>
               <Button
                 variant="contained"
                 color="inherit"
@@ -366,6 +495,7 @@ export default function BlogView() {
                   { value: "oldest", label: "Oldest" },
                 ]}
                 onSort={handleSort}
+                currentSort={sortOption}
               />
             </Stack>
             <Grid container spacing={3}>
@@ -388,73 +518,7 @@ export default function BlogView() {
                 }}
               />
             )}
-            <Portal>
-              <Popover
-                id={shareId}
-                open={isPopoverOpen}
-                anchorEl={anchorEl}
-                onClose={handleShareClose}
-                anchorOrigin={{
-                  vertical: "bottom",
-                  horizontal: "center",
-                }}
-                transformOrigin={{
-                  vertical: "top",
-                  horizontal: "center",
-                }}
-              >
-                <List>
-                  <ListItem button onClick={handleEmailShare}>
-                    <ListItemIcon>
-                      <EmailIcon />
-                    </ListItemIcon>
-                    <ListItemText primary="Email" />
-                  </ListItem>
-                  <ListItem button onClick={handleWhatsAppShare}>
-                    <ListItemIcon>
-                      <WhatsAppIcon />
-                    </ListItemIcon>
-                    <ListItemText primary="WhatsApp" />
-                  </ListItem>
-                  <ListItem button onClick={handleCopyLink}>
-                    <ListItemIcon>
-                      <LinkIcon />
-                    </ListItemIcon>
-                    <ListItemText primary="Copy Link" />
-                  </ListItem>
-                </List>
-                <Box
-                  sx={{
-                    p: 2,
-                    alignItems: "center",
-                    display: "flex",
-                    flexDirection: "column",
-                  }}
-                >
-                  <Typography variant="subtitle1" gutterBottom>
-                    QR Code
-                  </Typography>
-                  <QRCodeSVG
-                    id="QRCode"
-                    value={shareUrl}
-                    size={128}
-                    level="M"
-                  />
-                  <Button
-                    startIcon={<DownloadIcon />}
-                    onClick={handleQrCodeDownload}
-                    sx={{
-                      mt: 1,
-                      backgroundColor: "#0A4191",
-                      color: "#ffff",
-                      p: 1,
-                    }}
-                  >
-                    Download QR Code
-                  </Button>
-                </Box>
-              </Popover>
-            </Portal>
+
             {/* //new post dialog  */}
             <Dialog
               open={openNewPost}

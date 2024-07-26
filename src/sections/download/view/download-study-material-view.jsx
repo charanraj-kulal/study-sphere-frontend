@@ -258,6 +258,9 @@ export default function DownloadStudyMaterialView() {
 
   return (
     <Container>
+      <Typography variant="h4" sx={{ mb: 5 }}>
+        Download Study Materials
+      </Typography>
       {isProcessing && <LottieLoader />}
       <Card sx={{ p: 4, mt: 3 }}>
         <Box sx={{ display: "flex", justifyContent: "center", mb: 3 }}>

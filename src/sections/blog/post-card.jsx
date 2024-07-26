@@ -21,10 +21,7 @@ import SvgColor from "../../components/svg-color";
 
 export default function PostCard({ post, index, onCardClick }) {
   const {
-    id,
     title,
-    content,
-
     blogPostDate,
     viewCount,
     commentCount,
@@ -32,22 +29,43 @@ export default function PostCard({ post, index, onCardClick }) {
     blogPosterUid,
   } = post;
 
-  const [authorAvatar, setAuthorAvatar] = useState(null);
-
+  const [authorInfo, setAuthorInfo] = useState({
+    name: "",
+    role: "",
+    avatar: null,
+  });
   useEffect(() => {
-    const fetchAuthorAvatar = async () => {
+    const fetchAuthorInfo = async () => {
       try {
         const userDoc = await getDoc(doc(db, "users", blogPosterUid));
         if (userDoc.exists()) {
-          setAuthorAvatar(userDoc.data().profilePhotoURL);
+          const userData = userDoc.data();
+          setAuthorInfo({
+            name: userData.name,
+            role: getUserRole(userData.userrole),
+            avatar: userData.profilePhotoURL,
+          });
         }
       } catch (error) {
-        console.error("Error fetching author avatar:", error);
+        console.error("Error fetching author info:", error);
       }
     };
 
-    fetchAuthorAvatar();
+    fetchAuthorInfo();
   }, [blogPosterUid]);
+
+  const getUserRole = (userrole) => {
+    switch (userrole) {
+      case 1:
+        return "Admin";
+      case 2:
+        return "Lecturer";
+      case 3:
+        return "";
+      default:
+        return "";
+    }
+  };
 
   const latestPostLarge = index === 0;
   const latestPost = index === 1 || index === 2;
@@ -57,7 +75,7 @@ export default function PostCard({ post, index, onCardClick }) {
   const renderAvatar = (
     <Avatar
       alt="Author Avatar"
-      src={authorAvatar}
+      src={authorInfo.avatar}
       sx={{
         zIndex: 9,
         width: 32,
@@ -77,26 +95,41 @@ export default function PostCard({ post, index, onCardClick }) {
   );
 
   const renderTitle = (
-    <Typography
-      onClick={() => onCardClick(post)}
-      color="inherit"
-      variant="subtitle2"
-      underline="hover"
-      sx={{
-        height: 44,
-        overflow: "hidden",
-        WebkitLineClamp: 2,
-        cursor: "pointer",
-        display: "-webkit-box",
-        WebkitBoxOrient: "vertical",
-        ...(latestPostLarge && { typography: "h5", height: 60 }),
-        ...((latestPostLarge || latestPost) && {
-          color: "common.white",
-        }),
-      }}
-    >
-      {title}
-    </Typography>
+    <>
+      <Typography
+        onClick={() => onCardClick(post)}
+        color="inherit"
+        variant="subtitle2"
+        underline="hover"
+        sx={{
+          height: 44,
+          overflow: "hidden",
+          WebkitLineClamp: 2,
+          cursor: "pointer",
+          display: "-webkit-box",
+          WebkitBoxOrient: "vertical",
+          ...(latestPostLarge && { typography: "h5", height: 60 }),
+          ...((latestPostLarge || latestPost) && {
+            color: "common.white",
+          }),
+        }}
+      >
+        {title}
+      </Typography>
+      <Typography
+        variant="caption"
+        sx={{
+          mt: 1,
+          display: "block",
+          ...((latestPostLarge || latestPost) && {
+            color: "common.white",
+            opacity: 0.72,
+          }),
+        }}
+      >
+        {authorInfo.name} {authorInfo.role && `  (${authorInfo.role})`}
+      </Typography>
+    </>
   );
 
   const renderInfo = (
