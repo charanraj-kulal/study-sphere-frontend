@@ -1,14 +1,14 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import Stack from "@mui/material/Stack";
 import Button from "@mui/material/Button";
 import Container from "@mui/material/Container";
 import Grid from "@mui/material/Unstable_Grid2";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
+import Divider from "@mui/material/Divider";
 import Card from "@mui/material/Card";
-import { Portal } from "@mui/material";
-import ShareIcon from "@mui/icons-material/Share";
+import UserProfileSection from "../UserProfileSection";
 import { useUser } from "../../../hooks/UserContext";
 
 import {
@@ -70,6 +70,7 @@ export default function BlogView() {
   const [posts, setPosts] = useState([]);
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [blogPosterData, setBlogPosterData] = useState(null);
 
   const handleShare = async () => {
     const userId = userData.uid;
@@ -136,7 +137,52 @@ export default function BlogView() {
     };
     img.src = "data:image/svg+xml;base64," + btoa(svgData);
   };
+  const fetchUserData = async (uid) => {
+    try {
+      const userDoc = await getDoc(doc(db, "users", uid));
+      if (userDoc.exists()) {
+        return userDoc.data();
+      } else {
+        console.log("No such user!");
+        return null;
+      }
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+      return null;
+    }
+  };
+  useEffect(() => {
+    const fetchBlog = async () => {
+      if (!blogId) return;
 
+      setLoading(true);
+      try {
+        const blogDoc = await getDoc(doc(db, "blogs", blogId));
+        if (blogDoc.exists()) {
+          const blogData = { id: blogDoc.id, ...blogDoc.data() };
+          setSelectedBlog(blogData);
+          setBreadcrumbs(["Dashboard", "Blog", blogData.title]);
+          incrementViewCount(blogId);
+
+          // Fetch user data
+          if (blogData.blogPosterUid) {
+            const userData = await fetchUserData(blogData.blogPosterUid);
+            setBlogPosterData(userData);
+          }
+        } else {
+          console.log("No such document!");
+          // Show error toast
+        }
+      } catch (error) {
+        console.error("Error fetching blog:", error);
+        // Show error toast
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBlog();
+  }, [blogId]);
   useEffect(() => {
     const urlParams = new URLSearchParams(location.search);
     const blogIdFromUrl = urlParams.get("blogId");
@@ -177,31 +223,6 @@ export default function BlogView() {
   useEffect(() => {
     fetchPosts();
   }, [location]);
-  useEffect(() => {
-    const fetchBlog = async () => {
-      if (!blogId) return;
-
-      setLoading(true);
-      try {
-        const blogDoc = await getDoc(doc(db, "blogs", blogId));
-        if (blogDoc.exists()) {
-          setSelectedBlog({ id: blogDoc.id, ...blogDoc.data() });
-          setBreadcrumbs(["Dashboard", "Blog", blogDoc.data().title]);
-          incrementViewCount(blogId);
-        } else {
-          console.log("No such document!");
-          // Show error toast
-        }
-      } catch (error) {
-        console.error("Error fetching blog:", error);
-        // Show error toast
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchBlog();
-  }, [blogId]);
 
   const handleCardClick = (blog) => {
     setBlogId(blog.id);
@@ -330,7 +351,14 @@ export default function BlogView() {
         />
 
         {selectedBlog ? (
-          <Box>
+          <Box sx={{ backgroundColor: "#f5f5f5", borderRadius: 2, p: 3 }}>
+            <Typography
+              variant="h4"
+              sx={{ mb: 3, color: "#1a237e", fontWeight: "bold" }}
+            >
+              {selectedBlog.title}
+            </Typography>
+
             <Box
               sx={{
                 display: "flex",
@@ -339,16 +367,41 @@ export default function BlogView() {
                 mb: 3,
               }}
             >
-              <Typography variant="h4">{selectedBlog.title}</Typography>
+              {blogPosterData && (
+                <UserProfileSection
+                  user={{
+                    BlogPosterUid: selectedBlog.blogPosterUid,
+                    displayName:
+                      blogPosterData.name || selectedBlog.blogPosterName,
+                    role:
+                      blogPosterData.userrole || selectedBlog.blogPosterRole,
+                    photoURL: blogPosterData.photoURL,
+                    email: blogPosterData.email,
+                  }}
+                />
+              )}
               <Box>
                 <Button
                   ref={shareButtonRef}
-                  startIcon={<ShareIcon />}
                   onClick={handleShare}
-                  variant="contained"
-                  sx={{ mr: 2 }}
+                  variant="outlined"
+                  sx={{ borderColor: "#0A4191", mr: 2 }}
                 >
-                  Share
+                  <Iconify
+                    icon="tabler:share-3"
+                    sx={{ color: "#FFD700", width: 20, height: 20 }}
+                  />
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      fontWeight: "bold",
+                      ml: 0.5,
+                      fontSize: 15,
+                      color: "#0A4191",
+                    }}
+                  >
+                    Share
+                  </Typography>
                 </Button>
                 {selectedBlog.blogPosterUid === userData.uid && (
                   <Button
@@ -362,21 +415,33 @@ export default function BlogView() {
                 )}
               </Box>
             </Box>
-            <Typography variant="subtitle1" sx={{ mb: 2 }}>
-              {selectedBlog.blogPosterName}
-              {selectedBlog.blogPosterRole &&
-                ` (${selectedBlog.blogPosterRole})`}
-            </Typography>
-            <Card sx={{ p: 3, mb: 3 }}>
+
+            <Divider sx={{ my: 3 }} />
+
+            <Card
+              sx={{ p: 4, mb: 4, boxShadow: 3, backgroundColor: "#ffffff" }}
+            >
               <Typography
                 variant="body1"
                 dangerouslySetInnerHTML={{ __html: selectedBlog.content }}
+                sx={{ lineHeight: 1.8, color: "#333333" }}
               />
             </Card>
-            <Box sx={{ mt: 4 }}>
+
+            <Box
+              sx={{
+                mt: 4,
+                backgroundColor: "#ffffff",
+                p: 3,
+                borderRadius: 2,
+                boxShadow: 1,
+              }}
+            >
+              <Typography variant="h6" sx={{ mb: 2, color: "#1a237e" }}>
+                Comments
+              </Typography>
               <CommentSection blogId={selectedBlog.id} currentUser={userData} />
             </Box>
-
             {/* share popover  */}
             <Popover
               id={shareId}
@@ -385,11 +450,11 @@ export default function BlogView() {
               onClose={handleShareClose}
               anchorOrigin={{
                 vertical: "bottom",
-                horizontal: "center",
+                horizontal: "right",
               }}
               transformOrigin={{
                 vertical: "top",
-                horizontal: "center",
+                horizontal: "left",
               }}
             >
               <List>

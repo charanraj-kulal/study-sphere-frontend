@@ -103,7 +103,7 @@ function VerifyStudyMaterialCard({ material, onApprove, onReject }) {
 
   const handleReject = async () => {
     if (!rejectionReason.trim()) {
-      showToast("error", "Please provide a reason for rejection");
+      showToast("info", "Please provide a reason for rejection");
       return;
     }
     setIsDeciding(true);

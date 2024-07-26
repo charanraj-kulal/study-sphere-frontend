@@ -1,4 +1,3 @@
-// Toast.js
 import React, { useEffect } from "react";
 import "../styles/Toast.css";
 
@@ -18,20 +17,40 @@ const Toast = ({ type, message, onClose, className }) => {
     };
   }, [onClose]);
 
+  const getIcon = () => {
+    switch (type) {
+      case "success":
+        return "fa-solid fa-check";
+      case "error":
+        return "fa-solid fa-times";
+      case "info":
+        return "fa-solid fa-info";
+      default:
+        return "fa-solid fa-times";
+    }
+  };
+
+  const getTitle = () => {
+    switch (type) {
+      case "success":
+        return "Success";
+      case "error":
+        return "Error";
+      case "info":
+        return "Information";
+      default:
+        return "Notification";
+    }
+  };
+
   return (
     <div className={`toast active ${type} ${className}`}>
       <div className="toast-content">
         <div className="icon-container">
-          <i
-            className={`fas ${
-              type === "success" ? "fa-solid fa-check" : "fa-solid fa-times"
-            } check`}
-          ></i>
+          <i className={`fas ${getIcon()} check`}></i>
         </div>
         <div className="message-container">
-          <span className="text text-1">
-            {type === "success" ? "Success" : "Error"}
-          </span>
+          <span className="text text-1">{getTitle()}</span>
           <span className="text text-2">{message}</span>
         </div>
       </div>
