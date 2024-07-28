@@ -1,7 +1,19 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import {
+  collection,
+  query,
+  where,
+  onSnapshot,
+  orderBy,
+  limit,
+  Timestamp,
+  updateDoc,
+  doc,
+  writeBatch,
+} from "firebase/firestore";
+import { db } from "../../../firebase";
+import { useUser } from "../../../hooks/UserContext";
 import PropTypes from "prop-types";
-import { set, sub } from "date-fns";
-import { faker } from "@faker-js/faker";
 
 import Box from "@mui/material/Box";
 import List from "@mui/material/List";
@@ -23,81 +35,101 @@ import { fToNow } from "../../../utils/format-time";
 import Iconify from "../../../components/iconify";
 import Scrollbar from "../../../components/scrollbar";
 
-// ----------------------------------------------------------------------
-
-const NOTIFICATIONS = [
-  {
-    id: faker.string.uuid(),
-    title: "Your order is placed",
-    description: "waiting for shipping",
-    avatar: null,
-    type: "order_placed",
-    createdAt: set(new Date(), { hours: 10, minutes: 30 }),
-    isUnRead: true,
-  },
-  {
-    id: faker.string.uuid(),
-    title: faker.person.fullName(),
-    description: "answered to your comment on the Minimal",
-    avatar: "../src/../src/assets/images/avatars/avatar_2.jpg",
-    type: "friend_interactive",
-    createdAt: sub(new Date(), { hours: 3, minutes: 30 }),
-    isUnRead: true,
-  },
-  {
-    id: faker.string.uuid(),
-    title: "You have new message",
-    description: "5 unread messages",
-    avatar: null,
-    type: "chat_message",
-    createdAt: sub(new Date(), { days: 1, hours: 3, minutes: 30 }),
-    isUnRead: false,
-  },
-  {
-    id: faker.string.uuid(),
-    title: "You have new mail",
-    description: "sent from Guido Padberg",
-    avatar: null,
-    type: "mail",
-    createdAt: sub(new Date(), { days: 2, hours: 3, minutes: 30 }),
-    isUnRead: false,
-  },
-  {
-    id: faker.string.uuid(),
-    title: "Delivery processing",
-    description: "Your order is being shipped",
-    avatar: null,
-    type: "order_shipped",
-    createdAt: sub(new Date(), { days: 3, hours: 3, minutes: 30 }),
-    isUnRead: false,
-  },
-];
+import BellIcon from "../../../assets/icons/ic_notification_bell.svg";
+import MailIcon from "../../../assets/icons/ic_notification_mail.svg";
+import ChatIcon from "../../../assets/icons/ic_notification_chat.svg";
+import FileCheckIcon from "../../../assets/icons/ic_file_check.svg";
+import FileRemoveIcon from "../../../assets/icons/ic_file_remove.svg";
+// import BookIcon from "../../../assets/icons/ic_book_open.svg";
+import BookIcon from "../../../assets/icons/ic_notification_pdf.svg";
 
 export default function NotificationsPopover() {
-  const [notifications, setNotifications] = useState(NOTIFICATIONS);
-
-  const totalUnRead = notifications.filter(
-    (item) => item.isUnRead === true
-  ).length;
-
+  const [notifications, setNotifications] = useState([]);
+  const { userData } = useUser();
   const [open, setOpen] = useState(null);
+
+  useEffect(() => {
+    if (userData && userData.uid) {
+      const notificationsRef = collection(db, "notifications");
+      const q = query(
+        notificationsRef,
+        where("userId", "==", userData.uid),
+        orderBy("createdAt", "desc"),
+        limit(20)
+      );
+
+      const unsubscribe = onSnapshot(q, (snapshot) => {
+        const newNotifications = snapshot.docs.map((doc) => {
+          const data = doc.data();
+          return {
+            id: doc.id,
+            ...data,
+            createdAt:
+              data.createdAt instanceof Timestamp
+                ? data.createdAt.toDate()
+                : new Date(),
+          };
+        });
+        setNotifications(newNotifications);
+      });
+
+      return () => unsubscribe();
+    }
+  }, [userData]);
+
+  const unreadNotifications = notifications.filter((item) => item.isUnRead);
+  const totalUnRead = unreadNotifications.length;
 
   const handleOpen = (event) => {
     setOpen(event.currentTarget);
+    markAllAsRead();
   };
 
   const handleClose = () => {
     setOpen(null);
   };
 
-  const handleMarkAllAsRead = () => {
-    setNotifications(
-      notifications.map((notification) => ({
-        ...notification,
-        isUnRead: false,
-      }))
-    );
+  const markAllAsRead = async () => {
+    const batch = writeBatch(db);
+    unreadNotifications.forEach((notification) => {
+      const notificationRef = doc(db, "notifications", notification.id);
+      batch.update(notificationRef, { isUnRead: false });
+    });
+    await batch.commit();
   };
+
+  const markAsRead = async (notificationId) => {
+    const notificationRef = doc(db, "notifications", notificationId);
+    await updateDoc(notificationRef, { isUnRead: false });
+  };
+
+  const renderNotifications = (notificationList, subheader) => (
+    <List
+      disablePadding
+      subheader={
+        <ListSubheader
+          disableSticky
+          sx={{ py: 1, px: 2.5, typography: "overline" }}
+        >
+          {subheader}
+        </ListSubheader>
+      }
+    >
+      {notificationList.map((notification) => (
+        <NotificationItem
+          key={notification.id}
+          notification={notification}
+          onMarkAsRead={markAsRead}
+        />
+      ))}
+    </List>
+  );
+
+  const oneDayAgo = new Date(new Date().setDate(new Date().getDate() - 1));
+  const newNotifications = notifications.filter((n) => n.createdAt > oneDayAgo);
+  const olderNotifications = notifications.filter(
+    (n) => n.createdAt <= oneDayAgo
+  );
 
   return (
     <>
@@ -108,7 +140,7 @@ export default function NotificationsPopover() {
       </IconButton>
 
       <Popover
-        open={!!open}
+        open={Boolean(open)}
         anchorEl={open}
         onClose={handleClose}
         anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
@@ -128,56 +160,17 @@ export default function NotificationsPopover() {
               You have {totalUnRead} unread messages
             </Typography>
           </Box>
-
-          {totalUnRead > 0 && (
-            <Tooltip title=" Mark all as read">
-              <IconButton color="primary" onClick={handleMarkAllAsRead}>
-                <Iconify icon="eva:done-all-fill" />
-              </IconButton>
-            </Tooltip>
-          )}
         </Box>
 
         <Divider sx={{ borderStyle: "dashed" }} />
 
         <Scrollbar sx={{ height: { xs: 340, sm: "auto" } }}>
-          <List
-            disablePadding
-            subheader={
-              <ListSubheader
-                disableSticky
-                sx={{ py: 1, px: 2.5, typography: "overline" }}
-              >
-                New
-              </ListSubheader>
-            }
-          >
-            {notifications.slice(0, 2).map((notification) => (
-              <NotificationItem
-                key={notification.id}
-                notification={notification}
-              />
-            ))}
-          </List>
-
-          <List
-            disablePadding
-            subheader={
-              <ListSubheader
-                disableSticky
-                sx={{ py: 1, px: 2.5, typography: "overline" }}
-              >
-                Before that
-              </ListSubheader>
-            }
-          >
-            {notifications.slice(2, 5).map((notification) => (
-              <NotificationItem
-                key={notification.id}
-                notification={notification}
-              />
-            ))}
-          </List>
+          {renderNotifications(unreadNotifications, "Unread")}
+          {renderNotifications(
+            newNotifications.filter((n) => !n.isUnRead),
+            "New"
+          )}
+          {renderNotifications(olderNotifications.slice(0, 8), "Before that")}
         </Scrollbar>
 
         <Divider sx={{ borderStyle: "dashed" }} />
@@ -192,8 +185,6 @@ export default function NotificationsPopover() {
   );
 }
 
-// ----------------------------------------------------------------------
-
 NotificationItem.propTypes = {
   notification: PropTypes.shape({
     createdAt: PropTypes.instanceOf(Date),
@@ -202,11 +193,11 @@ NotificationItem.propTypes = {
     title: PropTypes.string,
     description: PropTypes.string,
     type: PropTypes.string,
-    avatar: PropTypes.any,
   }),
+  onMarkAsRead: PropTypes.func.isRequired,
 };
 
-function NotificationItem({ notification }) {
+function NotificationItem({ notification, onMarkAsRead }) {
   const { avatar, title } = renderContent(notification);
 
   return (
@@ -239,15 +230,26 @@ function NotificationItem({ notification }) {
               icon="eva:clock-outline"
               sx={{ mr: 0.5, width: 16, height: 16 }}
             />
-            {fToNow(notification.createdAt)}
+            {notification.createdAt
+              ? fToNow(notification.createdAt)
+              : "Unknown time"}
           </Typography>
         }
       />
+      {notification.isUnRead && (
+        <Tooltip title="Mark as read">
+          <IconButton
+            onClick={() => onMarkAsRead(notification.id)}
+            edge="end"
+            aria-label="mark as read"
+          >
+            <Iconify icon="eva:done-all-fill" />
+          </IconButton>
+        </Tooltip>
+      )}
     </ListItemButton>
   );
 }
-
-// ----------------------------------------------------------------------
 
 function renderContent(notification) {
   const title = (
@@ -263,54 +265,44 @@ function renderContent(notification) {
     </Typography>
   );
 
-  if (notification.type === "order_placed") {
-    return {
-      avatar: (
-        <img
-          alt={notification.title}
-          src="/../src/assets/icons/ic_notification_package.svg"
-        />
-      ),
-      title,
-    };
-  }
-  if (notification.type === "order_shipped") {
-    return {
-      avatar: (
-        <img
-          alt={notification.title}
-          src="/../src/assets/icons/ic_notification_shipping.svg"
-        />
-      ),
-      title,
-    };
-  }
-  if (notification.type === "mail") {
-    return {
-      avatar: (
-        <img
-          alt={notification.title}
-          src="/../src/assets/icons/ic_notification_mail.svg"
-        />
-      ),
-      title,
-    };
-  }
-  if (notification.type === "chat_message") {
-    return {
-      avatar: (
-        <img
-          alt={notification.title}
-          src="/../src/assets/icons/ic_notification_chat.svg"
-        />
-      ),
-      title,
-    };
-  }
+  const iconMap = {
+    document_approved: (
+      <img
+        src={FileCheckIcon}
+        alt="Approved Icon"
+        width={24}
+        height={24}
+        style={{
+          filter:
+            "invert(46%) sepia(78%) saturate(475%) hue-rotate(72deg) brightness(95%) contrast(87%)",
+        }}
+      />
+    ),
+    document_rejected: (
+      <img
+        src={FileRemoveIcon}
+        alt="Rejected Icon"
+        width={24}
+        height={24}
+        style={{
+          filter:
+            "invert(15%) sepia(85%) saturate(7416%) hue-rotate(354deg) brightness(94%) contrast(102%)",
+        }}
+      />
+    ),
+    new_material: (
+      <img src={BookIcon} alt="New Material Icon" width={24} height={24} />
+    ),
+    mail: <img src={MailIcon} alt="Mail Icon" width={24} height={24} />,
+    chat_message: <img src={ChatIcon} alt="Chat Icon" width={24} height={24} />,
+  };
+
+  const icon = iconMap[notification.type] || (
+    <BellIcon width={24} height={24} />
+  );
+
   return {
-    avatar: notification.avatar ? (
-      <img alt={notification.title} src={notification.avatar} />
-    ) : null,
+    avatar: icon,
     title,
   };
 }

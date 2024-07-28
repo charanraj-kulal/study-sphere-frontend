@@ -16,6 +16,11 @@ import {
   doc,
   increment,
   deleteDoc,
+  query,
+  where,
+  collection,
+  addDoc,
+  getDocs,
   serverTimestamp,
   arrayUnion,
 } from "firebase/firestore";
@@ -36,6 +41,20 @@ function VerifyStudyMaterialCard({ material, onApprove, onReject }) {
   const [isDeciding, setIsDeciding] = useState(false);
   const { showToast } = useToast();
 
+  async function addNotification(userId, title, description, type) {
+    try {
+      await addDoc(collection(db, "notifications"), {
+        userId,
+        title,
+        description,
+        type,
+        createdAt: serverTimestamp(),
+        isUnRead: true,
+      });
+    } catch (error) {
+      console.error("Error adding notification: ", error);
+    }
+  }
   const handleClickOpen = () => {
     setOpen(true);
   };
@@ -89,6 +108,29 @@ function VerifyStudyMaterialCard({ material, onApprove, onReject }) {
       await updateDoc(doc(db, "users", userData.uid), {
         contribution: increment(1),
       });
+      await addNotification(
+        material.uploaderUid,
+        "Document Approved",
+        `Your document "${material.documentName}" has been approved.`,
+        "document_approved"
+      );
+
+      // Add notifications for students in the same course
+      const studentsSnapshot = await getDocs(
+        query(
+          collection(db, "users"),
+          where("course", "==", material.uploaderCourse),
+          where("userrole", "==", 3)
+        )
+      );
+      studentsSnapshot.forEach(async (doc) => {
+        await addNotification(
+          doc.id,
+          "New Study Material Available",
+          `A new document "${material.documentName}" is now available for your course.`,
+          "new_material"
+        );
+      });
       onApprove(material.id);
       setIsDeciding(false);
       handleClose();
@@ -138,6 +180,12 @@ function VerifyStudyMaterialCard({ material, onApprove, onReject }) {
       handleClose();
       handleRejectDialogClose();
       showToast("success", "Document successfully Rejected");
+      await addNotification(
+        material.uploaderUid,
+        "Document Rejected",
+        `Your document "${material.documentName}" has been rejected. Reason: ${rejectionReason}`,
+        "document_rejected"
+      );
     } catch (error) {
       console.error("Error rejecting document:", error);
       showToast("error", "Error while rejecting this document!!");
