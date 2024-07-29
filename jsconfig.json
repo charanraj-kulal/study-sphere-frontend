@@ -7,5 +7,5 @@
       "@/lib/utils/*": ["src/lib/utils/*"]
     }
   },
-  "include": ["src"]
+  "include": ["src", "src/sections/add-products/view/.jsx"]
 }

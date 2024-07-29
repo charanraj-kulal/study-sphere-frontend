@@ -28,10 +28,10 @@ const StyledRoot = styled("div")(({ theme }) => ({
 
 // ----------------------------------------------------------------------
 
-export default function CartWidget() {
+export default function CartWidget({ cartItemsCount, onOpen }) {
   return (
-    <StyledRoot>
-      <Badge showZero badgeContent={5} color="error" max={99}>
+    <StyledRoot onClick={onOpen}>
+      <Badge showZero badgeContent={cartItemsCount} color="error" max={99}>
         <Iconify icon="eva:shopping-cart-fill" width={24} height={24} />
       </Badge>
     </StyledRoot>
