@@ -17,7 +17,7 @@ const __dirname = path.dirname(__filename);
 dotenv.config({ path: path.resolve(__dirname, ".env.local") });
 
 // Import the service account key with an import assertion
-import serviceAccount from "./serviceAccountKey.json" assert { type: "json" };
+import serviceAccount from "./serviceAccountKey.js";
 
 // Initialize Firebase Admin SDK
 admin.initializeApp({
