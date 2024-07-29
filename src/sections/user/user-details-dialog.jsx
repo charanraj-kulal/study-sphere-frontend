@@ -32,7 +32,17 @@ import StarIcon from "@mui/icons-material/Star";
 import GetAppIcon from "@mui/icons-material/GetApp";
 import Iconify from "../../components/iconify";
 import { db } from "../../firebase";
-import { collection, query, where, getDocs } from "firebase/firestore";
+import {
+  collection,
+  query,
+  where,
+  getDocs,
+  doc,
+  getDoc,
+  updateDoc,
+  arrayUnion,
+  arrayRemove,
+} from "firebase/firestore";
 import { formatTimeAgo } from "../../utils/timeUtils";
 import { QRCodeSVG } from "qrcode.react";
 import { useToast } from "../../hooks/ToastContext";
@@ -56,7 +66,7 @@ const calculateAverageRating = (starArray) => {
   return totalVotes > 0 ? (totalRatings / totalVotes).toFixed(2) : "0.00";
 };
 
-const UserDetailsDialog = ({ open, onClose, userId, user }) => {
+const UserDetailsDialog = ({ open, onClose, userId, user, currentUser }) => {
   const navigate = useNavigate();
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down("md"));
@@ -65,6 +75,7 @@ const UserDetailsDialog = ({ open, onClose, userId, user }) => {
   const [userDocuments, setUserDocuments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [anchorEl, setAnchorEl] = useState(null);
+  const [isFollowing, setIsFollowing] = useState(false);
 
   useEffect(() => {
     const fetchUserDocuments = async () => {
@@ -95,6 +106,18 @@ const UserDetailsDialog = ({ open, onClose, userId, user }) => {
     fetchUserDocuments();
   }, [user]);
 
+  // following use effect
+  useEffect(() => {
+    const checkFollowStatus = async () => {
+      if (currentUser && currentUser.userRole === 3) {
+        const currentUserDoc = await getDoc(doc(db, "users", currentUser.uid));
+        const followingUsers = currentUserDoc.data().followingUsers || [];
+        setIsFollowing(followingUsers.includes(userId));
+      }
+    };
+
+    checkFollowStatus();
+  }, [currentUser, userId]);
   const handleGoBack = () => {
     onClose();
     navigate(1);
@@ -153,6 +176,38 @@ const UserDetailsDialog = ({ open, onClose, userId, user }) => {
     img.src = "data:image/svg+xml;base64," + btoa(svgData);
   };
 
+  //follow functionalities
+  const handleFollowToggle = async () => {
+    if (!currentUser || currentUser.userRole !== 3) return;
+
+    const currentUserRef = doc(db, "users", currentUser.uid);
+    const displayedUserRef = doc(db, "users", userId);
+    try {
+      if (isFollowing) {
+        await updateDoc(currentUserRef, {
+          followingUsers: arrayRemove(userId),
+        });
+        await updateDoc(displayedUserRef, {
+          followers: arrayRemove(currentUser.uid),
+        });
+      } else {
+        await updateDoc(currentUserRef, {
+          followingUsers: arrayUnion(userId),
+        });
+        await updateDoc(displayedUserRef, {
+          followers: arrayUnion(currentUser.uid),
+        });
+      }
+      setIsFollowing(!isFollowing);
+      showToast(
+        "info",
+        isFollowing ? `Unfollowed ${user.name}` : `Followed ${user.name}`
+      );
+    } catch (error) {
+      console.error("Error updating follow status:", error);
+      showToast("error", "Failed to update follow status");
+    }
+  };
   const isSharePopoverOpen = Boolean(anchorEl);
   const shareId = isSharePopoverOpen ? "share-popover" : undefined;
 
@@ -208,12 +263,44 @@ const UserDetailsDialog = ({ open, onClose, userId, user }) => {
                   alt={user.name}
                   sx={{ width: 80, height: 80, mr: 2 }}
                 />
-                <Box>
-                  <Typography variant="h5">{user.name}</Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {user.email}
-                  </Typography>
-                </Box>
+                <Stack direction="row" alignItems="center" spacing={2}>
+                  <Box>
+                    <Typography variant="h5">{user.name}</Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      {user.email}
+                    </Typography>
+                  </Box>
+                  {currentUser &&
+                    currentUser.userRole === 3 &&
+                    currentUser.uid !== userId && (
+                      <Button
+                        variant="contained"
+                        onClick={handleFollowToggle}
+                        sx={{
+                          backgroundColor: isFollowing ? "#FFD700" : "#0A4191",
+                          mr: -1,
+                          color: isFollowing ? "#000000" : "#FFFFFF",
+                          "&:hover": {
+                            backgroundColor: isFollowing
+                              ? "#E6C200"
+                              : "#083470",
+                          },
+                        }}
+                      >
+                        <Iconify
+                          width={15}
+                          height={15}
+                          icon={
+                            isFollowing
+                              ? "simple-line-icons:user-following"
+                              : "simple-line-icons:user-follow"
+                          }
+                          sx={{ mr: 1, ml: -0.5 }}
+                        />
+                        {isFollowing ? "Following" : "Follow"}
+                      </Button>
+                    )}
+                </Stack>
               </Box>
               <Button
                 variant="outlined"
@@ -496,6 +583,7 @@ UserDetailsDialog.propTypes = {
   open: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
   userId: PropTypes.string.isRequired,
+  currentUser: PropTypes.object.isRequired,
   user: PropTypes.object,
 };
 export default UserDetailsDialog;

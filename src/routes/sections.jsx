@@ -19,7 +19,7 @@ export const LeaderboardPage = lazy(() => import("../pages/leaderboard"));
 export const LoginPage = lazy(() => import("../pages/SignInSignUpFrom"));
 export const UserProfilePage = lazy(() => import("../pages/UserProfile"));
 // export const LoginPage = lazy(() => import("../pages/login"));
-
+export const AddProductsPage = lazy(() => import("../pages/addProducts"));
 export const ProductsPage = lazy(() => import("../pages/products"));
 export const Page404 = lazy(() => import("../pages/page-not-found"));
 
@@ -56,6 +56,7 @@ export default function Router() {
             { path: "download", element: <DownloadPage /> },
             { path: "leaderboard", element: <LeaderboardPage /> },
             { path: "products", element: <ProductsPage /> },
+            { path: "addproducts", element: <AddProductsPage /> },
             { path: "blog", element: <BlogPage /> },
             { path: "profile/:userId", element: <UserProfilePage /> },
           ],

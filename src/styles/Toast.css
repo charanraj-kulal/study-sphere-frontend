@@ -40,6 +40,17 @@
 .toast.error .progress:before {
   background-color: #dc3545;
 }
+.toast.info .check {
+  background-color: #0a4191;
+}
+
+.toast.info .progress:before {
+  background-color: #0a4191;
+}
+
+.toast.info .text.text-1 {
+  color: #0a4191;
+}
 
 .toast .toast-content {
   display: flex;

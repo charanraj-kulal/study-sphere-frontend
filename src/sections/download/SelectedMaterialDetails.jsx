@@ -5,7 +5,7 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
 import Avatar from "@mui/material/Avatar";
-
+import Divider from "@mui/material/Divider";
 import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
@@ -380,7 +380,7 @@ const SelectedMaterialDetails = ({
             component="span"
             sx={{
               color: "green",
-              fontSize: "0.4rem",
+              fontSize: "0.5rem",
               padding: "0.5px 6px 0.5px",
               borderRadius: "10px",
               border: "1px solid green",
@@ -627,7 +627,7 @@ const SelectedMaterialDetails = ({
       </Typography>
       <Box
         sx={{ display: "flex", alignItems: "center", mb: 2, cursor: "pointer" }}
-        onClick={() => handleUserClick(userData.uid)}
+        onClick={() => handleUserClick(selectedMaterial.uploaderUid)}
       >
         <Avatar src={selectedMaterial.uploaderPhotoUrl} sx={{ mr: 1 }} />
         <Typography variant="body2">{selectedMaterial.uploadedBy}</Typography>
@@ -638,6 +638,7 @@ const SelectedMaterialDetails = ({
         onRate={handleStarRating}
         currentRating={selectedMaterial?.userRatings?.[userData.uid] || 0}
       />
+      <Divider sx={{ my: 3 }} />
       <Box sx={{ height: "600px", width: "100%" }}>
         <PanelGroup direction="horizontal">
           <Panel defaultSize={pdfWidth} minSize={20}>
