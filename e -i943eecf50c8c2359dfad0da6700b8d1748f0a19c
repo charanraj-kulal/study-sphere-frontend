@@ -1,0 +1,158 @@
+[33mcommit b5e84288fad70c1d376b56653e6e3cad4707faaf[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mNotification[m[33m)[m
+Author: charanraj-kulal <charanraj9731@gmail.com>
+Date:   Mon Jul 29 21:12:45 2024 +0530
+
+    env fix
+
+[33mcommit 943eecf50c8c2359dfad0da6700b8d1748f0a19c[m
+Author: charanraj-kulal <charanraj9731@gmail.com>
+Date:   Mon Jul 29 20:42:29 2024 +0530
+
+    Products section done half
+
+[33mcommit 4f9adfa259dbab94cd71f527ebbd24ac2dda4d27[m[33m ([m[1;31morigin/Notification[m[33m)[m
+Author: charanraj-kulal <charanraj9731@gmail.com>
+Date:   Sun Jul 28 22:00:05 2024 +0530
+
+    notification fix
+
+[33mcommit 9538d11be67dbcaa2f7500174f18eb7fd5c5d7b2[m
+Author: charanraj-kulal <charanraj9731@gmail.com>
+Date:   Fri Jul 26 21:42:26 2024 +0530
+
+    blog fixes, follow functionality
+
+[33mcommit 6271e3181fd1c05dbb46801746750952c7914c9a[m[33m ([m[1;31morigin/Blog-module[m[33m, [m[1;32mBlog-module[m[33m)[m
+Author: charanraj-kulal <charanraj9731@gmail.com>
+Date:   Fri Jul 26 13:18:16 2024 +0530
+
+    Blog completed
+
+[33mcommit 991094ef09570eac32cf8d224221d060ae447dcf[m
+Author: charanraj-kulal <charanraj9731@gmail.com>
+Date:   Tue Jul 23 23:58:51 2024 +0530
+
+    pdf summary
+
+[33mcommit 003ef5ebd7db47206c84bc44a2a468b91a54601c[m
+Author: charanraj-kulal <charanraj9731@gmail.com>
+Date:   Tue Jul 23 12:03:44 2024 +0530
+
+    not working
+
+[33mcommit 15353e9300b52537e5bc706b657c592a953ff749[m
+Author: charanraj-kulal <charanraj9731@gmail.com>
+Date:   Mon Jul 22 10:38:34 2024 +0530
+
+    last commit need to change firebase account
+
+[33mcommit 421211ea551a5e4e8c9734c0e4641cfe16ed74a5[m[33m ([m[1;31morigin/Landing-page-changes[m[33m, [m[1;32mLanding-page-changes[m[33m)[m
+Author: charanraj-kulal <charanraj9731@gmail.com>
+Date:   Fri Jul 19 12:00:46 2024 +0530
+
+    perfect till now everything is working.. user profile fixed..
+
+[33mcommit 3f3f812176f8a65fec1eccb8c9e14c56a030d222[m
+Author: charanraj-kulal <charanraj9731@gmail.com>
+Date:   Thu Jul 18 17:37:43 2024 +0530
+
+    user-profile
+
+[33mcommit 878de59528066f42834b8d6c43e1656705692e19[m
+Author: charanraj-kulal <charanraj9731@gmail.com>
+Date:   Wed Jul 17 17:37:33 2024 +0530
+
+    fixes nav
+
+[33mcommit 2daf6749f70f1446247d1ff6f67782291297d6a9[m
+Author: charanraj-kulal <charanraj9731@gmail.com>
+Date:   Wed Jul 17 16:54:22 2024 +0530
+
+    user module added
+
+[33mcommit 5bd3a9cbb1193237d9efe9670b8e2d69fd267e1a[m
+Author: charanraj-kulal <charanraj9731@gmail.com>
+Date:   Wed Jul 17 13:13:27 2024 +0530
+
+    email for approve and rejection is sending successfully
+
+[33mcommit cfff6a7a517c5b3715f0898dea7867317b5734d9[m
+Author: charanraj-kulal <charanraj9731@gmail.com>
+Date:   Wed Jul 17 10:39:59 2024 +0530
+
+    minor changes
+
+[33mcommit 3a43257de71ed37a62c707c5ce4a16f6c1e881c7[m
+Author: charanraj-kulal <charanraj9731@gmail.com>
+Date:   Tue Jul 16 09:44:12 2024 +0530
+
+    landing partial
+
+[33mcommit 06639a91e4ff806f3a9de4033b854f12610f59bf[m
+Author: charanraj-kulal <charanraj9731@gmail.com>
+Date:   Mon Jul 15 18:23:57 2024 +0530
+
+    fixes
+
+[33mcommit ace5f3042b8920f28f7127cc8d63418d54200ec8[m
+Author: charanraj-kulal <charanraj9731@gmail.com>
+Date:   Mon Jul 15 17:38:45 2024 +0530
+
+    contact page
+
+[33mcommit 5a03253d1bda7716fb1ac8c11eb5efd9fc344fa1[m
+Author: charanraj-kulal <charanraj9731@gmail.com>
+Date:   Mon Jul 15 09:45:56 2024 +0530
+
+    folder structure fix
+
+[33mcommit 1d9482587d862a3dddbc711b40a831c3b2aed1d2[m[33m ([m[1;31morigin/Leaderbord[m[33m, [m[1;32mLeaderbord[m[33m)[m
+Author: charanraj-kulal <charanraj9731@gmail.com>
+Date:   Sun Jul 14 09:51:03 2024 +0530
+
+    leaderboard completes
+
+[33mcommit 44f0ea6c615a3f0fe3ba41be0eda110d238fe89c[m
+Author: charanraj-kulal <charanraj9731@gmail.com>
+Date:   Sat Jul 13 14:09:54 2024 +0530
+
+    almost leaderboard complete
+
+[33mcommit d1979279d3678ac396b55b2d9619f7c073613c79[m[33m ([m[1;31morigin/Download-studyMaterial[m[33m, [m[1;32mDownload-studyMaterial[m[33m)[m
+Merge: f5b94a7 b4eabdd
+Author: charanraj-kulal <charanraj9731@gmail.com>
+Date:   Fri Jul 12 16:59:41 2024 +0530
+
+    Merge branch 'Download-studyMaterial' of https://github.com/charanraj-kulal/study-sphere-frontend into Download-studyMaterial
+
+[33mcommit f5b94a7ca94174c84e7374c7ccca3a46704635a0[m
+Author: charanraj-kulal <charanraj9731@gmail.com>
+Date:   Fri Jul 12 16:59:26 2024 +0530
+
+    download is complete
+
+[33mcommit b4eabddc416b09dae3ea1c23d793f7f267b4bfe5[m
+Merge: 779309d 37981ea
+Author: charanraj-kulal <97221926+charanraj-kulal@users.noreply.github.com>
+Date:   Fri Jul 12 15:30:55 2024 +0530
+
+    Merge branch 'master' into Download-studyMaterial
+
+[33mcommit 779309d7126f467cc731ae41de36c7053c313997[m
+Author: charanraj-kulal <charanraj9731@gmail.com>
+Date:   Fri Jul 12 15:25:36 2024 +0530
+
+    downalod(download is completed)
+
+[33mcommit 782da7411323c3f06c34b25725659ace0a8bbe23[m
+Merge: 01cd5a5 2acffa3
+Author: charanraj-kulal <charanraj9731@gmail.com>
+Date:   Fri Jul 12 14:25:00 2024 +0530
+
+    Merge branch 'Download-studyMaterial' of https://github.com/charanraj-kulal/study-sphere-frontend into Download-studyMaterial
+
+[33mcommit 01cd5a5a306de93b8b71ffa15a2258b07600687d[m
+Author: charanraj-kulal <charanraj9731@gmail.com>
+Date:   Fri Jul 12 11:46:41 2024 +0530
+
+    somewhat okay
