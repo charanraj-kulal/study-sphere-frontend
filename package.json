@@ -1,5 +1,6 @@
 {
   "name": "study-sphere-frontend",
+  "homepage": "",
   "private": true,
   "main": "server.js",
   "version": "0.0.0",
