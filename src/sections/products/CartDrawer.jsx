@@ -1,8 +1,8 @@
-import React from "react";
-import Razorpay from "razorpay";
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
+import Dialog from "@mui/material/Dialog";
+import DialogContent from "@mui/material/DialogContent";
 import { useUser } from "../../hooks/UserContext";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 import { db } from "../../firebase";
 import Drawer from "@mui/material/Drawer";
 import List from "@mui/material/List";
@@ -18,10 +18,20 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Divider from "@mui/material/Divider";
 import { fCurrency } from "../../utils/format-number";
+import AddressForm from "./AddressForm";
 
-export default function CartDrawer({ open, onClose, cart, setCart, user }) {
+export default function CartDrawer({
+  open,
+  onClose,
+  cart,
+  setCart,
+  user,
+  onPaymentSuccess,
+}) {
   const { userData } = useUser();
   const [userPoints, setUserPoints] = useState(0);
+  const [address, setAddress] = useState(null);
+  const [showAddressForm, setShowAddressForm] = useState(false);
 
   //razor pay sdk
   useEffect(() => {
@@ -31,17 +41,31 @@ export default function CartDrawer({ open, onClose, cart, setCart, user }) {
     document.body.appendChild(script);
   }, []);
 
+  // useEffect(() => {
+  //   const fetchUserPoints = async () => {
+  //     if (userData) {
+  //       const userDoc = await getDoc(doc(db, "users", userData.uid));
+  //       if (userDoc.exists()) {
+  //         setUserPoints(userDoc.data().points || 0);
+  //       }
+  //     }
+  //   };
+
+  //   fetchUserPoints();
+  // }, [userData]);
+
   useEffect(() => {
-    const fetchUserPoints = async () => {
+    const fetchUserData = async () => {
       if (userData) {
         const userDoc = await getDoc(doc(db, "users", userData.uid));
         if (userDoc.exists()) {
           setUserPoints(userDoc.data().points || 0);
+          setAddress(userDoc.data().address || null);
         }
       }
     };
 
-    fetchUserPoints();
+    fetchUserData();
   }, [userData]);
 
   const updateQuantity = (productId, change) => {
@@ -78,18 +102,44 @@ export default function CartDrawer({ open, onClose, cart, setCart, user }) {
   const pointsUsed = total > pointsValue ? userPoints : total * 2;
   const remainingPoints = Math.max(0, userPoints - pointsUsed);
 
+  const handleAddressSubmit = async (addressData) => {
+    setAddress(addressData);
+    setShowAddressForm(false);
+    if (user) {
+      await setDoc(
+        doc(db, "users", user.uid),
+        { address: addressData },
+        { merge: true }
+      );
+    }
+  };
+
+  const handleCheckout = () => {
+    if (!address) {
+      setShowAddressForm(true);
+    } else if (amountAfterPoints === 0) {
+      // Place order logic
+      console.log("Placing order...");
+      // Add your order placement logic here
+    } else {
+      handlePayment();
+    }
+  };
+
   const handlePayment = () => {
     const options = {
-      key: "rzp_test_X45n8vinhpSHdY", // Your Razorpay Key ID
-      amount: amountAfterPoints * 100, // Amount in paise
+      key: "rzp_test_X45n8vinhpSHdY",
+      amount: Math.round(amountAfterPoints * 100), // Convert to paise
       currency: "INR",
       name: "Study Sphere store",
       description: "Purchase Description",
+      // image: "https://ibb.co/59H6Y5L", // Add your logo URL here
       handler: function (response) {
         alert(response.razorpay_payment_id);
         // Handle successful payment
-        // You might want to update the order status in your database here
-        onClose(); // Close the drawer after successful payment
+        setCart([]);
+        onPaymentSuccess();
+        onClose();
       },
       prefill: {
         name: userData?.name || "",
@@ -99,12 +149,20 @@ export default function CartDrawer({ open, onClose, cart, setCart, user }) {
       theme: {
         color: "#3399cc",
       },
+      // Add these options to enable UPI and other payment methods
+      payment_capture: 1,
+      method: {
+        upi: true,
+        netbanking: true,
+        card: true,
+        wallet: true,
+        emi: true,
+      },
     };
 
     const paymentObject = new window.Razorpay(options);
     paymentObject.open();
   };
-
   return (
     <Drawer
       anchor="right"
@@ -185,11 +243,29 @@ export default function CartDrawer({ open, onClose, cart, setCart, user }) {
           variant="contained"
           fullWidth
           sx={{ mt: 2 }}
-          onClick={handlePayment}
-          disabled={amountAfterPoints === 0}
+          onClick={handleCheckout}
         >
-          {amountAfterPoints === 0 ? "Order Placed" : "Pay with Razorpay"}
+          {address
+            ? amountAfterPoints === 0
+              ? "Place Order"
+              : `Pay ${fCurrency(amountAfterPoints)} and Place Order`
+            : "Add Address"}
         </Button>
+        <Dialog
+          open={showAddressForm}
+          onClose={() => setShowAddressForm(false)}
+        >
+          <DialogContent>
+            <AddressForm
+              onSubmit={handleAddressSubmit}
+              initialData={{
+                name: userData?.name || "",
+                email: userData?.email || "",
+                phone: userData?.phone || "",
+              }}
+            />
+          </DialogContent>
+        </Dialog>
       </Box>
     </Drawer>
   );
