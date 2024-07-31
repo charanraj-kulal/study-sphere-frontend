@@ -39,7 +39,7 @@ export default function ProductCard({ product, onAddToCart, onBuyNow }) {
   const renderStatus = (
     <Label
       variant="filled"
-      color={(product.productStatus === "sale" && "error") || "info"}
+      color={(product.productStatus === "active" && "error") || "info"}
       sx={{
         zIndex: 9,
         top: 16,
@@ -48,10 +48,9 @@ export default function ProductCard({ product, onAddToCart, onBuyNow }) {
         textTransform: "uppercase",
       }}
     >
-      {product.productStatus}
+      {product.productStatus === "active" ? "Sale" : "New"}
     </Label>
   );
-
   const renderImg = (
     <Box
       component="img"
@@ -83,7 +82,7 @@ export default function ProductCard({ product, onAddToCart, onBuyNow }) {
         </Typography>
       )}
       {fCurrency(product.isDiscounted ? product.discountPrice : product.price)}
-      {product.isDiscounted && (
+      {/* {product.isDiscounted && (
         <Typography
           component="span"
           variant="body2"
@@ -96,7 +95,7 @@ export default function ProductCard({ product, onAddToCart, onBuyNow }) {
             ? `-${product.discountValue}%`
             : `-${fCurrency(product.discountValue)}`}
         </Typography>
-      )}
+      )} */}
     </Typography>
   );
 
@@ -120,9 +119,21 @@ export default function ProductCard({ product, onAddToCart, onBuyNow }) {
           <ColorPreview colors={product.colorPreview} />
           {renderPrice}
         </Stack>
-
-        <Typography variant="body2">Stock: {product.stock}</Typography>
-
+        <Stack
+          direction="row"
+          alignItems="center"
+          justifyContent="space-between"
+        >
+          <Typography variant="body2">Stock: {product.stock}</Typography>
+          {product.isDiscounted && (
+            <Typography variant="body2" sx={{ color: "error.main" }}>
+              Discount:{" "}
+              {product.discountType === "percentage"
+                ? `${product.discountValue}%`
+                : fCurrency(product.discountValue)}
+            </Typography>
+          )}
+        </Stack>
         <Stack direction="row" spacing={1}>
           <Button variant="contained" onClick={() => onAddToCart(product)}>
             Add to Cart

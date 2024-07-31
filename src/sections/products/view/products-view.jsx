@@ -24,6 +24,9 @@ export default function ProductsView() {
   const [openCart, setOpenCart] = useState(false);
   const [user, setUser] = useState(null);
 
+  const activeProducts = products.filter(
+    (product) => product.productStatus === "active"
+  );
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
@@ -99,21 +102,13 @@ export default function ProductsView() {
       </Stack>
 
       <Grid container spacing={3}>
-        {products.map((product, index) => (
-          <Grid
-            key={product.id}
-            xs={12}
-            sm={6}
-            md={3}
-            sx={{ marginTop: index < 4 ? 2 : 0 }} // Add marginTop for the first row
-          >
-            <Card sx={{ boxShadow: 3 }}>
-              <ProductCard
-                product={product}
-                onAddToCart={addToCart}
-                onBuyNow={buyNow}
-              />
-            </Card>
+        {activeProducts.map((product) => (
+          <Grid key={product.id} xs={12} sm={6} md={3}>
+            <ProductCard
+              product={product}
+              onAddToCart={addToCart}
+              onBuyNow={buyNow}
+            />
           </Grid>
         ))}
       </Grid>
