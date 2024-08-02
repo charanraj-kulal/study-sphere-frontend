@@ -6,8 +6,9 @@ import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
 import Box from "@mui/material/Box";
 import { useUser } from "../../hooks/UserContext";
-import { doc, getDoc, setDoc, updateDoc, increment } from "firebase/firestore";
+import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 import { db } from "../../firebase";
+import { useToast } from "../../hooks/ToastContext";
 import { fCurrency } from "../../utils/format-number";
 import AddressForm from "./AddressForm";
 
@@ -16,6 +17,7 @@ export default function BuyNowDialog({ open, onClose, product }) {
   const [userPoints, setUserPoints] = useState(0);
   const [address, setAddress] = useState(null);
   const [showAddressForm, setShowAddressForm] = useState(false);
+  const { showToast } = useToast();
 
   useEffect(() => {
     const script = document.createElement("script");
@@ -67,6 +69,7 @@ export default function BuyNowDialog({ open, onClose, product }) {
         { address: addressData },
         { merge: true }
       );
+      showToast("info", "Adress adeed successfully");
     }
   };
 
@@ -88,8 +91,13 @@ export default function BuyNowDialog({ open, onClose, product }) {
       name: "Study Sphere store",
       description: `Purchase of ${product.productName}`,
       handler: function (response) {
-        alert(response.razorpay_payment_id);
+        // alert(response.razorpay_payment_id);
+        showToast(
+          "success",
+          `Payment sucessfull with id:${response.razorpay_payment_id}`
+        );
         savePurchaseToFirestore();
+        refreshProducts();
       },
       prefill: {
         name: userData?.name || "",
@@ -115,7 +123,9 @@ export default function BuyNowDialog({ open, onClose, product }) {
 
   const savePurchaseToFirestore = async () => {
     if (userData) {
+      const purchaseId = `${userData.uid}_${Date.now()}`;
       const purchaseData = {
+        purchaseId,
         productId: product.id,
         productName: product.productName,
         price: subtotal,
@@ -126,10 +136,12 @@ export default function BuyNowDialog({ open, onClose, product }) {
         userId: userData.uid,
       };
 
-      await setDoc(
-        doc(db, "purchasedProducts", `${userData.uid}_${product.id}`),
-        purchaseData
-      );
+      // await setDoc(
+      //   doc(db, "purchasedProducts", `${userData.uid}_${product.id}`),
+      //   purchaseData
+      // );
+
+      await setDoc(doc(db, "purchasedProducts", purchaseId), purchaseData);
 
       // Update user points
       await setDoc(
@@ -137,11 +149,16 @@ export default function BuyNowDialog({ open, onClose, product }) {
         { points: Math.round(remainingPoints) },
         { merge: true }
       );
-      await setDoc(
-        doc(db, "products", product.id),
-        { stock: increment(-1) },
-        { merge: true }
-      );
+      // Update product stock
+      const productRef = doc(db, "products", product.id);
+      const productSnap = await getDoc(productRef);
+      const currentStock = productSnap.data().stock;
+      const newStock = currentStock - 1;
+
+      await updateDoc(productRef, {
+        stock: newStock,
+        productStatus: newStock === 0 ? "inactive" : "active",
+      });
 
       onClose();
     }

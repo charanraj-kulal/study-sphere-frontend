@@ -18,24 +18,52 @@ import Iconify from "../../components/iconify";
 export default function ProductCard({ product, onAddToCart }) {
   const [openBuyNow, setOpenBuyNow] = React.useState(false);
 
+  //check for stock availablity
+  const handleAddToCart = () => {
+    if (product.stock > 0) {
+      onAddToCart(product);
+    } else {
+      showToast("error", "This product is out of stock");
+    }
+  };
+
   const handleBuyNow = () => {
     setOpenBuyNow(true);
   };
-  const renderStatus = (
-    <Label
-      variant="filled"
-      color={(product.productStatus === "active" && "error") || "info"}
-      sx={{
-        zIndex: 9,
-        top: 16,
-        right: 16,
-        position: "absolute",
-        textTransform: "uppercase",
-      }}
-    >
-      {product.productStatus === "active" ? "Sale" : "New"}
-    </Label>
-  );
+
+  const renderStatus = () => {
+    const twoDaysAgo = new Date();
+    twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
+    const productDate = new Date(product.productUpdatedAt); // Assuming there's an 'addedDate' field
+
+    let statusText = "Sale";
+    let statusColor = "error";
+
+    if (productDate > twoDaysAgo) {
+      statusText = "New";
+      statusColor = "info";
+    } else if (product.isDiscounted) {
+      statusText = "Deal";
+      statusColor = "warning";
+    }
+
+    return (
+      <Label
+        variant="filled"
+        color={statusColor}
+        sx={{
+          zIndex: 9,
+          top: 16,
+          right: 16,
+          position: "absolute",
+          textTransform: "uppercase",
+        }}
+      >
+        {statusText}
+      </Label>
+    );
+  };
+
   const renderImg = (
     <Box
       component="img"
@@ -87,7 +115,7 @@ export default function ProductCard({ product, onAddToCart }) {
   return (
     <Card>
       <Box sx={{ pt: "100%", position: "relative" }}>
-        {product.productStatus && renderStatus}
+        {renderStatus()}
         {renderImg}
       </Box>
 
@@ -129,7 +157,8 @@ export default function ProductCard({ product, onAddToCart }) {
                 color: "black",
               },
             }}
-            onClick={() => onAddToCart(product)}
+            onClick={handleAddToCart}
+            disabled={product.stock === 0}
           >
             <Iconify
               icon="eva:shopping-cart-fill"
@@ -137,7 +166,7 @@ export default function ProductCard({ product, onAddToCart }) {
               height={22}
               sx={{ mr: 0.5 }}
             />
-            Add to Cart
+            {product.stock > 0 ? "Add to Cart" : "Out of Stock"}
           </Button>
           <Button
             variant="outlined"

@@ -16,14 +16,23 @@ import { useUser } from "../../../hooks/UserContext";
 
 export default function ProductsView() {
   const [openFilter, setOpenFilter] = useState(false);
+  const [filteredProducts, setFilteredProducts] = useState([]);
+  const [filters, setFilters] = useState({});
   const [products, setProducts] = useState([]);
   const [cart, setCart] = useState([]);
   const [openCart, setOpenCart] = useState(false);
   const { userData } = useUser();
+  const [activeProducts, setActiveProducts] = useState([]);
 
-  const activeProducts = products.filter(
-    (product) => product.productStatus === "active"
-  );
+  // const activeProducts = products.filter(
+  //   (product) => product.productStatus === "active"
+  // );
+
+  useEffect(() => {
+    setActiveProducts(
+      filteredProducts.filter((product) => product.productStatus === "active")
+    );
+  }, [filteredProducts]);
 
   useEffect(() => {
     const loadCart = async () => {
@@ -94,10 +103,55 @@ export default function ProductsView() {
         ...doc.data(),
       }));
       setProducts(productsList);
+      setFilteredProducts(productsList);
     };
 
     fetchProducts();
+    // refreshProducts();
   }, []);
+  const applyFilters = (newFilters) => {
+    setFilters(newFilters);
+    let filtered = products;
+
+    if (newFilters.category && newFilters.category !== "All") {
+      filtered = filtered.filter(
+        (product) => product.category === newFilters.category
+      );
+    }
+
+    if (newFilters.price) {
+      const [min, max] = newFilters.price.split("-").map(Number);
+      filtered = filtered.filter((product) => {
+        const price = product.isDiscounted
+          ? product.discountPrice
+          : product.price;
+        return price >= min && (max ? price <= max : true);
+      });
+    }
+
+    if (newFilters.colors && newFilters.colors.length > 0) {
+      filtered = filtered.filter(
+        (product) =>
+          product.colors &&
+          Array.isArray(product.colors) &&
+          newFilters.colors.some((color) => product.colors.includes(color))
+      );
+    }
+
+    setFilteredProducts(filtered);
+  };
+
+  const refreshProducts = async () => {
+    const productsCollection = collection(db, "products");
+    const productsSnapshot = await getDocs(productsCollection);
+    const productsList = productsSnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+    setProducts(productsList);
+    applyFilters(filters);
+  };
+  // refreshProducts();
 
   const buyNow = (product) => {
     addToCart(product);
@@ -133,6 +187,7 @@ export default function ProductsView() {
             openFilter={openFilter}
             onOpenFilter={handleOpenFilter}
             onCloseFilter={handleCloseFilter}
+            onFilter={applyFilters}
           />
 
           <ProductSort />
@@ -146,6 +201,7 @@ export default function ProductsView() {
               product={product}
               onAddToCart={addToCart}
               onBuyNow={buyNow}
+              refreshProducts={refreshProducts}
             />
           </Grid>
         ))}
@@ -162,6 +218,7 @@ export default function ProductsView() {
         setCart={setCart}
         user={userData}
         onPaymentSuccess={handlePaymentSuccess}
+        refreshProducts={refreshProducts}
       />
     </Container>
   );

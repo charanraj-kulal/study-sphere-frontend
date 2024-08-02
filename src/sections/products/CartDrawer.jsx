@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import Dialog from "@mui/material/Dialog";
 import DialogContent from "@mui/material/DialogContent";
 import { useUser } from "../../hooks/UserContext";
-import { doc, getDoc, setDoc, writeBatch } from "firebase/firestore";
+import { doc, getDoc, setDoc, writeBatch, updateDoc } from "firebase/firestore";
 import { db } from "../../firebase";
 import Drawer from "@mui/material/Drawer";
 import List from "@mui/material/List";
@@ -18,6 +18,7 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Divider from "@mui/material/Divider";
 import { fCurrency } from "../../utils/format-number";
+import { useToast } from "../../hooks/ToastContext";
 import AddressForm from "./AddressForm";
 
 export default function CartDrawer({
@@ -27,11 +28,13 @@ export default function CartDrawer({
   setCart,
   user,
   onPaymentSuccess,
+  refreshProducts,
 }) {
   const { userData } = useUser();
   const [userPoints, setUserPoints] = useState(0);
   const [address, setAddress] = useState(null);
   const [showAddressForm, setShowAddressForm] = useState(false);
+  const { showToast } = useToast();
 
   //razor pay sdk
   useEffect(() => {
@@ -74,6 +77,10 @@ export default function CartDrawer({
         .map((item) => {
           if (item.id === productId) {
             const newQuantity = Math.max(0, item.quantity + change);
+            if (newQuantity > item.stock) {
+              showToast("error", "Requested quantity exceeds available stock");
+              return item;
+            }
             return newQuantity === 0
               ? null
               : { ...item, quantity: newQuantity };
@@ -129,8 +136,8 @@ export default function CartDrawer({
       const purchaseId = `${userData.uid}_${Date.now()}`; // Generate a unique purchase ID for the entire cart
 
       // Save each cart item as a separate purchase
-      const purchases = cart.map((item) => ({
-        purchaseId,
+      const purchases = cart.map((item, index) => ({
+        purchaseId: `${purchaseId}_${index}`,
         productId: item.id,
         productName: item.productName,
         price: item.isDiscounted ? item.discountPrice : item.price,
@@ -144,8 +151,8 @@ export default function CartDrawer({
 
       // Save all purchases
       const batch = writeBatch(db);
-      purchases.forEach((purchase, index) => {
-        const docRef = doc(db, "purchasedProducts", `${purchaseId}_${index}`);
+      purchases.forEach((purchase) => {
+        const docRef = doc(db, "purchasedProducts", purchase.purchaseId);
         batch.set(docRef, purchase);
       });
 
@@ -156,19 +163,19 @@ export default function CartDrawer({
         { points: Math.round(remainingPoints) },
         { merge: true }
       );
-      const productRef = doc(db, "products", item.id);
-      batch.set(
-        productRef,
-        { stock: increment(-item.quantity) },
-        { merge: true }
-      );
+      // Update product stock and status for each item in the cart
+      for (const item of cart) {
+        const productRef = doc(db, "products", item.id);
+        const productSnap = await getDoc(productRef);
+        const currentStock = productSnap.data().stock;
+        const newStock = currentStock - item.quantity;
 
+        await updateDoc(productRef, {
+          stock: newStock,
+          productStatus: newStock === 0 ? "inactive" : "active",
+        });
+      }
       await batch.commit();
-
-      // Clear the cart
-      setCart([]);
-      onPaymentSuccess();
-      onClose();
     }
   };
 
@@ -181,12 +188,18 @@ export default function CartDrawer({
       description: "Purchase Description",
       // image: "https://ibb.co/4mnfNpm", // Add your logo URL here
       handler: function (response) {
-        alert(response.razorpay_payment_id);
+        // alert(response.razorpay_payment_id);
         savePurchasesToFirestore();
         // Handle successful payment
         setCart([]);
         onPaymentSuccess();
         onClose();
+        refreshProducts();
+
+        showToast(
+          "success",
+          `Payment sucessfull with id:${response.razorpay_payment_id}`
+        );
       },
       prefill: {
         name: userData?.name || "",
