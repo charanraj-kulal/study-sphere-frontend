@@ -51,7 +51,7 @@ const navConfig = [
     roles: [1, 2, 3],
   },
   {
-    title: "Products",
+    title: "Redeem",
     path: "/dashboard/products",
     icon: icon("ic_cart"),
     roles: [1, 2, 3],

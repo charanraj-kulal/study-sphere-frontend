@@ -1,9 +1,6 @@
 import PropTypes from "prop-types";
-import { useState, useEffect } from "react";
-// import { useUser } from "../../hooks/UserContext"; // Adjust the import path as needed
-// import { doc, getDoc } from "firebase/firestore";
-// import { db } from "../../firebase"; // Adjust the import path as needed
-
+import React from "react";
+import BuyNowDialog from "./BuyNowDialog.jsx";
 import Box from "@mui/material/Box";
 import Link from "@mui/material/Link";
 import Card from "@mui/material/Card";
@@ -15,31 +12,19 @@ import { fCurrency } from "../../utils/format-number";
 
 import Label from "../../components/label";
 import { ColorPreview } from "../../components/color-utils";
+import Iconify from "../../components/iconify";
 // ----------------------------------------------------------------------
 
-export default function ProductCard({ product, onAddToCart, onBuyNow }) {
-  // const { userData } = useUser();
-  // const [userPoints, setUserPoints] = useState(0);
+export default function ProductCard({ product, onAddToCart }) {
+  const [openBuyNow, setOpenBuyNow] = React.useState(false);
 
-  // useEffect(() => {
-  //   const fetchUserPoints = async () => {
-  //     if (userData) {
-  //       const userDoc = await getDoc(doc(db, "users", userData.uid));
-  //       console.log(userDoc.data().points);
-  //       if (userDoc.exists()) {
-  //         setUserPoints(userDoc.data().points || 0);
-  //         console.log(userDoc.data().points);
-  //       }
-  //     }
-  //   };
-
-  //   fetchUserPoints();
-  // }, [userData]);
-
+  const handleBuyNow = () => {
+    setOpenBuyNow(true);
+  };
   const renderStatus = (
     <Label
       variant="filled"
-      color={(product.productStatus === "sale" && "error") || "info"}
+      color={(product.productStatus === "active" && "error") || "info"}
       sx={{
         zIndex: 9,
         top: 16,
@@ -48,10 +33,9 @@ export default function ProductCard({ product, onAddToCart, onBuyNow }) {
         textTransform: "uppercase",
       }}
     >
-      {product.productStatus}
+      {product.productStatus === "active" ? "Sale" : "New"}
     </Label>
   );
-
   const renderImg = (
     <Box
       component="img"
@@ -83,7 +67,7 @@ export default function ProductCard({ product, onAddToCart, onBuyNow }) {
         </Typography>
       )}
       {fCurrency(product.isDiscounted ? product.discountPrice : product.price)}
-      {product.isDiscounted && (
+      {/* {product.isDiscounted && (
         <Typography
           component="span"
           variant="body2"
@@ -96,7 +80,7 @@ export default function ProductCard({ product, onAddToCart, onBuyNow }) {
             ? `-${product.discountValue}%`
             : `-${fCurrency(product.discountValue)}`}
         </Typography>
-      )}
+      )} */}
     </Typography>
   );
 
@@ -120,14 +104,54 @@ export default function ProductCard({ product, onAddToCart, onBuyNow }) {
           <ColorPreview colors={product.colorPreview} />
           {renderPrice}
         </Stack>
-
-        <Typography variant="body2">Stock: {product.stock}</Typography>
-
+        <Stack
+          direction="row"
+          alignItems="center"
+          justifyContent="space-between"
+        >
+          <Typography variant="body2">Stock: {product.stock}</Typography>
+          {product.isDiscounted && (
+            <Typography variant="body2" sx={{ color: "error.main" }}>
+              Discount:{" "}
+              {product.discountType === "percentage"
+                ? `${product.discountValue}%`
+                : fCurrency(product.discountValue)}
+            </Typography>
+          )}
+        </Stack>
         <Stack direction="row" spacing={1}>
-          <Button variant="contained" onClick={() => onAddToCart(product)}>
+          <Button
+            variant="contained"
+            sx={{
+              backgroundColor: "#0a4191",
+              "&:hover": {
+                backgroundColor: "#f9a825",
+                color: "black",
+              },
+            }}
+            onClick={() => onAddToCart(product)}
+          >
+            <Iconify
+              icon="eva:shopping-cart-fill"
+              width={22}
+              height={22}
+              sx={{ mr: 0.5 }}
+            />
             Add to Cart
           </Button>
-          <Button variant="outlined" onClick={() => onBuyNow(product)}>
+          <Button
+            variant="outlined"
+            sx={{
+              mt: 2,
+              borderColor: "#f9a825",
+              color: "#0a4191",
+              "&:hover": {
+                borderColor: "#0a4191",
+                color: "black",
+              },
+            }}
+            onClick={handleBuyNow}
+          >
             Buy Now
           </Button>
         </Stack>
@@ -136,6 +160,11 @@ export default function ProductCard({ product, onAddToCart, onBuyNow }) {
           <Typography variant="body2">Your Points: {userPoints}</Typography>
         )} */}
       </Stack>
+      <BuyNowDialog
+        open={openBuyNow}
+        onClose={() => setOpenBuyNow(false)}
+        product={product}
+      />
     </Card>
   );
 }

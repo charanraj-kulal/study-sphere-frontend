@@ -1,12 +1,10 @@
 import { useState, useEffect } from "react";
-import { collection, getDocs } from "firebase/firestore";
-import { db, auth } from "../../../firebase";
-import { onAuthStateChanged } from "firebase/auth";
+import { collection, getDocs, doc, setDoc, getDoc } from "firebase/firestore";
+import { db } from "../../../firebase";
 
 import Stack from "@mui/material/Stack";
 import Container from "@mui/material/Container";
 import Grid from "@mui/material/Unstable_Grid2";
-import Card from "@mui/material/Card";
 import Typography from "@mui/material/Typography";
 
 import ProductCard from "../product-card";
@@ -14,24 +12,70 @@ import ProductSort from "../product-sort";
 import ProductFilters from "../product-filters";
 import ProductCartWidget from "../product-cart-widget";
 import CartDrawer from "../CartDrawer";
-
-// ----------------------------------------------------------------------
+import { useUser } from "../../../hooks/UserContext";
 
 export default function ProductsView() {
   const [openFilter, setOpenFilter] = useState(false);
   const [products, setProducts] = useState([]);
   const [cart, setCart] = useState([]);
   const [openCart, setOpenCart] = useState(false);
-  const [user, setUser] = useState(null);
+  const { userData } = useUser();
+
+  const activeProducts = products.filter(
+    (product) => product.productStatus === "active"
+  );
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-    });
+    const loadCart = async () => {
+      if (userData) {
+        await loadCartFromFirestore(userData.uid);
+      } else {
+        const savedCart = JSON.parse(localStorage.getItem("cart")) || [];
+        setCart(savedCart);
+      }
+    };
 
-    // Cleanup subscription on unmount
-    return () => unsubscribe();
-  }, []);
+    loadCart();
+  }, [userData]);
+
+  useEffect(() => {
+    const saveCart = async () => {
+      if (userData) {
+        await setDoc(doc(db, "userCarts", userData.uid), { items: cart });
+      } else {
+        localStorage.setItem("cart", JSON.stringify(cart));
+      }
+    };
+
+    if (cart.length > 0) {
+      saveCart();
+    }
+  }, [cart, userData]);
+
+  const loadCartFromFirestore = async (userId) => {
+    try {
+      const cartDoc = await getDoc(doc(db, "userCarts", userId));
+      if (cartDoc.exists()) {
+        setCart(cartDoc.data().items);
+      }
+    } catch (error) {
+      console.error("Error loading cart from Firestore:", error);
+    }
+  };
+
+  const addToCart = (product) => {
+    setCart((prevCart) => {
+      const existingItem = prevCart.find((item) => item.id === product.id);
+      if (existingItem) {
+        return prevCart.map((item) =>
+          item.id === product.id
+            ? { ...item, quantity: item.quantity + 1 }
+            : item
+        );
+      }
+      return [...prevCart, { ...product, quantity: 1 }];
+    });
+  };
 
   const handleOpenFilter = () => {
     setOpenFilter(true);
@@ -55,23 +99,20 @@ export default function ProductsView() {
     fetchProducts();
   }, []);
 
-  const addToCart = (product) => {
-    setCart((prevCart) => {
-      const existingItem = prevCart.find((item) => item.id === product.id);
-      if (existingItem) {
-        return prevCart.map((item) =>
-          item.id === product.id
-            ? { ...item, quantity: item.quantity + 1 }
-            : item
-        );
-      }
-      return [...prevCart, { ...product, quantity: 1 }];
-    });
-  };
-
   const buyNow = (product) => {
     addToCart(product);
     setOpenCart(true);
+  };
+
+  const handlePaymentSuccess = async () => {
+    if (userData) {
+      // Clear cart in Firestore
+      await setDoc(doc(db, "userCarts", userData.uid), { items: [] });
+    } else {
+      localStorage.removeItem("cart");
+    }
+    setCart([]);
+    setOpenCart(false);
   };
 
   return (
@@ -99,21 +140,13 @@ export default function ProductsView() {
       </Stack>
 
       <Grid container spacing={3}>
-        {products.map((product, index) => (
-          <Grid
-            key={product.id}
-            xs={12}
-            sm={6}
-            md={3}
-            sx={{ marginTop: index < 4 ? 2 : 0 }} // Add marginTop for the first row
-          >
-            <Card sx={{ boxShadow: 3 }}>
-              <ProductCard
-                product={product}
-                onAddToCart={addToCart}
-                onBuyNow={buyNow}
-              />
-            </Card>
+        {activeProducts.map((product) => (
+          <Grid key={product.id} xs={12} sm={6} md={3}>
+            <ProductCard
+              product={product}
+              onAddToCart={addToCart}
+              onBuyNow={buyNow}
+            />
           </Grid>
         ))}
       </Grid>
@@ -127,7 +160,8 @@ export default function ProductsView() {
         onClose={() => setOpenCart(false)}
         cart={cart}
         setCart={setCart}
-        user={user}
+        user={userData}
+        onPaymentSuccess={handlePaymentSuccess}
       />
     </Container>
   );
