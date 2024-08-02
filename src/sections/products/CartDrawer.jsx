@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import Dialog from "@mui/material/Dialog";
 import DialogContent from "@mui/material/DialogContent";
 import { useUser } from "../../hooks/UserContext";
-import { doc, getDoc, setDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc, writeBatch } from "firebase/firestore";
 import { db } from "../../firebase";
 import Drawer from "@mui/material/Drawer";
 import List from "@mui/material/List";
@@ -85,10 +85,10 @@ export default function CartDrawer({
   };
 
   const calculateTotal = () => {
-    const subtotal = cart.reduce(
-      (total, item) => total + item.price * item.quantity,
-      0
-    );
+    const subtotal = cart.reduce((total, item) => {
+      const itemPrice = item.isDiscounted ? item.discountPrice : item.price;
+      return total + itemPrice * item.quantity;
+    }, 0);
     const gst = subtotal * 0.18;
     const platformFee = subtotal * 0.02;
     const total = subtotal + gst + platformFee;
@@ -99,7 +99,7 @@ export default function CartDrawer({
 
   const pointsValue = userPoints / 2;
   const amountAfterPoints = Math.max(0, total - pointsValue);
-  const pointsUsed = total > pointsValue ? userPoints : total * 2;
+  const pointsUsed = parseInt(total > pointsValue ? userPoints : total * 2);
   const remainingPoints = Math.max(0, userPoints - pointsUsed);
 
   const handleAddressSubmit = async (addressData) => {
@@ -118,24 +118,71 @@ export default function CartDrawer({
     if (!address) {
       setShowAddressForm(true);
     } else if (amountAfterPoints === 0) {
-      // Place order logic
-      console.log("Placing order...");
-      // Add your order placement logic here
+      savePurchasesToFirestore();
     } else {
       handlePayment();
+    }
+  };
+  //save purchased products
+  const savePurchasesToFirestore = async () => {
+    if (userData) {
+      const purchaseId = `${userData.uid}_${Date.now()}`; // Generate a unique purchase ID for the entire cart
+
+      // Save each cart item as a separate purchase
+      const purchases = cart.map((item) => ({
+        purchaseId,
+        productId: item.id,
+        productName: item.productName,
+        price: item.isDiscounted ? item.discountPrice : item.price,
+        quantity: item.quantity,
+        totalPaid:
+          (item.isDiscounted ? item.discountPrice : item.price) * item.quantity,
+        purchaseDate: new Date(),
+        userId: userData.uid,
+        status: "Purchased",
+      }));
+
+      // Save all purchases
+      const batch = writeBatch(db);
+      purchases.forEach((purchase, index) => {
+        const docRef = doc(db, "purchasedProducts", `${purchaseId}_${index}`);
+        batch.set(docRef, purchase);
+      });
+
+      // Update user points
+      const userRef = doc(db, "users", userData.uid);
+      batch.set(
+        userRef,
+        { points: Math.round(remainingPoints) },
+        { merge: true }
+      );
+      const productRef = doc(db, "products", item.id);
+      batch.set(
+        productRef,
+        { stock: increment(-item.quantity) },
+        { merge: true }
+      );
+
+      await batch.commit();
+
+      // Clear the cart
+      setCart([]);
+      onPaymentSuccess();
+      onClose();
     }
   };
 
   const handlePayment = () => {
     const options = {
-      key: "rzp_test_X45n8vinhpSHdY",
+      key: import.meta.env.VITE_RAZORPAY_API,
       amount: Math.round(amountAfterPoints * 100), // Convert to paise
       currency: "INR",
       name: "Study Sphere store",
       description: "Purchase Description",
-      // image: "https://ibb.co/59H6Y5L", // Add your logo URL here
+      // image: "https://ibb.co/4mnfNpm", // Add your logo URL here
       handler: function (response) {
         alert(response.razorpay_payment_id);
+        savePurchasesToFirestore();
         // Handle successful payment
         setCart([]);
         onPaymentSuccess();
@@ -147,7 +194,7 @@ export default function CartDrawer({
         contact: userData?.phone || "",
       },
       theme: {
-        color: "#3399cc",
+        color: "#f9a825",
       },
       // Add these options to enable UPI and other payment methods
       payment_capture: 1,
@@ -186,7 +233,7 @@ export default function CartDrawer({
               </ListItemAvatar>
               <ListItemText
                 primary={item.productName}
-                secondary={`${fCurrency(item.price)} x ${item.quantity}`}
+                secondary={`${fCurrency(item.isDiscounted ? item.discountPrice : item.price)} x ${item.quantity}`}
               />
               <Box>
                 <IconButton
@@ -242,12 +289,19 @@ export default function CartDrawer({
         <Button
           variant="contained"
           fullWidth
-          sx={{ mt: 2 }}
+          sx={{
+            mt: 2,
+            backgroundColor: "#0a4191",
+            "&:hover": {
+              backgroundColor: "#f9a825",
+              color: "black",
+            },
+          }}
           onClick={handleCheckout}
         >
           {address
             ? amountAfterPoints === 0
-              ? "Place Order"
+              ? `Use ${pointsUsed} points and Place Order`
               : `Pay ${fCurrency(amountAfterPoints)} and Place Order`
             : "Add Address"}
         </Button>

@@ -4,6 +4,7 @@ import PropTypes from "prop-types";
 import Box from "@mui/material/Box";
 import Stack from "@mui/material/Stack";
 import Drawer from "@mui/material/Drawer";
+import Button from "@mui/material/Button";
 
 import Avatar from "@mui/material/Avatar";
 import { alpha } from "@mui/material/styles";
@@ -23,6 +24,8 @@ import Scrollbar from "../../components/scrollbar";
 
 import { NAV } from "./config-layout";
 import navConfig from "./config-navigation";
+// import IllustrationAvatar from "../../assets/illustrations/illustration_avatar.png";
+import IllustrationAvatar from "../../assets/illustrations/illustration_donation.png";
 
 // ----------------------------------------------------------------------
 
@@ -79,6 +82,55 @@ export default function Nav({ openNav, onCloseNav }) {
     </Stack>
   );
 
+  const renderUpgrade = (
+    <Box sx={{ px: 2.5, pb: 3, mt: 10 }}>
+      <Stack
+        alignItems="center"
+        spacing={3}
+        sx={{ pt: 5, borderRadius: 2, position: "relative" }}
+      >
+        <Box
+          component="img"
+          src={IllustrationAvatar}
+          sx={{ width: 100, position: "absolute", top: -50 }}
+        />
+
+        <Box sx={{ textAlign: "center" }}>
+          <Typography variant="h6">Felt useful?</Typography>
+
+          <Typography variant="body2" sx={{ color: "text.secondary", mt: 1 }}>
+            Donate something..
+          </Typography>
+        </Box>
+
+        <Button
+          href="https://razorpay.me/@agnisia"
+          target="_blank"
+          variant="contained"
+          sx={{
+            backgroundColor: "#0a4191",
+            color: "white",
+            "&:hover": {
+              backgroundColor: "#f9a825",
+              color: "black",
+            },
+          }}
+          // color="inherit"
+          // backgr
+        >
+          Donate now
+        </Button>
+
+        {/* <Box component="form">
+          <script
+            src="https://checkout.razorpay.com/v1/payment-button.js"
+            data-payment_button_id="pl_OfWyROq0DgW0kE"
+            async
+          />
+        </Box> */}
+      </Stack>
+    </Box>
+  );
   const renderContent = (
     <Scrollbar
       sx={{
@@ -98,7 +150,7 @@ export default function Nav({ openNav, onCloseNav }) {
 
       <Box sx={{ flexGrow: 1 }} />
 
-      {/* {renderUpgrade} */}
+      {renderUpgrade}
     </Scrollbar>
   );
 
