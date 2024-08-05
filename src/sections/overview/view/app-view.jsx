@@ -1,4 +1,5 @@
 import { faker } from "@faker-js/faker";
+import { useState, useEffect } from "react";
 
 import Container from "@mui/material/Container";
 import Grid from "@mui/material/Unstable_Grid2";
@@ -15,14 +16,28 @@ import AppWidgetSummary from "../app-widget-summary";
 import AppTrafficBySite from "../app-traffic-by-site";
 import AppCurrentSubject from "../app-current-subject";
 import AppConversionRates from "../app-conversion-rates";
+import { useUser } from "../../../hooks/UserContext";
 
 // ----------------------------------------------------------------------
 
 export default function AppView() {
+  const { userData } = useUser();
+  const [greeting, setGreeting] = useState("");
+  useEffect(() => {
+    const getGreeting = () => {
+      const hour = new Date().getHours();
+      if (hour < 12) return "Morning";
+      if (hour < 18) return "Afternoon";
+      return "Evening";
+    };
+
+    setGreeting(getGreeting());
+  }, []);
+
   return (
     <Container maxWidth="xl">
       <Typography variant="h4" sx={{ mb: 5 }}>
-        Hi, Welcome back 👋
+        Good {greeting}, {userData.displayName}👋
       </Typography>
 
       <Grid container spacing={3}>
@@ -32,7 +47,10 @@ export default function AppView() {
             total={714000}
             color="success"
             icon={
-              <img alt="icon" src="src/assets/icons/glass/ic_glass_bag.png" />
+              <img
+                alt="icon"
+                src="../src/assets/icons/glass/ic_glass_bag.png"
+              />
             }
           />
         </Grid>
@@ -43,7 +61,10 @@ export default function AppView() {
             total={1352831}
             color="info"
             icon={
-              <img alt="icon" src="src/assets/icons/glass/ic_glass_users.png" />
+              <img
+                alt="icon"
+                src="../src/assets/icons/glass/ic_glass_users.png"
+              />
             }
           />
         </Grid>
@@ -54,7 +75,10 @@ export default function AppView() {
             total={1723315}
             color="warning"
             icon={
-              <img alt="icon" src="src/assets/icons/glass/ic_glass_buy.png" />
+              <img
+                alt="icon"
+                src="../src/assets/icons/glass/ic_glass_buy.png"
+              />
             }
           />
         </Grid>
@@ -67,7 +91,7 @@ export default function AppView() {
             icon={
               <img
                 alt="icon"
-                src="src/assets/icons/glass/ic_glass_message.png"
+                src="../src/assets/icons/glass/ic_glass_message.png"
               />
             }
           />
@@ -178,7 +202,7 @@ export default function AppView() {
               id: faker.string.uuid(),
               title: faker.person.jobTitle(),
               description: faker.commerce.productDescription(),
-              image: `src/assets/images/covers/cover_${index + 1}.jpg`,
+              image: `../src/assets/images/covers/cover_${index + 1}.jpg`,
               postedAt: faker.date.recent(),
             }))}
           />

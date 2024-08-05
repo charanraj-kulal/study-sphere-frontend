@@ -6,6 +6,7 @@ import Link from "@mui/material/Link";
 import { useTheme } from "@mui/material/styles";
 
 import { RouterLink } from "../../routes/components";
+import { Stack } from "@mui/material";
 
 // ----------------------------------------------------------------------
 
@@ -21,11 +22,20 @@ const Logo = forwardRef(({ disabledLink = false, sx, ...other }, ref) => {
   // OR using local (public folder)
   // -------------------------------------------------------
   const logo = (
-    <Box
-      component="img"
-      src="/../src/assets/images/logo/logo.png"
-      sx={{ width: 50, height: 50, cursor: "pointer", ...sx }}
-    />
+    <>
+      <Stack direction="row" alignItems="center" spacing={1} marginLeft={6}>
+        <Box
+          component="img"
+          src="/../src/assets/icons/favicon/favicon.png"
+          sx={{ width: 50, height: 50, cursor: "pointer", ...sx }}
+        />
+        <Box
+          component="img"
+          src="/../src/assets/images/logo/logo_text.png"
+          sx={{ width: 90, height: 90, cursor: "pointer", ...sx }}
+        />
+      </Stack>
+    </>
   );
 
   // const logo = (

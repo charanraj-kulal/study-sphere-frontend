@@ -21,6 +21,7 @@ export default function VerifyView() {
   const [count, setCount] = useState(0);
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("newest");
+  const [greeting, setGreeting] = useState("");
 
   useEffect(() => {
     const fetchStudyMaterials = async () => {
@@ -82,13 +83,25 @@ export default function VerifyView() {
   }
 
   const showNoDataCard = !loading && filteredMaterials.length === 0;
+  useEffect(() => {
+    const getGreeting = () => {
+      const hour = new Date().getHours();
+      if (hour < 12) return "Morning";
+      if (hour < 18) return "Afternoon";
+      return "Evening";
+    };
 
+    setGreeting(getGreeting());
+  }, []);
   return (
     <Container>
-      <Typography variant="h4" sx={{ mb: 3 }}>
-        Verify Study Material
+      <Typography variant="h4" sx={{ mb: 5 }}>
+        Good {greeting}, {userData.displayName}👋
       </Typography>
       <Card sx={{ ml: 2, p: 4 }}>
+        <Typography variant="h4" sx={{ mb: 3 }}>
+          Verify Study Material
+        </Typography>
         <VerifyStudyMaterialFilters
           filterValue={searchQuery}
           onFilterChange={setSearchQuery}

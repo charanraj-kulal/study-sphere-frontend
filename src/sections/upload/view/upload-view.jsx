@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Container from "@mui/material/Container";
 import Typography from "@mui/material/Typography";
 import Card from "@mui/material/Card";
@@ -7,13 +7,28 @@ import { useUser } from "../../../hooks/UserContext";
 
 export default function UploadView() {
   const { userData } = useUser();
+  const [greeting, setGreeting] = useState("");
+
+  useEffect(() => {
+    const getGreeting = () => {
+      const hour = new Date().getHours();
+      if (hour < 12) return "Morning";
+      if (hour < 18) return "Afternoon";
+      return "Evening";
+    };
+
+    setGreeting(getGreeting());
+  }, []);
 
   return (
     <Container>
       <Typography variant="h4" sx={{ mb: 5 }}>
-        Upload Study Materials
+        Good {greeting}, {userData.displayName}👋
       </Typography>
       <Card>
+        <Typography variant="h4" sx={{ mb: 3 }}>
+          Upload study materials
+        </Typography>
         <UploadStudyMaterialForm currentUser={userData} />
       </Card>
     </Container>

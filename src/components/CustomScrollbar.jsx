@@ -1,27 +1,35 @@
-import React, { useRef, useEffect } from 'react';
-import PropTypes from 'prop-types';
-import { styled } from '@mui/material/styles';
+import React, { useRef, useEffect, useState } from "react";
+import PropTypes from "prop-types";
+import { styled } from "@mui/material/styles";
 
-const ScrollContainer = styled('div')(({ theme }) => ({
-  height: '100%',
-  overflow: 'auto',
-  '&::-webkit-scrollbar': {
-    width: '8px',
+const ScrollContainer = styled("div")(({ theme, $isHovering }) => ({
+  height: "100%",
+  overflow: "auto",
+  scrollbarWidth: "thin",
+  scrollbarColor: $isHovering
+    ? `${theme.palette.grey[400]} transparent`
+    : "transparent transparent",
+  transition: "scrollbar-color 0.3s ease",
+  "&::-webkit-scrollbar": {
+    width: "8px",
   },
-  '&::-webkit-scrollbar-track': {
-    background: theme.palette.background.default,
+  "&::-webkit-scrollbar-track": {
+    background: "transparent",
   },
-  '&::-webkit-scrollbar-thumb': {
+  "&::-webkit-scrollbar-thumb": {
     background: theme.palette.grey[400],
-    borderRadius: '4px',
+    borderRadius: "4px",
+    opacity: $isHovering ? 1 : 0,
+    transition: "opacity 0.3s ease",
   },
-  '&::-webkit-scrollbar-thumb:hover': {
-    background: theme.palette.grey[600],
+  "&:hover::-webkit-scrollbar-thumb": {
+    opacity: 1,
   },
 }));
 
 const CustomScrollbar = ({ children, onScroll, ...props }) => {
   const scrollRef = useRef(null);
+  const [isHovering, setIsHovering] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -36,18 +44,24 @@ const CustomScrollbar = ({ children, onScroll, ...props }) => {
 
     const scrollElement = scrollRef.current;
     if (scrollElement) {
-      scrollElement.addEventListener('scroll', handleScroll);
+      scrollElement.addEventListener("scroll", handleScroll);
     }
 
     return () => {
       if (scrollElement) {
-        scrollElement.removeEventListener('scroll', handleScroll);
+        scrollElement.removeEventListener("scroll", handleScroll);
       }
     };
   }, [onScroll]);
 
   return (
-    <ScrollContainer ref={scrollRef} {...props}>
+    <ScrollContainer
+      ref={scrollRef}
+      $isHovering={isHovering}
+      onMouseEnter={() => setIsHovering(true)}
+      onMouseLeave={() => setIsHovering(false)}
+      {...props}
+    >
       {children}
     </ScrollContainer>
   );

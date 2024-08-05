@@ -132,17 +132,18 @@ export default function Nav({ openNav, onCloseNav }) {
   );
   const renderContent = (
     <CustomScrollbar
-      sx={{
-        height: "100vh",
-        "& > div": {
-          display: "flex",
-          flexDirection: "column",
-          minHeight: "100%",
-        },
-      }}
+    // sx={{
+    //   height: "100vh",
+    //   "& > div": {
+    //     display: "flex",
+    //     flexDirection: "column",
+    //     minHeight: "100%",
+    //   },
+    // }}
     >
-      <Logo sx={{ mt: 3, ml: 4 }} />
-
+      <Stack>
+        <Logo sx={{ mt: 3, ml: 4 }} />
+      </Stack>
       {renderAccount}
 
       {renderMenu}

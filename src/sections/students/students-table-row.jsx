@@ -16,7 +16,7 @@ import Label from "../../components/label";
 import Iconify from "../../components/iconify";
 import { useToast } from "../../hooks/ToastContext";
 import LottieLoader from "../../components/LottieLoader";
-
+import EditStudentDialog from "./EditStudentDialog";
 export default function UserTableRow({
   selected,
   id,
@@ -33,6 +33,7 @@ export default function UserTableRow({
   const [open, setOpen] = useState(null);
   const { showToast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
   const navigate = useNavigate();
 
   const handleOpenMenu = (event) => {
@@ -58,6 +59,14 @@ export default function UserTableRow({
       setIsLoading(false);
     }
     handleCloseMenu();
+  };
+  const handleEditUser = () => {
+    setEditDialogOpen(true);
+    handleCloseMenu();
+  };
+
+  const handleCloseEditDialog = () => {
+    setEditDialogOpen(false);
   };
 
   return (
@@ -110,7 +119,19 @@ export default function UserTableRow({
           </>
         )}
       </TableRow>
-
+      <EditStudentDialog
+        open={editDialogOpen}
+        onClose={handleCloseEditDialog}
+        user={{
+          id,
+          name,
+          email,
+          course,
+          collegeName,
+          status,
+        }}
+        setUsers={setUsers}
+      />
       <Popover
         open={!!open}
         anchorEl={open}
@@ -121,7 +142,7 @@ export default function UserTableRow({
           sx: { width: 140 },
         }}
       >
-        <MenuItem onClick={handleCloseMenu}>
+        <MenuItem onClick={handleEditUser}>
           <Iconify icon="eva:edit-fill" sx={{ mr: 2 }} />
           Edit
         </MenuItem>

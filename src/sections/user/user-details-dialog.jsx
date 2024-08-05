@@ -42,6 +42,8 @@ import {
   updateDoc,
   arrayUnion,
   arrayRemove,
+  addDoc,
+  serverTimestamp,
 } from "firebase/firestore";
 import { formatTimeAgo } from "../../utils/timeUtils";
 import { QRCodeSVG } from "qrcode.react";
@@ -77,6 +79,20 @@ const UserDetailsDialog = ({ open, onClose, userId, user, currentUser }) => {
   const [anchorEl, setAnchorEl] = useState(null);
   const [isFollowing, setIsFollowing] = useState(false);
 
+  async function addNotification(userId, title, description, type) {
+    try {
+      await addDoc(collection(db, "notifications"), {
+        userId,
+        title,
+        description,
+        type,
+        createdAt: serverTimestamp(),
+        isUnRead: true,
+      });
+    } catch (error) {
+      console.error("Error adding notification: ", error);
+    }
+  }
   useEffect(() => {
     const fetchUserDocuments = async () => {
       if (!user || !user.uploadedDoc) return;
@@ -197,6 +213,12 @@ const UserDetailsDialog = ({ open, onClose, userId, user, currentUser }) => {
         await updateDoc(displayedUserRef, {
           followers: arrayUnion(currentUser.uid),
         });
+        await addNotification(
+          userId,
+          "You have new follower",
+          `${currentUser.displayName} started following you`,
+          "started_following"
+        );
       }
       setIsFollowing(!isFollowing);
       showToast(
