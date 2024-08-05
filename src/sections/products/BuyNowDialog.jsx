@@ -12,7 +12,12 @@ import { useToast } from "../../hooks/ToastContext";
 import { fCurrency } from "../../utils/format-number";
 import AddressForm from "./AddressForm";
 
-export default function BuyNowDialog({ open, onClose, product }) {
+export default function BuyNowDialog({
+  open,
+  onClose,
+  product,
+  refreshProducts,
+}) {
   const { userData } = useUser();
   const [userPoints, setUserPoints] = useState(0);
   const [address, setAddress] = useState(null);
@@ -98,6 +103,7 @@ export default function BuyNowDialog({ open, onClose, product }) {
         );
         savePurchaseToFirestore();
         refreshProducts();
+        onClose();
       },
       prefill: {
         name: userData?.name || "",
@@ -159,7 +165,7 @@ export default function BuyNowDialog({ open, onClose, product }) {
         stock: newStock,
         productStatus: newStock === 0 ? "inactive" : "active",
       });
-
+      refreshProducts();
       onClose();
     }
   };

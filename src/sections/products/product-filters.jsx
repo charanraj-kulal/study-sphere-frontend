@@ -73,9 +73,11 @@ export default function ProductFilters({
 
   const handleCategoryChange = (category) => {
     setSelectedCategories((prev) =>
-      prev.includes(category)
-        ? prev.filter((c) => c !== category)
-        : [...prev, category]
+      category === "All"
+        ? []
+        : prev.includes(category)
+          ? prev.filter((c) => c !== category)
+          : [...prev, category]
     );
   };
 
@@ -93,7 +95,7 @@ export default function ProductFilters({
 
   const handleApplyFilters = () => {
     onFilter({
-      categories: selectedCategories,
+      categories: selectedCategories.length > 0 ? selectedCategories : ["All"],
       price: selectedPrice,
       colors: selectedColors,
     });

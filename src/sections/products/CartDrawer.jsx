@@ -133,8 +133,7 @@ export default function CartDrawer({
   //save purchased products
   const savePurchasesToFirestore = async () => {
     if (userData) {
-      const purchaseId = `${userData.uid}_${Date.now()}`; // Generate a unique purchase ID for the entire cart
-
+      const purchaseId = `${userData.uid}_${Date.now()}`;
       // Save each cart item as a separate purchase
       const purchases = cart.map((item, index) => ({
         purchaseId: `${purchaseId}_${index}`,

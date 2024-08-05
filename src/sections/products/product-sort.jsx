@@ -1,4 +1,5 @@
 import { useState } from "react";
+import PropTypes from "prop-types";
 
 import Menu from "@mui/material/Menu";
 import Button from "@mui/material/Button";
@@ -8,17 +9,16 @@ import Typography from "@mui/material/Typography";
 
 import Iconify from "../../components/iconify";
 
-// ----------------------------------------------------------------------
-
 const SORT_OPTIONS = [
-  { value: "featured", label: "Featured" },
+  { value: "featured", label: "Oldest" },
   { value: "newest", label: "Newest" },
   { value: "priceDesc", label: "Price: High-Low" },
   { value: "priceAsc", label: "Price: Low-High" },
 ];
 
-export default function ShopProductSort() {
+export default function ShopProductSort({ onSort }) {
   const [open, setOpen] = useState(null);
+  const [selected, setSelected] = useState("newest");
 
   const handleOpen = (event) => {
     setOpen(event.currentTarget);
@@ -26,6 +26,12 @@ export default function ShopProductSort() {
 
   const handleClose = () => {
     setOpen(null);
+  };
+
+  const handleMenuItemClick = (option) => {
+    setSelected(option.value);
+    onSort(option.value);
+    handleClose();
   };
 
   return (
@@ -46,7 +52,7 @@ export default function ShopProductSort() {
           variant="subtitle2"
           sx={{ color: "text.secondary" }}
         >
-          Newest
+          {SORT_OPTIONS.find((option) => option.value === selected).label}
         </Typography>
       </Button>
 
@@ -69,8 +75,8 @@ export default function ShopProductSort() {
         {SORT_OPTIONS.map((option) => (
           <MenuItem
             key={option.value}
-            selected={option.value === "newest"}
-            onClick={handleClose}
+            selected={option.value === selected}
+            onClick={() => handleMenuItemClick(option)}
           >
             {option.label}
           </MenuItem>
@@ -79,3 +85,7 @@ export default function ShopProductSort() {
     </>
   );
 }
+
+ShopProductSort.propTypes = {
+  onSort: PropTypes.func.isRequired,
+};

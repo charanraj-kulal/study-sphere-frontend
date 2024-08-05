@@ -7,7 +7,7 @@ import Card from "@mui/material/Card";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
-
+import { serverTimestamp } from "firebase/firestore";
 import { fCurrency } from "../../utils/format-number";
 
 import Label from "../../components/label";
@@ -32,9 +32,9 @@ export default function ProductCard({ product, onAddToCart }) {
   };
 
   const renderStatus = () => {
-    const twoDaysAgo = new Date();
-    twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
-    const productDate = new Date(product.productUpdatedAt); // Assuming there's an 'addedDate' field
+    const now = new Date();
+    const twoDaysAgo = new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000);
+    const productDate = product.productUpdatedAt?.toDate() || new Date(0);
 
     let statusText = "Sale";
     let statusColor = "error";
@@ -42,7 +42,8 @@ export default function ProductCard({ product, onAddToCart }) {
     if (productDate > twoDaysAgo) {
       statusText = "New";
       statusColor = "info";
-    } else if (product.isDiscounted) {
+    }
+    if (product.isDiscounted) {
       statusText = "Deal";
       statusColor = "warning";
     }
@@ -63,7 +64,6 @@ export default function ProductCard({ product, onAddToCart }) {
       </Label>
     );
   };
-
   const renderImg = (
     <Box
       component="img"
@@ -78,7 +78,16 @@ export default function ProductCard({ product, onAddToCart }) {
       }}
     />
   );
-
+  const refreshProducts = async () => {
+    const productsCollection = collection(db, "products");
+    const productsSnapshot = await getDocs(productsCollection);
+    const productsList = productsSnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+    setProducts(productsList);
+    setFilteredProducts(productsList);
+  };
   const renderPrice = (
     <Typography variant="subtitle1">
       {product.isDiscounted && (
@@ -193,6 +202,7 @@ export default function ProductCard({ product, onAddToCart }) {
         open={openBuyNow}
         onClose={() => setOpenBuyNow(false)}
         product={product}
+        refreshProducts={refreshProducts}
       />
     </Card>
   );

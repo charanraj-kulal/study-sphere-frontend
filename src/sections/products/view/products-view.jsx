@@ -23,6 +23,7 @@ export default function ProductsView() {
   const [openCart, setOpenCart] = useState(false);
   const { userData } = useUser();
   const [activeProducts, setActiveProducts] = useState([]);
+  const [sortOption, setSortOption] = useState("newest");
 
   // const activeProducts = products.filter(
   //   (product) => product.productStatus === "active"
@@ -113,9 +114,13 @@ export default function ProductsView() {
     setFilters(newFilters);
     let filtered = products;
 
-    if (newFilters.category && newFilters.category !== "All") {
-      filtered = filtered.filter(
-        (product) => product.category === newFilters.category
+    if (
+      newFilters.categories &&
+      newFilters.categories.length > 0 &&
+      !newFilters.categories.includes("All")
+    ) {
+      filtered = filtered.filter((product) =>
+        newFilters.categories.includes(product.category)
       );
     }
 
@@ -132,13 +137,45 @@ export default function ProductsView() {
     if (newFilters.colors && newFilters.colors.length > 0) {
       filtered = filtered.filter(
         (product) =>
-          product.colors &&
-          Array.isArray(product.colors) &&
-          newFilters.colors.some((color) => product.colors.includes(color))
+          product.colorPreview &&
+          Array.isArray(product.colorPreview) &&
+          newFilters.colors.some((color) =>
+            product.colorPreview.includes(color)
+          )
       );
     }
 
     setFilteredProducts(filtered);
+  };
+
+  const handleSort = (option) => {
+    setSortOption(option);
+    let sorted = [...filteredProducts];
+
+    switch (option) {
+      case "featured":
+        // Sort by oldest (assuming you have a 'createdAt' field)
+        sorted.sort(
+          (a, b) => a.productAddedAt.seconds - b.productAddedAt.seconds
+        );
+        break;
+      case "newest":
+        // Sort by newest (assuming you have a 'createdAt' field)
+        sorted.sort(
+          (a, b) => b.productAddedAt.seconds - a.productAddedAt.seconds
+        );
+        break;
+      case "priceDesc":
+        sorted.sort((a, b) => b.price - a.price);
+        break;
+      case "priceAsc":
+        sorted.sort((a, b) => a.price - b.price);
+        break;
+      default:
+        break;
+    }
+
+    setFilteredProducts(sorted);
   };
 
   const refreshProducts = async () => {
@@ -149,9 +186,8 @@ export default function ProductsView() {
       ...doc.data(),
     }));
     setProducts(productsList);
-    applyFilters(filters);
+    setFilteredProducts(productsList);
   };
-  // refreshProducts();
 
   const buyNow = (product) => {
     addToCart(product);
@@ -190,7 +226,7 @@ export default function ProductsView() {
             onFilter={applyFilters}
           />
 
-          <ProductSort />
+          <ProductSort onSort={handleSort} />
         </Stack>
       </Stack>
 

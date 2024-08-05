@@ -17,10 +17,9 @@ import { RouterLink } from "../../routes/components";
 import { useResponsive } from "../../hooks/use-responsive";
 import { useUser } from "../../hooks/UserContext";
 
-import { account } from "../../_mock/account";
-
 import Logo from "../../components/logo";
-import Scrollbar from "../../components/scrollbar";
+// import Scrollbar from "../../components/scrollbar";
+import CustomScrollbar from "../../components/CustomScrollbar";
 
 import { NAV } from "./config-layout";
 import navConfig from "./config-navigation";
@@ -132,13 +131,13 @@ export default function Nav({ openNav, onCloseNav }) {
     </Box>
   );
   const renderContent = (
-    <Scrollbar
+    <CustomScrollbar
       sx={{
-        height: 1,
-        "& .simplebar-content": {
-          height: 1,
+        height: "100vh",
+        "& > div": {
           display: "flex",
           flexDirection: "column",
+          minHeight: "100%",
         },
       }}
     >
@@ -151,7 +150,7 @@ export default function Nav({ openNav, onCloseNav }) {
       <Box sx={{ flexGrow: 1 }} />
 
       {renderUpgrade}
-    </Scrollbar>
+    </CustomScrollbar>
   );
 
   return (
