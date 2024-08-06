@@ -102,8 +102,6 @@ export default function BuyNowDialog({
           `Payment sucessfull with id:${response.razorpay_payment_id}`
         );
         savePurchaseToFirestore();
-        refreshProducts();
-        onClose();
       },
       prefill: {
         name: userData?.name || "",

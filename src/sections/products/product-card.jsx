@@ -7,15 +7,15 @@ import Card from "@mui/material/Card";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
-import { serverTimestamp } from "firebase/firestore";
+import { collection, getDocs } from "firebase/firestore";
 import { fCurrency } from "../../utils/format-number";
-
+import { db } from "../../firebase.js";
 import Label from "../../components/label";
 import { ColorPreview } from "../../components/color-utils";
 import Iconify from "../../components/iconify";
 // ----------------------------------------------------------------------
 
-export default function ProductCard({ product, onAddToCart }) {
+export default function ProductCard({ product, onAddToCart, refreshProducts }) {
   const [openBuyNow, setOpenBuyNow] = React.useState(false);
 
   //check for stock availablity
@@ -78,16 +78,16 @@ export default function ProductCard({ product, onAddToCart }) {
       }}
     />
   );
-  const refreshProducts = async () => {
-    const productsCollection = collection(db, "products");
-    const productsSnapshot = await getDocs(productsCollection);
-    const productsList = productsSnapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
-    setProducts(productsList);
-    setFilteredProducts(productsList);
-  };
+  // const refreshProducts = async () => {
+  //   const productsCollection = collection(db, "products");
+  //   const productsSnapshot = await getDocs(productsCollection);
+  //   const productsList = productsSnapshot.docs.map((doc) => ({
+  //     id: doc.id,
+  //     ...doc.data(),
+  //   }));
+  //   setProducts(productsList);
+  //   setFilteredProducts(productsList);
+  // };
   const renderPrice = (
     <Typography variant="subtitle1">
       {product.isDiscounted && (
@@ -212,4 +212,5 @@ ProductCard.propTypes = {
   product: PropTypes.object.isRequired,
   onAddToCart: PropTypes.func.isRequired,
   onBuyNow: PropTypes.func.isRequired,
+  refreshProducts: PropTypes.func.isRequired,
 };

@@ -175,6 +175,11 @@ export default function CartDrawer({
         });
       }
       await batch.commit();
+      refreshProducts();
+      onClose();
+      refreshProducts();
+      setCart([]);
+      onPaymentSuccess();
     }
   };
 
@@ -190,10 +195,6 @@ export default function CartDrawer({
         // alert(response.razorpay_payment_id);
         savePurchasesToFirestore();
         // Handle successful payment
-        setCart([]);
-        onPaymentSuccess();
-        onClose();
-        refreshProducts();
 
         showToast(
           "success",

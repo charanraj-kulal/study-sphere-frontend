@@ -24,7 +24,7 @@ export default function UserTableRow({
   email,
   avatarUrl,
   course,
-  collegeName,
+  university,
   isVerified,
   status,
   handleClick,
@@ -102,7 +102,7 @@ export default function UserTableRow({
             </TableCell>
             <TableCell>{email}</TableCell>
             <TableCell>{course}</TableCell>
-            <TableCell>{collegeName}</TableCell>
+            <TableCell>{university}</TableCell>
             <TableCell align="center">{isVerified ? "Yes" : "No"}</TableCell>
             <TableCell>
               <Label color={(status === "banned" && "error") || "success"}>
@@ -127,7 +127,7 @@ export default function UserTableRow({
           name,
           email,
           course,
-          collegeName,
+          university,
           status,
         }}
         setUsers={setUsers}
@@ -163,7 +163,7 @@ UserTableRow.propTypes = {
   isVerified: PropTypes.bool,
   name: PropTypes.string,
   email: PropTypes.string, // Add this line
-  collegeName: PropTypes.string,
+  university: PropTypes.string,
   selected: PropTypes.bool,
   status: PropTypes.string,
   setUsers: PropTypes.func.isRequired,

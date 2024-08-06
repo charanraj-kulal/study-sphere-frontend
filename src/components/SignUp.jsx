@@ -23,7 +23,7 @@ function SignUpForm() {
   const [state, setState] = useState({
     name: "",
     email: "",
-    collegeName: "",
+    university: "",
     password: "",
     course: "",
     profilePhoto: null,
@@ -43,68 +43,162 @@ function SignUpForm() {
   });
 
   const [isLoading, setIsLoading] = useState(false);
-  const colleges = [
-    "Acharya Institute of Graduate Studies, Bangalore",
-    "Akshaya College, Puttur",
-    "Alvas College, Moodbidre",
-    "Besant Women's College, Mangalore",
-    "BMS Institute of Technology and Management, Bangalore",
-    "Canara College, Mangalore",
-    "Carmel Degree College, Modankap, Bantwal",
-    "Cauvery College, Gonikoppal",
-    "East West Institute of Technology, Bangalore",
-    "Field Marshal KM Cariappa College, Madikeri(FMC Madikeri)",
-    "Government First Grade College for Women, Mangalore",
-    "Government First Grade College, Bettampady",
-    "Government First Grade College, Madikeri",
-    "Government First Grade College, Mangalore",
-    "Government First Grade College, Sullia",
-    "Government First Grade College, Uppinangady",
-    "Government First Grade College, Virajpet",
-    "Govinda Dasa College - [GDC],Surathkal",
-    "Kristu Jayanti College, Autonomous, Bangalore",
-    "Mangalore Institute of Technology & Engineering (MITE), Moodbidre",
+  // const colleges = [
+  //   "Acharya Institute of Graduate Studies, Bangalore",
+  //   "Akshaya College, Puttur",
+  //   "Alvas College, Moodbidre",
+  //   "Besant Women's College, Mangalore",
+  //   "BMS Institute of Technology and Management, Bangalore",
+  //   "Canara College, Mangalore",
+  //   "Carmel Degree College, Modankap, Bantwal",
+  //   "Cauvery College, Gonikoppal",
+  //   "East West Institute of Technology, Bangalore",
+  //   "Field Marshal KM Cariappa College, Madikeri(FMC Madikeri)",
+  //   "Government First Grade College for Women, Mangalore",
+  //   "Government First Grade College, Bettampady",
+  //   "Government First Grade College, Madikeri",
+  //   "Government First Grade College, Mangalore",
+  //   "Government First Grade College, Sullia",
+  //   "Government First Grade College, Uppinangady",
+  //   "Government First Grade College, Virajpet",
+  //   "Govinda Dasa College - [GDC],Surathkal",
+  //   "Kristu Jayanti College, Autonomous, Bangalore",
+  //   "Mangalore Institute of Technology & Engineering (MITE), Moodbidre",
+  //   "Mangalore University",
+  //   "Maps College, Mangalore",
+  //   "Meredian College, Mangalore",
+  //   "Milagres College, Mangalore",
+  //   "MGM Degree college, Kushalnagar",
+  //   "Nehru Memorial College, Sullia",
+  //   "NMAM Institute of Technology, Karkala",
+  //   "Nirmala College of Information Technology",
+  //   "P. A. First Grade College, Mangalore",
+  //   "Padua Degree College, Mangalore",
+  //   "PES University, Bangalore",
+  //   "Sacred Heart College, Madanthyar",
+  //   "SCS First Grade College, Mangalore",
+  //   "SDM College of Business Management, Mangalore",
+  //   "Sharada College. Devinagara, Talapady, Mangalore",
+  //   "Shree Devi College, Mangalore",
+  //   "Shree Devi Institute of Technology, Mangalore",
+  //   "Sri Bhuvanendra College, Karkala",
+  //   "Sri Dharmasthala Manjunatheshwara College, Ujire",
+  //   "Sri Dhavala College, Moodbidre",
+  //   "Sri Mahaveera College, Moodabidri",
+  //   "Sri Rama First Grade College, Kalladka",
+  //   "Sri Ramakrishna College, Mangalore",
+  //   "Sri Venkataramana Swamy College, Bantwal",
+  //   "Srinivas College Pandeshwar",
+  //   "Srinivas College, Pandeshwar",
+  //   "Srinivas Institute of Technology (SIT)",
+  //   "St Aloysius College (Autonomous), Mangaluru",
+  //   "St Aloysius Institute of Management & Information Technology (AIMIT), Mangalore",
+  //   "St Joseph Engineering College, Mangalore",
+  //   "St Philomena College, Puttur",
+  //   "St. Agnes College (Autonomous), Mangaluru",
+  //   "St. Anne's Degree College, Virajpet",
+  //   "St. Raymond's College, Vamajoor",
+  //   "University College, Mangalore",
+  //   "Vidyarashmi Vidyalaya, Savanoor",
+  //   "Vijaya College, Mulki",
+  //   "Vivekananda Degree College, Puttur",
+  //   "Yenepoya Institute of Arts, Science, Commerce and Management",
+  //   "Yenepoya Institute of Arts, Science, Commerce and Management, Mangalore",
+  //   "Yenepoya(Deemed-to-be-University), Bangalore",
+  // ];
+
+  const universities = [
+    "University of Mysore",
+    "Karnataka University",
+    "Bangalore University",
     "Mangalore University",
-    "Maps College, Mangalore",
-    "Meredian College, Mangalore",
-    "Milagres College, Mangalore",
-    "MGM Degree college, Kushalnagar",
-    "Nehru Memorial College, Sullia",
-    "NMAM Institute of Technology, Karkala",
-    "Nirmala College of Information Technology",
-    "P. A. First Grade College, Mangalore",
-    "Padua Degree College, Mangalore",
-    "PES University, Bangalore",
-    "Sacred Heart College, Madanthyar",
-    "SCS First Grade College, Mangalore",
-    "SDM College of Business Management, Mangalore",
-    "Sharada College. Devinagara, Talapady, Mangalore",
-    "Shree Devi College, Mangalore",
-    "Shree Devi Institute of Technology, Mangalore",
-    "Sri Bhuvanendra College, Karkala",
-    "Sri Dharmasthala Manjunatheshwara College, Ujire",
-    "Sri Dhavala College, Moodbidre",
-    "Sri Mahaveera College, Moodabidri",
-    "Sri Rama First Grade College, Kalladka",
-    "Sri Ramakrishna College, Mangalore",
-    "Sri Venkataramana Swamy College, Bantwal",
-    "Srinivas College Pandeshwar",
-    "Srinivas College, Pandeshwar",
-    "Srinivas Institute of Technology (SIT)",
-    "St Aloysius College (Autonomous), Mangaluru",
-    "St Aloysius Institute of Management & Information Technology (AIMIT), Mangalore",
-    "St Joseph Engineering College, Mangalore",
-    "St Philomena College, Puttur",
-    "St. Agnes College (Autonomous), Mangaluru",
-    "St. Anne's Degree College, Virajpet",
-    "St. Raymond's College, Vamajoor",
-    "University College, Mangalore",
-    "Vidyarashmi Vidyalaya, Savanoor",
-    "Vijaya College, Mulki",
-    "Vivekananda Degree College, Puttur",
-    "Yenepoya Institute of Arts, Science, Commerce and Management",
-    "Yenepoya Institute of Arts, Science, Commerce and Management, Mangalore",
-    "Yenepoya(Deemed-to-be-University), Bangalore",
+    "Gulbarga University",
+    "Kuvempu University",
+    "Kannada University",
+    "Karnataka State Open University",
+    "Visweswaraiah Technological University",
+    "Karnataka State Akkamahadevi Women's University",
+    "Tumkur University",
+    "Davangere University",
+    "Karnataka State Gangubai Hanagal Music University",
+    "Rani Channamma University",
+    "Vijayanagara Sri Krishnadevaraya University",
+    "Karnataka Sanskrit University",
+    "Karnataka Janapadha University",
+    "Bengaluru City University",
+    "Bengaluru North University",
+    "Maharani Cluster University",
+    "Mandya Unitary University",
+    "Nrupathunga University",
+    "Raichur University",
+    "University of Visvesvaraya College of Engineering",
+    "Bengaluru Dr. B R Ambedkar School of Economics University",
+    "Koppala University",
+    "Chamarajanagara University",
+    "Bagalkote University",
+    "Bidar University",
+    "Haveri University",
+    "Hassan University",
+    "Kodagu University",
+    "Karnataka State Rural Development and Panchayat Raj University",
+    "University of Agricultural Sciences (Bangalore)",
+    "University of Agricultural Sciences (Dharwad)",
+    "University of Agricultural Sciences (Raichuru)",
+    "Keladi Shivappa Nayaka University of Agricultural and Horticultural Sciences",
+    "University of Horticultural Sciences",
+    "Karnataka Veterinary, Animal & Fisheries Sciences University",
+    "Karnataka State Law University",
+    "Rajiv Gandhi University of Health Sciences",
+    "Alliance University",
+    "Azim Premji University",
+    "Presidency University",
+    "CMR University",
+    "PES University",
+    "MS Ramaiah University of Applied Sciences",
+    "Reva University",
+    "Dayananda Sagar University",
+    "Rai Technology University",
+    "JSS Science and Technology University",
+    "KLE University",
+    "Srinivasa University",
+    "Sharanbasva University",
+    "The University of Trans-Disciplinary Health Sciences & Technology",
+    "Adichunchanagiri University",
+    "Garden City University",
+    "Khaja Bandanawz University",
+    "Sri Satya Sai University for Human Excellence",
+    "Sri Dharmasthala Manjunatheswara University",
+    "Vidyashilp University",
+    "Atria University",
+    "Chanakya University",
+    "Sri Jagadhguru Murugharajendra University",
+    "RV University",
+    "Kishkinda University",
+    "Amity University",
+    "G M University",
+    "St. Joseph's University",
+    "Manipal Academy of Higher Education",
+    "Swami Vivekananda Yoga Anusandhana Samsthana",
+    "Sri Devaraj Urs Academy of Higher Education & Research",
+    "Yenepoya University",
+    "BLDE University",
+    "JSS Academy of Higher Education and Research",
+    "Sri Siddartha Academy of Higher Education",
+    "Christ University",
+    "Jain University",
+    "NITTE University",
+    "KLE Academy of Higher Education & Research",
+    "Central University of Karnataka",
+    "Indian Institute of Science",
+    "International Institute of Information Technology",
+    "Jawaharlal Nehru Centre for Advanced Scientific Research",
+    "National Institute of Mental Health and Neuro Sciences",
+    "National Institute Technology",
+    "Indian Institute of Management",
+    "National Law School of India University",
+    "Indian Institute of Information Technology (Dharawad)",
+    "Indian Institute of Technology",
+    ,
   ];
 
   const handleChange = (evt) => {
@@ -125,7 +219,7 @@ function SignUpForm() {
   const handleOnSubmit = async (evt) => {
     evt.preventDefault();
 
-    const { name, email, collegeName, password, course, profilePhoto } = state;
+    const { name, email, university, password, course, profilePhoto } = state;
     const userrole = 3;
     const status = "active";
     const isVerified = "No";
@@ -153,7 +247,7 @@ function SignUpForm() {
       await setDoc(doc(db, "users", user.uid), {
         name,
         email,
-        collegeName,
+        university,
         course,
         userId: user.uid,
         userrole,
@@ -191,7 +285,7 @@ function SignUpForm() {
       setState({
         name: "",
         email: "",
-        collegeName: "",
+        university: "",
         password: "",
         course: "",
 
@@ -284,14 +378,14 @@ function SignUpForm() {
             placeholder="Email"
           />
           <select
-            name="collegeName"
-            value={state.collegeName}
+            name="university"
+            value={state.university}
             onChange={handleChange}
           >
-            <option value="">Select Your College</option>
-            {colleges.map((collegeName, index) => (
-              <option key={index} value={collegeName}>
-                {collegeName}
+            <option value="">Select Your Univeristy</option>
+            {universities.map((university, index) => (
+              <option key={index} value={university}>
+                {university}
               </option>
             ))}
           </select>
@@ -301,8 +395,8 @@ function SignUpForm() {
             </InputLabel>
             <CenteredSelect
               labelId="college-select-label"
-              name="collegeName"
-              value={state.collegeName}
+              name="university"
+              value={state.university}
               onChange={handleChange}
               label="Select Your College"
               MenuProps={{
@@ -325,9 +419,9 @@ function SignUpForm() {
               <MenuItem value="">
                 <em>Select Your College</em>
               </MenuItem>
-              {colleges.map((collegeName, index) => (
-                <MenuItem key={index} value={collegeName}>
-                  {collegeName}
+              {colleges.map((university, index) => (
+                <MenuItem key={index} value={university}>
+                  {university}
                 </MenuItem>
               ))}
             </CenteredSelect>
