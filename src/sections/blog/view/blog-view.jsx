@@ -454,7 +454,7 @@ export default function BlogView() {
               }}
               transformOrigin={{
                 vertical: "top",
-                horizontal: "left",
+                horizontal: "center",
               }}
             >
               <List>

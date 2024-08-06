@@ -40,6 +40,7 @@ import MailIcon from "../../../assets/icons/ic_notification_mail.svg";
 import ChatIcon from "../../../assets/icons/ic_notification_chat.svg";
 import FileCheckIcon from "../../../assets/icons/ic_file_check.svg";
 import FileRemoveIcon from "../../../assets/icons/ic_file_remove.svg";
+import Following from "../../../assets/icons/ic_following.svg";
 // import BookIcon from "../../../assets/icons/ic_book_open.svg";
 import BookIcon from "../../../assets/icons/ic_notification_pdf.svg";
 
@@ -260,7 +261,8 @@ function renderContent(notification) {
         variant="body2"
         sx={{ color: "text.secondary" }}
       >
-        &nbsp; {notification.description}
+        <br />
+        {notification.description}
       </Typography>
     </Typography>
   );
@@ -287,6 +289,18 @@ function renderContent(notification) {
         style={{
           filter:
             "invert(15%) sepia(85%) saturate(7416%) hue-rotate(354deg) brightness(94%) contrast(102%)",
+        }}
+      />
+    ),
+    started_following: (
+      <img
+        src={Following}
+        alt="Following icon"
+        width={24}
+        height={24}
+        style={{
+          filter:
+            "invert(46%) sepia(78%) saturate(475%) hue-rotate(72deg) brightness(95%) contrast(87%)",
         }}
       />
     ),

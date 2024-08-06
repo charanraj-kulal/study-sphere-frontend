@@ -15,7 +15,13 @@ import {
   Radio,
 } from "@mui/material";
 import { ColorPicker } from "../../components/color-utils";
-import { collection, addDoc, doc, updateDoc } from "firebase/firestore";
+import {
+  collection,
+  addDoc,
+  doc,
+  updateDoc,
+  serverTimestamp,
+} from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { db, storage } from "../../firebase"; // Update the import path as needed
 
@@ -152,13 +158,13 @@ export default function AddProductForm({
     const productData = {
       ...formData,
       productImageUrl: imageUrl,
-      productUpdatedAt: new Date().toISOString(),
+      productUpdatedAt: serverTimestamp(),
     };
 
     // Only add solderUid if it's a new product and userData is available
     if (!editProduct && userData) {
       productData.solderUid = userData.uid;
-      productData.productAddedAt = new Date().toISOString();
+      productData.productAddedAt = serverTimestamp();
     }
 
     try {

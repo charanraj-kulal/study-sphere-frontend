@@ -16,7 +16,7 @@ import Label from "../../components/label";
 import Iconify from "../../components/iconify";
 import { useToast } from "../../hooks/ToastContext";
 import LottieLoader from "../../components/LottieLoader";
-import UserDetailsDialog from "./user-details-dialog";
+import EditUserDialog from "./EditUserDialog";
 
 export default function UserTableRow({
   selected,
@@ -35,6 +35,7 @@ export default function UserTableRow({
   const { showToast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
   const navigate = useNavigate();
   const handleOpenMenu = (event) => {
     setOpen(event.currentTarget);
@@ -65,6 +66,16 @@ export default function UserTableRow({
       setIsLoading(false);
     }
     handleCloseMenu();
+  };
+
+  //edit users data
+  const handleEditUser = () => {
+    setEditDialogOpen(true);
+    handleCloseMenu();
+  };
+
+  const handleCloseEditDialog = () => {
+    setEditDialogOpen(false);
   };
 
   return (
@@ -130,7 +141,19 @@ export default function UserTableRow({
         onClose={handleCloseDialog}
         userId={id.toString()}
       /> */}
-
+      <EditUserDialog
+        open={editDialogOpen}
+        onClose={handleCloseEditDialog}
+        user={{
+          id,
+          name,
+          email,
+          course,
+          role: role === 3 ? "Student" : role === 2 ? "Lecturer" : "Admin",
+          status,
+        }}
+        setUsers={setUsers}
+      />
       <Popover
         open={!!open}
         anchorEl={open}
@@ -141,7 +164,7 @@ export default function UserTableRow({
           sx: { width: 140 },
         }}
       >
-        <MenuItem onClick={handleCloseMenu}>
+        <MenuItem onClick={handleEditUser}>
           <Iconify icon="eva:edit-fill" sx={{ mr: 2 }} />
           Edit
         </MenuItem>

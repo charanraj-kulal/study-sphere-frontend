@@ -7,7 +7,7 @@ import Card from "@mui/material/Card";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
-
+import { serverTimestamp } from "firebase/firestore";
 import { fCurrency } from "../../utils/format-number";
 
 import Label from "../../components/label";
@@ -18,24 +18,52 @@ import Iconify from "../../components/iconify";
 export default function ProductCard({ product, onAddToCart }) {
   const [openBuyNow, setOpenBuyNow] = React.useState(false);
 
+  //check for stock availablity
+  const handleAddToCart = () => {
+    if (product.stock > 0) {
+      onAddToCart(product);
+    } else {
+      showToast("error", "This product is out of stock");
+    }
+  };
+
   const handleBuyNow = () => {
     setOpenBuyNow(true);
   };
-  const renderStatus = (
-    <Label
-      variant="filled"
-      color={(product.productStatus === "active" && "error") || "info"}
-      sx={{
-        zIndex: 9,
-        top: 16,
-        right: 16,
-        position: "absolute",
-        textTransform: "uppercase",
-      }}
-    >
-      {product.productStatus === "active" ? "Sale" : "New"}
-    </Label>
-  );
+
+  const renderStatus = () => {
+    const now = new Date();
+    const twoDaysAgo = new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000);
+    const productDate = product.productUpdatedAt?.toDate() || new Date(0);
+
+    let statusText = "Sale";
+    let statusColor = "error";
+
+    if (productDate > twoDaysAgo) {
+      statusText = "New";
+      statusColor = "info";
+    }
+    if (product.isDiscounted) {
+      statusText = "Deal";
+      statusColor = "warning";
+    }
+
+    return (
+      <Label
+        variant="filled"
+        color={statusColor}
+        sx={{
+          zIndex: 9,
+          top: 16,
+          right: 16,
+          position: "absolute",
+          textTransform: "uppercase",
+        }}
+      >
+        {statusText}
+      </Label>
+    );
+  };
   const renderImg = (
     <Box
       component="img"
@@ -50,7 +78,16 @@ export default function ProductCard({ product, onAddToCart }) {
       }}
     />
   );
-
+  const refreshProducts = async () => {
+    const productsCollection = collection(db, "products");
+    const productsSnapshot = await getDocs(productsCollection);
+    const productsList = productsSnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+    setProducts(productsList);
+    setFilteredProducts(productsList);
+  };
   const renderPrice = (
     <Typography variant="subtitle1">
       {product.isDiscounted && (
@@ -87,7 +124,7 @@ export default function ProductCard({ product, onAddToCart }) {
   return (
     <Card>
       <Box sx={{ pt: "100%", position: "relative" }}>
-        {product.productStatus && renderStatus}
+        {renderStatus()}
         {renderImg}
       </Box>
 
@@ -129,7 +166,8 @@ export default function ProductCard({ product, onAddToCart }) {
                 color: "black",
               },
             }}
-            onClick={() => onAddToCart(product)}
+            onClick={handleAddToCart}
+            disabled={product.stock === 0}
           >
             <Iconify
               icon="eva:shopping-cart-fill"
@@ -137,7 +175,7 @@ export default function ProductCard({ product, onAddToCart }) {
               height={22}
               sx={{ mr: 0.5 }}
             />
-            Add to Cart
+            {product.stock > 0 ? "Add to Cart" : "Out of Stock"}
           </Button>
           <Button
             variant="outlined"
@@ -164,6 +202,7 @@ export default function ProductCard({ product, onAddToCart }) {
         open={openBuyNow}
         onClose={() => setOpenBuyNow(false)}
         product={product}
+        refreshProducts={refreshProducts}
       />
     </Card>
   );
