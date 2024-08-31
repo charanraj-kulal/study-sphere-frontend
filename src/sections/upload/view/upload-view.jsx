@@ -26,7 +26,7 @@ export default function UploadView() {
         Good {greeting}, {userData.displayName}👋
       </Typography>
       <Card>
-        <Typography variant="h4" sx={{ mb: 3 }}>
+        <Typography variant="h4" sx={{ mb: 3, mt: 2, ml: 4 }}>
           Upload study materials
         </Typography>
         <UploadStudyMaterialForm currentUser={userData} />

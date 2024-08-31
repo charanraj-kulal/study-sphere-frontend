@@ -37,7 +37,7 @@ export const typography = {
   fontWeightSemiBold: 600,
   fontWeightBold: 700,
   commonpdfname: {
-    fontFamily: '"LEMONMILK"',
+    fontFamily: "LEMONMILK",
     fontWeight: 700,
     lineHeight: 1.5,
     fontSize: pxToRem(32),

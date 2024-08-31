@@ -1,4 +1,5 @@
 /* styles/fonts.css */
+
 @font-face {
   font-family: "LEMONMILK";
   src: url("../assets/fonts/custom/LemonMilk/LEMONMILK-Bold.otf")
@@ -18,6 +19,21 @@
 @font-face {
   font-family: "Pacifico";
   src: url("../assets/fonts/custom/Pacifico/Pacifico-Regular.ttf")
+    format("opentype");
+  font-weight: bold;
+  line-height: 120px;
+  font-style: normal;
+}
+@font-face {
+  font-family: "hindi";
+  src: url("../assets/fonts/hindi/Mangal\ Regular.ttf") format("opentype");
+  font-weight: bold;
+  line-height: 120px;
+  font-style: normal;
+}
+@font-face {
+  font-family: "kannada";
+  src: url("../assets/fonts/kannada/AnekKannada_Condensed-Regular.ttf")
     format("opentype");
   font-weight: bold;
   line-height: 120px;

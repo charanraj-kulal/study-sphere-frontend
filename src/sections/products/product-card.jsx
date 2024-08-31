@@ -189,8 +189,9 @@ export default function ProductCard({ product, onAddToCart, refreshProducts }) {
               },
             }}
             onClick={handleBuyNow}
+            disabled={product.stock > 0}
           >
-            Buy Now
+            {product.stock > 0 ? "Buy Now" : "Not Available"}
           </Button>
         </Stack>
 
