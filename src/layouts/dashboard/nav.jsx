@@ -1,5 +1,6 @@
 import { useEffect, useMemo } from "react";
 import PropTypes from "prop-types";
+import { useTranslation } from "react-i18next";
 
 import Box from "@mui/material/Box";
 import Stack from "@mui/material/Stack";
@@ -18,17 +19,16 @@ import { useResponsive } from "../../hooks/use-responsive";
 import { useUser } from "../../hooks/UserContext";
 
 import Logo from "../../components/logo";
-// import Scrollbar from "../../components/scrollbar";
 import CustomScrollbar from "../../components/CustomScrollbar";
 
 import { NAV } from "./config-layout";
 import navConfig from "./config-navigation";
-// import IllustrationAvatar from "../../assets/illustrations/illustration_avatar.png";
 import IllustrationAvatar from "../../assets/illustrations/illustration_donation.png";
 
 // ----------------------------------------------------------------------
 
 export default function Nav({ openNav, onCloseNav }) {
+  const { t } = useTranslation();
   const pathname = usePathname();
   const { userData } = useUser();
   const upLg = useResponsive("up", "lg");
@@ -39,9 +39,11 @@ export default function Nav({ openNav, onCloseNav }) {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname]);
+
   const filteredNavConfig = useMemo(() => {
     return navConfig.filter((item) => item.roles.includes(userData.userRole));
   }, [userData.userRole]);
+
   const renderAccount = (
     <Box
       sx={{
@@ -62,12 +64,12 @@ export default function Nav({ openNav, onCloseNav }) {
 
         <Typography variant="body2" sx={{ color: "text.secondary" }}>
           {userData.userRole === 3
-            ? "Student"
+            ? t("student")
             : userData.userRole === 2
-              ? "Lecturer"
+              ? t("lecturer")
               : userData.userRole === 1
-                ? "Admin"
-                : "Unknown Role"}
+                ? t("admin")
+                : t("unknown_role")}
         </Typography>
       </Box>
     </Box>
@@ -95,10 +97,10 @@ export default function Nav({ openNav, onCloseNav }) {
         />
 
         <Box sx={{ textAlign: "center" }}>
-          <Typography variant="h6">Felt useful?</Typography>
+          <Typography variant="h6">{t("felt_useful")}</Typography>
 
           <Typography variant="body2" sx={{ color: "text.secondary", mt: 1 }}>
-            Donate something..
+            {t("donate_something")}
           </Typography>
         </Box>
 
@@ -114,33 +116,15 @@ export default function Nav({ openNav, onCloseNav }) {
               color: "black",
             },
           }}
-          // color="inherit"
-          // backgr
         >
-          Donate now
+          {t("donate_now")}
         </Button>
-
-        {/* <Box component="form">
-          <script
-            src="https://checkout.razorpay.com/v1/payment-button.js"
-            data-payment_button_id="pl_OfWyROq0DgW0kE"
-            async
-          />
-        </Box> */}
       </Stack>
     </Box>
   );
+
   const renderContent = (
-    <CustomScrollbar
-    // sx={{
-    //   height: "100vh",
-    //   "& > div": {
-    //     display: "flex",
-    //     flexDirection: "column",
-    //     minHeight: "100%",
-    //   },
-    // }}
-    >
+    <CustomScrollbar>
       <Stack>
         <Logo sx={{ mt: 3, ml: 4 }} />
       </Stack>
@@ -197,6 +181,7 @@ Nav.propTypes = {
 // ----------------------------------------------------------------------
 
 function NavItem({ item }) {
+  const { t } = useTranslation();
   const pathname = usePathname();
 
   const active = item.path === pathname;
@@ -226,7 +211,7 @@ function NavItem({ item }) {
         {item.icon}
       </Box>
 
-      <Box component="span">{item.title} </Box>
+      <Box component="span">{t(item.title)}</Box>
     </ListItemButton>
   );
 }

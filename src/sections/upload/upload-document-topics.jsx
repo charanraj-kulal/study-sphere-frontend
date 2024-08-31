@@ -1,7 +1,8 @@
 import React from "react";
 import { Autocomplete, TextField, Chip } from "@mui/material";
-
+import { useTranslation } from "react-i18next";
 const UploadDocumentTopics = ({ value, onChange }) => {
+  const { t } = useTranslation(); // Initialize translation hook
   const options = [
     "3D Printing",
     "Abstract Algebra",
@@ -461,7 +462,7 @@ const UploadDocumentTopics = ({ value, onChange }) => {
         <TextField
           {...params}
           variant="outlined"
-          label="Document Topics"
+          label={t("document_topic")}
           placeholder="Add topics"
         />
       )}

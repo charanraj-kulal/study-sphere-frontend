@@ -9,8 +9,8 @@ import {
   Box,
 } from "@mui/material";
 import { keyframes } from "@emotion/react";
-
 import styled from "@emotion/styled";
+import { useTranslation } from "react-i18next"; // Import translation hook
 
 const neonBoxShadowChange = keyframes`
   0% { box-shadow: 0 0 10px #ff00ff, 0 0 20px #ff00ff, 0 0 30px #ff00ff; }
@@ -76,10 +76,12 @@ const ContentWrapper = styled(Box)`
 
 const TopRankCard = ({ user, rank, medalImage }) => {
   const navigate = useNavigate();
+  const { t } = useTranslation(); // Translation hook
 
   const handleCardClick = (userId) => {
     navigate(`/dashboard/profile/${userId}`);
   };
+
   return (
     <StyledCard
       rank={rank}
@@ -123,7 +125,7 @@ const TopRankCard = ({ user, rank, medalImage }) => {
             </Stack>
             <img
               src={medalImage}
-              alt={`Rank ${rank}`}
+              alt={t("rank", { rank })} // Translate rank
               style={{
                 width:
                   rank === 1 ? 150 : rank === 2 ? 130 : rank === 3 ? 110 : 100,
@@ -139,15 +141,15 @@ const TopRankCard = ({ user, rank, medalImage }) => {
           >
             <Box align="center">
               <Typography variant="h6">{user.uploadCount || 0}</Typography>
-              <Typography variant="body2">Uploads</Typography>
+              <Typography variant="body2">{t("uploads")}</Typography>
             </Box>
             <Box align="center">
               <Typography variant="h6">{user.downloadCount || 0}</Typography>
-              <Typography variant="body2">Downloads</Typography>
+              <Typography variant="body2">{t("downloads")}</Typography>
             </Box>
             <Box align="center">
               <Typography variant="h6">{user.points || 0}</Typography>
-              <Typography variant="body2">Points</Typography>
+              <Typography variant="body2">{t("points")}</Typography>
             </Box>
           </Stack>
         </CardContent>

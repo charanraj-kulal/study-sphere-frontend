@@ -7,23 +7,24 @@ import Card from "@mui/material/Card";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
-import { collection, getDocs } from "firebase/firestore";
+import { useTranslation } from "react-i18next";
+
 import { fCurrency } from "../../utils/format-number";
-import { db } from "../../firebase.js";
+
 import Label from "../../components/label";
 import { ColorPreview } from "../../components/color-utils";
 import Iconify from "../../components/iconify";
 // ----------------------------------------------------------------------
 
 export default function ProductCard({ product, onAddToCart, refreshProducts }) {
+  const { t } = useTranslation();
   const [openBuyNow, setOpenBuyNow] = React.useState(false);
 
-  //check for stock availablity
   const handleAddToCart = () => {
     if (product.stock > 0) {
       onAddToCart(product);
     } else {
-      showToast("error", "This product is out of stock");
+      showToast("error", t("thisProductIsOutOfStock"));
     }
   };
 
@@ -36,15 +37,15 @@ export default function ProductCard({ product, onAddToCart, refreshProducts }) {
     const twoDaysAgo = new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000);
     const productDate = product.productUpdatedAt?.toDate() || new Date(0);
 
-    let statusText = "Sale";
+    let statusText = t("sale");
     let statusColor = "error";
 
     if (productDate > twoDaysAgo) {
-      statusText = "New";
+      statusText = t("new");
       statusColor = "info";
     }
     if (product.isDiscounted) {
-      statusText = "Deal";
+      statusText = t("deal");
       statusColor = "warning";
     }
 
@@ -64,6 +65,7 @@ export default function ProductCard({ product, onAddToCart, refreshProducts }) {
       </Label>
     );
   };
+
   const renderImg = (
     <Box
       component="img"
@@ -78,16 +80,7 @@ export default function ProductCard({ product, onAddToCart, refreshProducts }) {
       }}
     />
   );
-  // const refreshProducts = async () => {
-  //   const productsCollection = collection(db, "products");
-  //   const productsSnapshot = await getDocs(productsCollection);
-  //   const productsList = productsSnapshot.docs.map((doc) => ({
-  //     id: doc.id,
-  //     ...doc.data(),
-  //   }));
-  //   setProducts(productsList);
-  //   setFilteredProducts(productsList);
-  // };
+
   const renderPrice = (
     <Typography variant="subtitle1">
       {product.isDiscounted && (
@@ -104,20 +97,6 @@ export default function ProductCard({ product, onAddToCart, refreshProducts }) {
         </Typography>
       )}
       {fCurrency(product.isDiscounted ? product.discountPrice : product.price)}
-      {/* {product.isDiscounted && (
-        <Typography
-          component="span"
-          variant="body2"
-          sx={{
-            color: "error.main",
-            marginLeft: 1,
-          }}
-        >
-          {product.discountType === "percentage"
-            ? `-${product.discountValue}%`
-            : `-${fCurrency(product.discountValue)}`}
-        </Typography>
-      )} */}
     </Typography>
   );
 
@@ -146,10 +125,12 @@ export default function ProductCard({ product, onAddToCart, refreshProducts }) {
           alignItems="center"
           justifyContent="space-between"
         >
-          <Typography variant="body2">Stock: {product.stock}</Typography>
+          <Typography variant="body2">
+            {t("stock")} {product.stock}
+          </Typography>
           {product.isDiscounted && (
             <Typography variant="body2" sx={{ color: "error.main" }}>
-              Discount:{" "}
+              {t("discount")}
               {product.discountType === "percentage"
                 ? `${product.discountValue}%`
                 : fCurrency(product.discountValue)}
@@ -175,7 +156,7 @@ export default function ProductCard({ product, onAddToCart, refreshProducts }) {
               height={22}
               sx={{ mr: 0.5 }}
             />
-            {product.stock > 0 ? "Add to Cart" : "Out of Stock"}
+            {product.stock > 0 ? t("addToCart") : t("outOfStock")}
           </Button>
           <Button
             variant="outlined"
@@ -189,15 +170,11 @@ export default function ProductCard({ product, onAddToCart, refreshProducts }) {
               },
             }}
             onClick={handleBuyNow}
-            disabled={product.stock > 0}
+            disabled={product.stock === 0}
           >
-            {product.stock > 0 ? "Buy Now" : "Not Available"}
+            {product.stock > 0 ? t("buyNow") : t("notAvailable")}
           </Button>
         </Stack>
-
-        {/* {userData && (
-          <Typography variant="body2">Your Points: {userPoints}</Typography>
-        )} */}
       </Stack>
       <BuyNowDialog
         open={openBuyNow}
@@ -212,6 +189,5 @@ export default function ProductCard({ product, onAddToCart, refreshProducts }) {
 ProductCard.propTypes = {
   product: PropTypes.object.isRequired,
   onAddToCart: PropTypes.func.isRequired,
-  onBuyNow: PropTypes.func.isRequired,
   refreshProducts: PropTypes.func.isRequired,
 };

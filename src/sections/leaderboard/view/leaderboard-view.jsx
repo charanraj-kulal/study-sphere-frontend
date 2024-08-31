@@ -19,10 +19,12 @@ import { ConfettiButton } from "../../../components/magicui/confetti-button"; //
 import rank1Image from "../../../assets/images/medals/1_medal.png";
 import rank2Image from "../../../assets/images/medals/2_medal.png";
 import rank3Image from "../../../assets/images/medals/3_medal.png";
+import { useTranslation } from "react-i18next";
 
 export default function LeaderboardView() {
   const [topUsers, setTopUsers] = useState([]);
   const confettiRef = useRef(null);
+  const { t } = useTranslation(); // Translation hook
 
   useEffect(() => {
     const fetchTopUsers = async () => {
@@ -49,12 +51,12 @@ export default function LeaderboardView() {
           confettiRef.current.fire();
         }
       } catch (error) {
-        console.error("Error fetching top users:", error);
+        console.error(t("fetchError"), error);
       }
     };
 
     fetchTopUsers();
-  }, []);
+  }, [t]);
 
   return (
     <Container>
@@ -64,7 +66,7 @@ export default function LeaderboardView() {
         justifyContent="space-between"
         mb={5}
       >
-        <Typography variant="h4">Leaderboard</Typography>
+        <Typography variant="h4">{t("leaderboardTitle")}</Typography>
       </Stack>
 
       <Box
@@ -99,7 +101,7 @@ export default function LeaderboardView() {
 
       {/* Hidden ConfettiButton to trigger the effect */}
       <ConfettiButton ref={confettiRef} style={{ display: "none" }}>
-        Hidden Confetti Trigger
+        {t("confettiTriggerText")}
       </ConfettiButton>
     </Container>
   );

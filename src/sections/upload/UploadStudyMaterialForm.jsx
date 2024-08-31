@@ -6,13 +6,13 @@ import {
   FormControlLabel,
   Typography,
   Box,
-  Chip,
   CircularProgress,
   Alert,
   Tooltip,
   IconButton,
 } from "@mui/material";
 import { styled } from "@mui/system";
+import { useTranslation } from "react-i18next";
 import { storage, db } from "../../firebase";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import {
@@ -27,8 +27,8 @@ import { useToast } from "../../hooks/ToastContext";
 import LottieLoader from "../../components/LottieLoader";
 import InfoIcon from "@mui/icons-material/Info";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
-import { ConfettiButton } from "../../components/magicui/confetti-button"; // Import ConfettiButton
-import UploadDocumentTopics from "./upload-document-topics"; // Import the new component
+import { ConfettiButton } from "../../components/magicui/confetti-button";
+import UploadDocumentTopics from "./upload-document-topics";
 
 const StyledForm = styled("form")(({ theme }) => ({
   display: "flex",
@@ -55,6 +55,7 @@ const PointsInfoMain = styled(Box)(({ theme }) => ({
 }));
 
 const UploadStudyMaterialForm = ({ currentUser }) => {
+  const { t } = useTranslation(); // Initialize translation hook
   const [formData, setFormData] = useState({
     documentName: "",
     document: null,
@@ -65,12 +66,12 @@ const UploadStudyMaterialForm = ({ currentUser }) => {
   const [isUploading, setIsUploading] = useState(false);
   const [points, setPoints] = useState(0);
   const { showToast } = useToast();
-  const confettiRef = useRef(null); // Create a reference for the confetti
+  const confettiRef = useRef(null);
 
   const calculatePoints = () => {
-    let totalPoints = 10; // Base points for uploading a PDF
-    totalPoints += Math.min(formData.documentTopics.length, 3) * 5; // Points for topics (max 3)
-    totalPoints += Math.min(formData.description.length, 20); // Points for description (max 20)
+    let totalPoints = 10;
+    totalPoints += Math.min(formData.documentTopics.length, 3) * 5;
+    totalPoints += Math.min(formData.description.length, 20);
     setPoints(totalPoints);
   };
 
@@ -88,7 +89,7 @@ const UploadStudyMaterialForm = ({ currentUser }) => {
     if (file && file.type === "application/pdf") {
       setFormData((prevData) => ({ ...prevData, document: file }));
     } else {
-      showToast("error", "Please upload only PDF files.");
+      showToast("error", t("upload_error"));
     }
   };
 
@@ -99,12 +100,12 @@ const UploadStudyMaterialForm = ({ currentUser }) => {
   const handleSubmit = async (event) => {
     event.preventDefault();
     if (!agreedToTerms) {
-      showToast("error", "Please agree to the terms before submitting.");
+      showToast("error", t("terms_error"));
       return;
     }
 
     if (!formData.documentName || !formData.document) {
-      showToast("error", "Document Name and File are required.");
+      showToast("error", t("warning_document_required"));
       return;
     }
 
@@ -128,7 +129,6 @@ const UploadStudyMaterialForm = ({ currentUser }) => {
         uploaderPhotoUrl: currentUser.photoURL,
         uploaderUid: currentUser.uid,
         uploaderEmail: currentUser.email,
-
         uploadedOn: serverTimestamp(),
         visibility: "private",
         Approved: "No",
@@ -136,17 +136,12 @@ const UploadStudyMaterialForm = ({ currentUser }) => {
         star: [0, 0, 0, 0, 0],
       });
 
-      // Update user document in Firestore
       const userRef = doc(db, "users", currentUser.uid);
       await updateDoc(userRef, {
         points: increment(points),
       });
 
-      showToast(
-        "success",
-        `Document uploaded successfully! You earned ${points} points!`
-      );
-      // Trigger confetti effect on successful upload
+      showToast("success", t("success_upload", { points }));
       confettiRef.current.fire();
       setFormData({
         documentName: "",
@@ -157,7 +152,7 @@ const UploadStudyMaterialForm = ({ currentUser }) => {
       setAgreedToTerms(false);
     } catch (error) {
       console.error("Error uploading document:", error);
-      showToast("error", "An error occurred while uploading the document.");
+      showToast("error", t("upload_error"));
     } finally {
       setIsUploading(false);
     }
@@ -176,28 +171,25 @@ const UploadStudyMaterialForm = ({ currentUser }) => {
             alignItems: "center",
           }}
         >
-          Earn up to 45 points for each upload! Check out our pointing system
-          here
+          {t("points_info")}
           <ArrowForwardIcon fontSize="small" sx={{ ml: 0.5 }} />
         </Typography>
       </PointsInfoMain>
       <PointsInfo>
-        <Tooltip
-          title="Upload PDF: +10 points&#10;Each topic (max 3): +5 points&#10;Description (max 20 chars): +1 point per char"
-        >
+        <Tooltip title={t("upload_pdf_tooltip")}>
           <Box display="flex" alignItems="center">
             <IconButton size="small">
               <InfoIcon sx={{ color: "warning.main" }} />
             </IconButton>
             <Typography variant="subtitle2" sx={{ color: "info.main", mr: 1 }}>
-              Pointing System
+              {t("pointing_system")}
             </Typography>
           </Box>
         </Tooltip>
       </PointsInfo>
       <TextField
         name="documentName"
-        label="Document Name"
+        label={t("document_name")}
         sx={{ mt: 7 }}
         value={formData.documentName}
         onChange={handleInputChange}
@@ -219,13 +211,13 @@ const UploadStudyMaterialForm = ({ currentUser }) => {
             component="span"
             sx={{ backgroundColor: "#0A4191" }}
           >
-            Upload PDF Document
+            {t("upload_pdf")}
           </Button>
         </label>
         {formData.document && <Typography>{formData.document.name}</Typography>}
       </Box>
       {(!formData.documentName || !formData.document) && (
-        <Alert severity="warning">Document Name and File are required.</Alert>
+        <Alert severity="warning">{t("warning_document_required")}</Alert>
       )}
       <UploadDocumentTopics
         value={formData.documentTopics}
@@ -233,7 +225,7 @@ const UploadStudyMaterialForm = ({ currentUser }) => {
       />
       <TextField
         name="description"
-        label="Description"
+        label={t("description")}
         value={formData.description}
         onChange={handleInputChange}
         multiline
@@ -249,7 +241,7 @@ const UploadStudyMaterialForm = ({ currentUser }) => {
             color="primary"
           />
         }
-        label="I agree that the submitted document is genuine. I understand that submitting non-genuine documents may result in being banned from the system."
+        label={t("agree_terms")}
       />
       <ConfettiButton
         type="submit"
@@ -263,7 +255,7 @@ const UploadStudyMaterialForm = ({ currentUser }) => {
         {isUploading ? (
           <CircularProgress size={24} />
         ) : (
-          `Upload Now and Get ${points} Points`
+          t("upload_now", { points })
         )}
       </ConfettiButton>
     </StyledForm>

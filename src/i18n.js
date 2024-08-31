@@ -14,25 +14,8 @@ i18n
     interpolation: {
       escapeValue: false,
     },
-    resources: {
-      en: {
-        translation: {
-          welcome: "Welcome",
-          // add more translations here
-        },
-      },
-      hin: {
-        translation: {
-          welcome: "स्वागत है",
-          // add more translations here
-        },
-      },
-      kan: {
-        translation: {
-          welcome: "ಸ್ವಾಗತ",
-          // add more translations here
-        },
-      },
+    backend: {
+      loadPath: "/locales/{{lng}}.json", // Path to the JSON files
     },
   });
 

@@ -3,8 +3,11 @@ import Card from "@mui/material/Card";
 import Typography from "@mui/material/Typography";
 import IllustrationBadSearch from "../../assets/illustrations/illustration_bad_search.png";
 import Box from "@mui/material/Box";
+import { useTranslation } from "react-i18next";
 
 export default function CardNoData({ query }) {
+  const { t } = useTranslation(); // Translation hook
+
   return (
     <Card
       sx={{
@@ -27,19 +30,17 @@ export default function CardNoData({ query }) {
         {/* Add your image here */}
         <img
           src={IllustrationBadSearch}
-          alt="Search Illustration"
+          alt={t("searchIllustrationAlt")}
           style={{ maxWidth: "150px", marginBottom: "10px" }}
         />
       </Box>
 
       <Typography variant="h6" paragraph>
-        No Results Found
+        {t("noResultsFound")}
       </Typography>
 
       <Typography variant="body2" sx={{ color: "text.secondary" }}>
-        No results found for &nbsp;
-        <strong>&quot;{query}&quot;</strong>.
-        <br /> Try checking for typos or using complete words.
+        {t("noResultsDescription", { query })}
       </Typography>
     </Card>
   );

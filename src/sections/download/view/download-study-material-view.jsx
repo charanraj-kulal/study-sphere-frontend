@@ -11,6 +11,7 @@ import StudyMaterialCards from "../download-studyMaterial-card";
 import { useUser } from "../../../hooks/UserContext";
 import BreadcrumbsNavigation from "../BreadcrumbsNavigation";
 import SelectedMaterialDetails from "../SelectedMaterialDetails";
+import { useTranslation } from "react-i18next";
 import {
   collection,
   query,
@@ -20,12 +21,12 @@ import {
   getDoc,
   doc,
   updateDoc,
-  increment,
 } from "firebase/firestore";
 import { db } from "../../../firebase";
 import IllustrationGif from "../../../assets/illustrations/illustration_download_pdf.gif";
 
 export default function DownloadStudyMaterialView() {
+  const { t } = useTranslation(); // Translation hook
   const navigate = useNavigate();
   const location = useLocation();
   const { userData } = useUser();
@@ -34,72 +35,71 @@ export default function DownloadStudyMaterialView() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  const [breadcrumbs, setBreadcrumbs] = useState(["Dashboard", "Download"]);
+  const [breadcrumbs, setBreadcrumbs] = useState([
+    t("dashboard"),
+    t("download"),
+  ]);
   const [selectedMaterial, setSelectedMaterial] = useState(null);
   const [starDialogOpen, setStarDialogOpen] = useState(false);
   const { showToast } = useToast();
 
-  useEffect(
-    () => {
-      const urlParams = new URLSearchParams(location.search);
-      const documentId = urlParams.get("documentId");
-      const searchParam = urlParams.get("search");
-      if (documentId) {
-        handleCardClick({ id: documentId });
-      }
-      if (searchParam) {
-        setSearchQuery(searchParam);
-      }
-      const fetchStudyMaterials = async () => {
-        if (!searchQuery) {
-          setStudyMaterials([]);
-          setLoading(false);
-          return;
-        }
-
-        setLoading(true);
-        const materialsRef = collection(db, "documents");
-        const q = query(
-          materialsRef,
-          where("visibility", "==", "public"),
-          where("Approved", "==", "Yes"),
-          orderBy("uploadedOn", "desc")
-        );
-
-        const querySnapshot = await getDocs(q);
-        const materials = querySnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-
-        const filteredMaterials = materials.filter(
-          (material) =>
-            material.documentName
-              .toLowerCase()
-              .includes(searchQuery.toLowerCase()) ||
-            material.description
-              .toLowerCase()
-              .includes(searchQuery.toLowerCase()) ||
-            material.documentTopics.some((topic) =>
-              topic.toLowerCase().includes(searchQuery.toLowerCase())
-            ) ||
-            material.uploadedBy
-              .toLowerCase()
-              .includes(searchQuery.toLowerCase()) ||
-            material.uploaderCourse
-              .toLowerCase()
-              .includes(searchQuery.toLowerCase())
-        );
-
-        setStudyMaterials(filteredMaterials);
+  useEffect(() => {
+    const urlParams = new URLSearchParams(location.search);
+    const documentId = urlParams.get("documentId");
+    const searchParam = urlParams.get("search");
+    if (documentId) {
+      handleCardClick({ id: documentId });
+    }
+    if (searchParam) {
+      setSearchQuery(searchParam);
+    }
+    const fetchStudyMaterials = async () => {
+      if (!searchQuery) {
+        setStudyMaterials([]);
         setLoading(false);
-      };
+        return;
+      }
 
-      fetchStudyMaterials();
-    },
-    [searchQuery],
-    [location]
-  );
+      setLoading(true);
+      const materialsRef = collection(db, "documents");
+      const q = query(
+        materialsRef,
+        where("visibility", "==", "public"),
+        where("Approved", "==", "Yes"),
+        orderBy("uploadedOn", "desc")
+      );
+
+      const querySnapshot = await getDocs(q);
+      const materials = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+
+      const filteredMaterials = materials.filter(
+        (material) =>
+          material.documentName
+            .toLowerCase()
+            .includes(searchQuery.toLowerCase()) ||
+          material.description
+            .toLowerCase()
+            .includes(searchQuery.toLowerCase()) ||
+          material.documentTopics.some((topic) =>
+            topic.toLowerCase().includes(searchQuery.toLowerCase())
+          ) ||
+          material.uploadedBy
+            .toLowerCase()
+            .includes(searchQuery.toLowerCase()) ||
+          material.uploaderCourse
+            .toLowerCase()
+            .includes(searchQuery.toLowerCase())
+      );
+
+      setStudyMaterials(filteredMaterials);
+      setLoading(false);
+    };
+
+    fetchStudyMaterials();
+  }, [searchQuery, location]);
 
   const handleSearch = (query) => {
     setSearchQuery(query);
@@ -109,6 +109,7 @@ export default function DownloadStudyMaterialView() {
       replace: true,
     });
   };
+
   const handleCardClick = async (material) => {
     setIsProcessing(true);
     try {
@@ -117,18 +118,22 @@ export default function DownloadStudyMaterialView() {
       if (docSnap.exists()) {
         const updatedMaterial = { id: docSnap.id, ...docSnap.data() };
         setSelectedMaterial(updatedMaterial);
-        setBreadcrumbs(["Dashboard", "Download", updatedMaterial.documentName]);
+        setBreadcrumbs([
+          t("dashboard"),
+          t("download"),
+          updatedMaterial.documentName,
+        ]);
         // Update URL without redirecting
         navigate(`/dashboard/download?documentId=${material.id}`, {
           replace: true,
         });
       } else {
         console.log("No such document!");
-        showToast("error", "Document not found");
+        showToast("error", t("error_document_not_found"));
       }
     } catch (error) {
       console.error("Error fetching updated document:", error);
-      showToast("error", "Error fetching document");
+      showToast("error", t("error_fetching_document"));
     } finally {
       setIsProcessing(false);
     }
@@ -138,26 +143,25 @@ export default function DownloadStudyMaterialView() {
     event.preventDefault();
     if (index === 0) {
       navigate("/dashboard");
-      setBreadcrumbs(["Dashboard", "Download"]);
+      setBreadcrumbs([t("dashboard"), t("download")]);
       setSelectedMaterial(null);
       // Remove documentId from URL
     } else if (index === 1) {
-      setBreadcrumbs(["Dashboard", "Download"]);
+      setBreadcrumbs([t("dashboard"), t("download")]);
       setSelectedMaterial(null);
       // Remove documentId from URL
       navigate("/dashboard/download", { replace: true });
     }
   };
-  //download and update study material
+
   const handleDownload = async (material) => {
     if (!material || !material.id) {
       console.error("Invalid material object:", material);
-      showToast("error", "Error: Invalid material data");
+      showToast("error", t("error_invalid_material_data"));
       return;
     }
 
     try {
-      // Initiate the download
       const response = await fetch(
         `${import.meta.env.VITE_SERVER_URL}/api/download/${material.id}?userId=${userData.uid}`
       );
@@ -166,7 +170,6 @@ export default function DownloadStudyMaterialView() {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      // Trigger the actual download
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -177,10 +180,13 @@ export default function DownloadStudyMaterialView() {
       a.click();
       window.URL.revokeObjectURL(url);
 
-      showToast("success", "Document downloaded successfully");
+      showToast("success", t("success_document_downloaded"));
     } catch (error) {
       console.error("Error initiating download:", error);
-      showToast("error", `Failed to initiate download: ${error.message}`);
+      showToast(
+        "error",
+        `${t("failed_to_initiate_download")}: ${error.message}`
+      );
     }
   };
 
@@ -223,13 +229,11 @@ export default function DownloadStudyMaterialView() {
 
       showToast(
         "success",
-        previousRating
-          ? "Your rating has been updated!"
-          : "Thank you for rating!"
+        previousRating ? t("rating_updated") : t("thank_you_for_rating")
       );
     } catch (error) {
       console.error("Error updating rating:", error.message, error.code);
-      showToast("error", `Failed to update rating: ${error.message}`);
+      showToast("error", `${t("failed_to_update_rating")}: ${error.message}`);
     } finally {
       setIsProcessing(false);
     }
@@ -253,13 +257,13 @@ export default function DownloadStudyMaterialView() {
   const handleShare = () => {};
 
   if (!userData) {
-    return <Typography>Loading user data...</Typography>;
+    return <Typography>{t("loading_user_data")}</Typography>;
   }
 
   return (
     <Container>
       <Typography variant="h4" sx={{ mb: 5 }}>
-        Download Study Materials
+        {t("download_study_materials")}
       </Typography>
       {isProcessing && <LottieLoader />}
       <Card sx={{ p: 4, mt: 3 }}>
@@ -287,22 +291,22 @@ export default function DownloadStudyMaterialView() {
           <Box sx={{ textAlign: "center", my: 5 }}>
             <img
               src={IllustrationGif}
-              alt="Search Illustration"
+              alt={t("search_illustration")}
               style={{ maxWidth: "300px", marginBottom: "20px" }}
             />
             <Typography variant="h5" gutterBottom>
-              Discover Your Study Materials
+              {t("discover_study_materials")}
             </Typography>
             <Typography variant="body1" color="text.secondary">
-              Search for the study materials you need to excel in your studies.
+              {t("search_for_materials")}
             </Typography>
           </Box>
         ) : (
           <>
             <Typography variant="body1" sx={{ mb: 3, fontWeight: "bold" }}>
               {loading
-                ? "Searching..."
-                : `${studyMaterials.length} results found`}
+                ? t("searching")
+                : `${studyMaterials.length} ${t("results_found", { count: studyMaterials.length })}`}
             </Typography>
             <StudyMaterialCards
               studyMaterials={studyMaterials}

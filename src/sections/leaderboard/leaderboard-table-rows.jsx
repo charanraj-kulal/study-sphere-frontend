@@ -17,10 +17,12 @@ import { db } from "../../firebase";
 import rank1Image from "../../assets/images/medals/1_badge.png";
 import rank2Image from "../../assets/images/medals/2_badge.png";
 import rank3Image from "../../assets/images/medals/3_badge.png";
+import { useTranslation } from "react-i18next"; // Import translation hook
 
 const LeaderboardTable = () => {
   const [leaderboardData, setLeaderboardData] = useState([]);
   const navigate = useNavigate();
+  const { t } = useTranslation(); // Translation hook
 
   useEffect(() => {
     const fetchLeaderboardData = async () => {
@@ -41,12 +43,12 @@ const LeaderboardTable = () => {
 
         setLeaderboardData(data);
       } catch (error) {
-        console.error("Error fetching leaderboard data:", error);
+        console.error(t("fetchErrorLeader"), error);
       }
     };
 
     fetchLeaderboardData();
-  }, []);
+  }, [t]);
 
   const handleRowClick = (userId) => {
     navigate(`/dashboard/profile/${userId}`);
@@ -56,15 +58,27 @@ const LeaderboardTable = () => {
     switch (rank) {
       case 1:
         return (
-          <img src={rank1Image} alt="1st" style={{ width: 30, height: 30 }} />
+          <img
+            src={rank1Image}
+            alt={t("first")}
+            style={{ width: 30, height: 30 }}
+          />
         );
       case 2:
         return (
-          <img src={rank2Image} alt="2nd" style={{ width: 33, height: 33 }} />
+          <img
+            src={rank2Image}
+            alt={t("second")}
+            style={{ width: 33, height: 33 }}
+          />
         );
       case 3:
         return (
-          <img src={rank3Image} alt="3rd" style={{ width: 30, height: 30 }} />
+          <img
+            src={rank3Image}
+            alt={t("third")}
+            style={{ width: 30, height: 30 }}
+          />
         );
       default:
         return (
@@ -85,18 +99,18 @@ const LeaderboardTable = () => {
   return (
     <TableContainer component={Paper}>
       <Typography variant="h6" sx={{ p: 2 }}>
-        Student Leaderboard
+        {t("studentLeaderboard")}
       </Typography>
       <Table>
         <TableHead>
           <TableRow>
-            <TableCell>Rank</TableCell>
-            <TableCell>Username</TableCell>
-            <TableCell align="center">Uploads</TableCell>
-            <TableCell align="center">Downloads</TableCell>
-            <TableCell align="center">Doc Approved</TableCell>
-            <TableCell align="center">Doc Rejected</TableCell>
-            <TableCell align="center">Points</TableCell>
+            <TableCell>{t("rank")}</TableCell>
+            <TableCell>{t("username")}</TableCell>
+            <TableCell align="center">{t("uploads")}</TableCell>
+            <TableCell align="center">{t("downloads")}</TableCell>
+            <TableCell align="center">{t("docApproved")}</TableCell>
+            <TableCell align="center">{t("docRejected")}</TableCell>
+            <TableCell align="center">{t("points")}</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>

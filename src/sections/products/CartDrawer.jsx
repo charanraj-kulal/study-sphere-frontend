@@ -20,6 +20,7 @@ import Divider from "@mui/material/Divider";
 import { fCurrency } from "../../utils/format-number";
 import { useToast } from "../../hooks/ToastContext";
 import AddressForm from "./AddressForm";
+import { useTranslation } from "react-i18next";
 
 export default function CartDrawer({
   open,
@@ -35,27 +36,15 @@ export default function CartDrawer({
   const [address, setAddress] = useState(null);
   const [showAddressForm, setShowAddressForm] = useState(false);
   const { showToast } = useToast();
+  const { t } = useTranslation(); // Hook for translation
 
-  //razor pay sdk
+  // Razorpay SDK
   useEffect(() => {
     const script = document.createElement("script");
     script.src = "https://checkout.razorpay.com/v1/checkout.js";
     script.async = true;
     document.body.appendChild(script);
   }, []);
-
-  // useEffect(() => {
-  //   const fetchUserPoints = async () => {
-  //     if (userData) {
-  //       const userDoc = await getDoc(doc(db, "users", userData.uid));
-  //       if (userDoc.exists()) {
-  //         setUserPoints(userDoc.data().points || 0);
-  //       }
-  //     }
-  //   };
-
-  //   fetchUserPoints();
-  // }, [userData]);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -78,7 +67,7 @@ export default function CartDrawer({
           if (item.id === productId) {
             const newQuantity = Math.max(0, item.quantity + change);
             if (newQuantity > item.stock) {
-              showToast("error", "Requested quantity exceeds available stock");
+              showToast("error", t("requested_quantity_exceeds_stock"));
               return item;
             }
             return newQuantity === 0
@@ -130,7 +119,8 @@ export default function CartDrawer({
       handlePayment();
     }
   };
-  //save purchased products
+
+  // Save purchased products
   const savePurchasesToFirestore = async () => {
     if (userData) {
       const purchaseId = `${userData.uid}_${Date.now()}`;
@@ -192,13 +182,12 @@ export default function CartDrawer({
       description: "Purchase Description",
       // image: "https://ibb.co/4mnfNpm", // Add your logo URL here
       handler: function (response) {
-        // alert(response.razorpay_payment_id);
         savePurchasesToFirestore();
         // Handle successful payment
 
         showToast(
           "success",
-          `Payment sucessfull with id:${response.razorpay_payment_id}`
+          t("payment_successful", { id: response.razorpay_payment_id })
         );
       },
       prefill: {
@@ -223,6 +212,7 @@ export default function CartDrawer({
     const paymentObject = new window.Razorpay(options);
     paymentObject.open();
   };
+
   return (
     <Drawer
       anchor="right"
@@ -232,7 +222,7 @@ export default function CartDrawer({
     >
       <Box sx={{ p: 2 }}>
         <Typography variant="h6" gutterBottom>
-          Your Cart
+          {t("your_cart")}
         </Typography>
         <List>
           {cart.map((item) => (
@@ -270,34 +260,38 @@ export default function CartDrawer({
         </List>
         <Divider sx={{ my: 2 }} />
         <Typography variant="subtitle1">
-          Subtotal: {fCurrency(subtotal)}
+          {t("subtotal")}: {fCurrency(subtotal)}
         </Typography>
-        <Typography variant="subtitle2">GST (18%): {fCurrency(gst)}</Typography>
         <Typography variant="subtitle2">
-          Platform Fee (2%): {fCurrency(platformFee)}
+          {t("gst")}: {fCurrency(gst)}
+        </Typography>
+        <Typography variant="subtitle2">
+          {t("platform_fee")}: {fCurrency(platformFee)}
         </Typography>
         <Typography variant="h6" sx={{ mt: 2 }}>
-          Total: {fCurrency(total)}
+          {t("total")}: {fCurrency(total)}
         </Typography>
         <Divider sx={{ my: 2 }} />
         {userData ? (
           <>
             <Typography variant="body2">
-              Available Points: {userPoints}
+              {t("available_points")}: {userPoints}
             </Typography>
             <Typography variant="body2">
-              Points Value: {fCurrency(pointsValue)}
+              {t("points_value")}: {fCurrency(pointsValue)}
             </Typography>
-            <Typography variant="body2">Points Used: {pointsUsed}</Typography>
             <Typography variant="body2">
-              Remaining Points: {remainingPoints}
+              {t("points_used")}: {pointsUsed}
+            </Typography>
+            <Typography variant="body2">
+              {t("remaining_points")}: {remainingPoints}
             </Typography>
             <Typography variant="h6" sx={{ mt: 2 }}>
-              Amount to Pay: {fCurrency(amountAfterPoints)}
+              {t("amount_to_pay")}: {fCurrency(amountAfterPoints)}
             </Typography>
           </>
         ) : (
-          <Typography variant="body2">Log in to use your points</Typography>
+          <Typography variant="body2">{t("log_in_to_use_points")}</Typography>
         )}
         <Button
           variant="contained"
@@ -314,9 +308,11 @@ export default function CartDrawer({
         >
           {address
             ? amountAfterPoints === 0
-              ? `Use ${pointsUsed} points and Place Order`
-              : `Pay ${fCurrency(amountAfterPoints)} and Place Order`
-            : "Add Address"}
+              ? t("use_points_and_place_order", { points: pointsUsed })
+              : t("pay_and_place_order", {
+                  amount: fCurrency(amountAfterPoints),
+                })
+            : t("add_address")}
         </Button>
         <Dialog
           open={showAddressForm}

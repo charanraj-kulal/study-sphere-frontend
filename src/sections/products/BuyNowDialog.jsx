@@ -1,4 +1,3 @@
-// BuyNowDialog.js
 import React, { useState, useEffect } from "react";
 import Dialog from "@mui/material/Dialog";
 import DialogContent from "@mui/material/DialogContent";
@@ -11,6 +10,7 @@ import { db } from "../../firebase";
 import { useToast } from "../../hooks/ToastContext";
 import { fCurrency } from "../../utils/format-number";
 import AddressForm from "./AddressForm";
+import { useTranslation } from "react-i18next";
 
 export default function BuyNowDialog({
   open,
@@ -18,6 +18,7 @@ export default function BuyNowDialog({
   product,
   refreshProducts,
 }) {
+  const { t } = useTranslation();
   const { userData } = useUser();
   const [userPoints, setUserPoints] = useState(0);
   const [address, setAddress] = useState(null);
@@ -54,7 +55,6 @@ export default function BuyNowDialog({
     const platformFee = parseFloat(subtotal * 0.02);
 
     const total = parseFloat(subtotal + gst + platformFee);
-    // console.log(total);
     return { subtotal, gst, platformFee, total };
   };
 
@@ -74,7 +74,7 @@ export default function BuyNowDialog({
         { address: addressData },
         { merge: true }
       );
-      showToast("info", "Adress adeed successfully");
+      showToast("info", t("bn_address_added_successfully"));
     }
   };
 
@@ -94,12 +94,11 @@ export default function BuyNowDialog({
       amount: Math.round(amountAfterPoints * 100), // Convert to paise
       currency: "INR",
       name: "Study Sphere store",
-      description: `Purchase of ${product.productName}`,
+      description: `${t("bn_buy_now", { productName: product.productName })}`,
       handler: function (response) {
-        // alert(response.razorpay_payment_id);
         showToast(
           "success",
-          `Payment sucessfull with id:${response.razorpay_payment_id}`
+          t("bn_payment_successful", { id: response.razorpay_payment_id })
         );
         savePurchaseToFirestore();
       },
@@ -140,11 +139,6 @@ export default function BuyNowDialog({
         userId: userData.uid,
       };
 
-      // await setDoc(
-      //   doc(db, "purchasedProducts", `${userData.uid}_${product.id}`),
-      //   purchaseData
-      // );
-
       await setDoc(doc(db, "purchasedProducts", purchaseId), purchaseData);
 
       // Update user points
@@ -153,6 +147,7 @@ export default function BuyNowDialog({
         { points: Math.round(remainingPoints) },
         { merge: true }
       );
+
       // Update product stock
       const productRef = doc(db, "products", product.id);
       const productSnap = await getDoc(productRef);
@@ -172,37 +167,41 @@ export default function BuyNowDialog({
     <Dialog open={open} onClose={onClose}>
       <DialogContent>
         <Typography variant="h6" gutterBottom>
-          Buy Now: {product.productName}
+          {t("bn_buy_now", { productName: product.productName })}
         </Typography>
         <Box sx={{ mt: 2 }}>
           <Typography variant="subtitle1">
-            Subtotal: {fCurrency(subtotal)}
+            {t("bn_subtotal", { amount: fCurrency(subtotal) })}
           </Typography>
           <Typography variant="subtitle2">
-            GST (18%): {fCurrency(gst)}
+            {t("bn_gst", { amount: fCurrency(gst) })}
           </Typography>
           <Typography variant="subtitle2">
-            Platform Fee (2%): {fCurrency(platformFee)}
+            {t("bn_platform_fee", { amount: fCurrency(platformFee) })}
           </Typography>
           <Typography variant="h6" sx={{ mt: 2 }}>
-            Total: {fCurrency(total)}
+            {t("bn_total", { amount: fCurrency(total) })}
           </Typography>
           {userData && (
             <>
               <Typography variant="body2">
-                Available Points: {userPoints}
+                {t("bn_available_points", { points: userPoints })}
               </Typography>
               <Typography variant="body2">
-                Points Value: {fCurrency(pointsValue)}
+                {t("bn_points_value", { amount: fCurrency(pointsValue) })}
               </Typography>
               <Typography variant="body2">
-                Points Used: {Math.round(pointsUsed)}
+                {t("bn_points_used", { points: Math.round(pointsUsed) })}
               </Typography>
               <Typography variant="body2">
-                Remaining Points: {Math.round(remainingPoints)}
+                {t("bn_remaining_points", {
+                  points: Math.round(remainingPoints),
+                })}
               </Typography>
               <Typography variant="h6" sx={{ mt: 2 }}>
-                Amount to Pay: {fCurrency(amountAfterPoints)}
+                {t("bn_amount_to_pay", {
+                  amount: fCurrency(amountAfterPoints),
+                })}
               </Typography>
             </>
           )}
@@ -222,9 +221,11 @@ export default function BuyNowDialog({
           >
             {address
               ? amountAfterPoints === 0
-                ? `Use ${pointsUsed} points and Place Order`
-                : `Pay ${fCurrency(amountAfterPoints)} and Place Order`
-              : "Add Address"}
+                ? t("bn_use_points_and_place_order", { points: pointsUsed })
+                : t("bn_pay_and_place_order", {
+                    amount: fCurrency(amountAfterPoints),
+                  })
+              : t("bn_add_address")}
           </Button>
         </Box>
         <Dialog

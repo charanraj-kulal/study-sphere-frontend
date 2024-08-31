@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { useState, useEffect } from "react";
 import { collection, getDocs, doc, setDoc, getDoc } from "firebase/firestore";
 import { db } from "../../../firebase";
@@ -15,6 +16,7 @@ import CartDrawer from "../CartDrawer";
 import { useUser } from "../../../hooks/UserContext";
 
 export default function ProductsView() {
+  const { t } = useTranslation();
   const [openFilter, setOpenFilter] = useState(false);
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [filters, setFilters] = useState({});
@@ -24,10 +26,6 @@ export default function ProductsView() {
   const { userData } = useUser();
   const [activeProducts, setActiveProducts] = useState([]);
   const [sortOption, setSortOption] = useState("newest");
-
-  // const activeProducts = products.filter(
-  //   (product) => product.productStatus === "active"
-  // );
 
   useEffect(() => {
     setActiveProducts(
@@ -108,8 +106,8 @@ export default function ProductsView() {
     };
 
     fetchProducts();
-    // refreshProducts();
   }, []);
+
   const applyFilters = (newFilters) => {
     setFilters(newFilters);
     let filtered = products;
@@ -153,22 +151,20 @@ export default function ProductsView() {
     let sorted = [...filteredProducts];
 
     switch (option) {
-      case "featured":
-        // Sort by oldest (assuming you have a 'createdAt' field)
+      case t("featured"):
         sorted.sort(
           (a, b) => a.productAddedAt.seconds - b.productAddedAt.seconds
         );
         break;
-      case "newest":
-        // Sort by newest (assuming you have a 'createdAt' field)
+      case t("newest"):
         sorted.sort(
           (a, b) => b.productAddedAt.seconds - a.productAddedAt.seconds
         );
         break;
-      case "priceDesc":
+      case t("priceDesc"):
         sorted.sort((a, b) => b.price - a.price);
         break;
-      case "priceAsc":
+      case t("priceAsc"):
         sorted.sort((a, b) => a.price - b.price);
         break;
       default:
@@ -196,7 +192,6 @@ export default function ProductsView() {
 
   const handlePaymentSuccess = async () => {
     if (userData) {
-      // Clear cart in Firestore
       await setDoc(doc(db, "userCarts", userData.uid), { items: [] });
     } else {
       localStorage.removeItem("cart");
@@ -208,7 +203,7 @@ export default function ProductsView() {
   return (
     <Container>
       <Typography variant="h4" sx={{ mb: 5 }}>
-        Products
+        {t("products")}
       </Typography>
 
       <Stack
