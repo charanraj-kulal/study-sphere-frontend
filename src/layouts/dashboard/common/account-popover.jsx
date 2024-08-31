@@ -10,6 +10,7 @@ import { alpha } from "@mui/material/styles";
 import MenuItem from "@mui/material/MenuItem";
 import Typography from "@mui/material/Typography";
 import IconButton from "@mui/material/IconButton";
+import { useTranslation } from "react-i18next";
 
 import { account } from "../../../_mock/account";
 import { useUser } from "../../../hooks/UserContext";
@@ -17,16 +18,16 @@ import { useUser } from "../../../hooks/UserContext";
 
 const MENU_OPTIONS = [
   {
-    label: "Home",
+    label: "home",
     icon: "eva:home-fill",
     path: "/",
   },
   {
-    label: "Profile",
+    label: "profile",
     icon: "eva:person-fill",
   },
   {
-    label: "Settings",
+    label: "settings",
     icon: "eva:settings-2-fill",
   },
 ];
@@ -40,7 +41,7 @@ export default function AccountPopover() {
   const handleOpen = (event) => {
     setOpen(event.currentTarget);
   };
-
+  const { t } = useTranslation();
   const handleClose = () => {
     setOpen(null);
   };
@@ -119,7 +120,7 @@ export default function AccountPopover() {
             key={option.label}
             onClick={() => handleMenuItemClick(option.path)}
           >
-            {option.label}
+            {t(option.label)}
           </MenuItem>
         ))}
 
@@ -131,7 +132,7 @@ export default function AccountPopover() {
           onClick={handleLogout}
           sx={{ typography: "body2", color: "error.main", py: 1.5 }}
         >
-          Logout
+          {t("logout")}
         </MenuItem>
       </Popover>
     </>

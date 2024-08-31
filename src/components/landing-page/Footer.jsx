@@ -21,13 +21,23 @@ import LinkedInIcon from "@mui/icons-material/LinkedIn";
 import InstagramIcon from "@mui/icons-material/Instagram";
 // import FaviconImage from "../../assets/icons/favicon/favicon.png";
 import FaviconImage from "../../assets/images/logo/logo.png";
+import FooterImage from "../../assets/background/footer-image.png";
 
 gsap.registerPlugin(ScrollTrigger);
 
+// const StyledFooter = styled("footer")(({ theme }) => ({
+//   backgroundColor: "#0033a0",
+//   color: "#fdbf2d",
+//   padding: theme.spacing(6, 0),
+// }));
+
 const StyledFooter = styled("footer")(({ theme }) => ({
-  backgroundColor: "#0033a0",
-  color: "#fdbf2d",
+  backgroundImage: `url(${FooterImage})`,
+  backgroundSize: "cover",
+  backgroundRepeat: "no-repeat",
+  backgroundPosition: "center",
   padding: theme.spacing(6, 0),
+  color: "white",
 }));
 
 const LogoTypography = styled(Typography)(({ theme }) => ({
@@ -125,7 +135,7 @@ const Footer = () => {
   return (
     <StyledFooter ref={footerRef}>
       <Container maxWidth="lg">
-        <Grid container spacing={4}>
+        <Grid container spacing={4} sx={{ mt: 7 }}>
           <Grid item xs={12} sm={6} md={3}>
             <img
               src={FaviconImage}
@@ -134,6 +144,7 @@ const Footer = () => {
                 width: 100,
                 height: 100,
                 marginLeft: 50,
+                marginTop: 90,
                 filter: "drop-shadow(5px 10px 15px  #fff",
               }}
             />
@@ -184,43 +195,44 @@ const Footer = () => {
               <StyledButton onClick={handleAuthButtonClick}>
                 {userData ? "Dashboard" : "Login"}
               </StyledButton>
+              <Box mt={4}>
+                <SocialIcon
+                  component="a"
+                  href="https://facebook.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <FacebookIcon />
+                </SocialIcon>
+                <SocialIcon
+                  component="a"
+                  href="https://twitter.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <TwitterIcon />
+                </SocialIcon>
+                <SocialIcon
+                  component="a"
+                  href="https://linkedin.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <LinkedInIcon />
+                </SocialIcon>
+                <SocialIcon
+                  component="a"
+                  href="https://instagram.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <InstagramIcon />
+                </SocialIcon>
+              </Box>
             </Box>
           </Grid>
         </Grid>
-        <Box mt={4} textAlign="center">
-          <SocialIcon
-            component="a"
-            href="https://facebook.com"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <FacebookIcon />
-          </SocialIcon>
-          <SocialIcon
-            component="a"
-            href="https://twitter.com"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <TwitterIcon />
-          </SocialIcon>
-          <SocialIcon
-            component="a"
-            href="https://linkedin.com"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <LinkedInIcon />
-          </SocialIcon>
-          <SocialIcon
-            component="a"
-            href="https://instagram.com"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <InstagramIcon />
-          </SocialIcon>
-        </Box>
+
         <Typography
           variant="body2"
           align="center"

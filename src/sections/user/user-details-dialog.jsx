@@ -348,7 +348,7 @@ const UserDetailsDialog = ({ open, onClose, userId, user, currentUser }) => {
                       icon="mdi:school"
                       sx={{ mr: 1, color: "#0033a0" }}
                     />
-                    <Typography variant="body2">{user.collegeName}</Typography>
+                    <Typography variant="body2">{user.university}</Typography>
                   </Box>
                   <Box display="flex" alignItems="center" mb={1}>
                     <Iconify

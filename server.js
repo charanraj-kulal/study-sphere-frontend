@@ -16,7 +16,7 @@ const __dirname = path.dirname(__filename);
 
 dotenv.config({ path: path.resolve(__dirname, ".env.local") });
 
-// Import the service account key with an import assertion
+// Import the service account key
 import serviceAccount from "./serviceAccountKey.js";
 
 // Initialize Firebase Admin SDK
@@ -30,6 +30,9 @@ const transporter = nodemailer.createTransport({
   auth: {
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASS,
+  },
+  tls: {
+    rejectUnauthorized: false, // Allow self-signed certificates
   },
 });
 const app = express();

@@ -1,5 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { Box, Typography, Dialog, IconButton } from "@mui/material";
+import {
+  Box,
+  Typography,
+  Dialog,
+  IconButton,
+  CircularProgress,
+} from "@mui/material";
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
@@ -7,7 +13,7 @@ import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import CloseIcon from "@mui/icons-material/Close";
 
-const YOUTUBE_API_KEY = import.meta.env.VITE_YOUTUBE_API; // Replace with your actual API key
+const YOUTUBE_API_KEY = import.meta.env.VITE_YOUTUBE_API;
 
 const CustomArrow = ({ direction, onClick }) => (
   <IconButton
@@ -29,20 +35,30 @@ const CustomArrow = ({ direction, onClick }) => (
 const YouTubeSuggestions = ({ documentName, documentTopics }) => {
   const [videos, setVideos] = useState([]);
   const [selectedVideo, setSelectedVideo] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchVideos = async () => {
+      setLoading(true);
+      setError(null);
       try {
         const query = `${documentName} ${documentTopics.join(" ")}`;
         const response = await fetch(
           `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(
             query
-          )}&type=video&maxResults=10&key=${YOUTUBE_API_KEY}`
+          )}&type=video&maxResults=5&key=${YOUTUBE_API_KEY}`
         );
+        if (!response.ok) {
+          throw new Error("Failed to fetch videos");
+        }
         const data = await response.json();
-        setVideos(data.items);
+        setVideos(data.items || []);
       } catch (error) {
         console.error("Error fetching YouTube videos:", error);
+        setError("Failed to load videos. Please try again later.");
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -72,6 +88,22 @@ const YouTubeSuggestions = ({ documentName, documentTopics }) => {
       },
     ],
   };
+
+  if (loading) {
+    return (
+      <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Box sx={{ mt: 4 }}>
+        <Typography color="error">{error}</Typography>
+      </Box>
+    );
+  }
 
   return (
     <Box sx={{ mt: 4, position: "relative" }}>
@@ -113,7 +145,7 @@ const YouTubeSuggestions = ({ documentName, documentTopics }) => {
           ))}
         </Slider>
       ) : (
-        <Typography>Loading videos...</Typography>
+        <Typography>No videos found.</Typography>
       )}
       <Dialog
         open={!!selectedVideo}
