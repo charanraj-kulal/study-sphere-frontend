@@ -1,34 +1,13 @@
-import { useState } from "react";
-
+import React, { useState } from "react";
 import Box from "@mui/material/Box";
 import Popover from "@mui/material/Popover";
 import MenuItem from "@mui/material/MenuItem";
 import IconButton from "@mui/material/IconButton";
-
-// ----------------------------------------------------------------------
-
-const LANGS = [
-  {
-    value: "en",
-    label: "English",
-    icon: "../src/assets/icons/ic_flag_en.svg",
-  },
-  {
-    value: "de",
-    label: "German",
-    icon: "../src/assets/icons/ic_flag_de.svg",
-  },
-  {
-    value: "fr",
-    label: "French",
-    icon: "../src/assets/icons/ic_flag_fr.svg",
-  },
-];
-
-// ----------------------------------------------------------------------
+import { useLanguage, LANGS } from "../../../hooks/LanguageContext";
 
 export default function LanguagePopover() {
   const [open, setOpen] = useState(null);
+  const { language, setLanguage } = useLanguage();
 
   const handleOpen = (event) => {
     setOpen(event.currentTarget);
@@ -36,6 +15,11 @@ export default function LanguagePopover() {
 
   const handleClose = () => {
     setOpen(null);
+  };
+
+  const handleLanguageChange = (newLang) => {
+    setLanguage(newLang);
+    handleClose();
   };
 
   return (
@@ -50,7 +34,7 @@ export default function LanguagePopover() {
           }),
         }}
       >
-        <img src={LANGS[0].icon} alt={LANGS[0].label} />
+        <img src={language.icon} alt={language.label} />
       </IconButton>
 
       <Popover
@@ -71,8 +55,8 @@ export default function LanguagePopover() {
         {LANGS.map((option) => (
           <MenuItem
             key={option.value}
-            selected={option.value === LANGS[0].value}
-            onClick={() => handleClose()}
+            selected={option.value === language.value}
+            onClick={() => handleLanguageChange(option)}
             sx={{ typography: "body2", py: 1 }}
           >
             <Box
@@ -81,7 +65,6 @@ export default function LanguagePopover() {
               src={option.icon}
               sx={{ width: 28, mr: 2 }}
             />
-
             {option.label}
           </MenuItem>
         ))}
