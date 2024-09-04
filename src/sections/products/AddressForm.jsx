@@ -7,6 +7,7 @@ import {
   FormControl,
   InputLabel,
 } from "@mui/material";
+import { useTranslation } from "react-i18next";
 
 const indianStates = [
   "Andhra Pradesh",
@@ -40,6 +41,8 @@ const indianStates = [
 ];
 
 export default function AddressForm({ onSubmit, initialData }) {
+  const { t } = useTranslation();
+
   const [formData, setFormData] = useState({
     name: initialData.name || "",
     email: initialData.email || "",
@@ -64,7 +67,7 @@ export default function AddressForm({ onSubmit, initialData }) {
         fullWidth
         margin="normal"
         name="name"
-        label="Name"
+        label={t("af_name")}
         value={formData.name}
         onChange={handleChange}
         required
@@ -73,7 +76,7 @@ export default function AddressForm({ onSubmit, initialData }) {
         fullWidth
         margin="normal"
         name="email"
-        label="Email"
+        label={t("af_email")}
         type="email"
         value={formData.email}
         onChange={handleChange}
@@ -83,7 +86,7 @@ export default function AddressForm({ onSubmit, initialData }) {
         fullWidth
         margin="normal"
         name="phone"
-        label="Phone Number"
+        label={t("af_phone")}
         value={formData.phone}
         onChange={handleChange}
         required
@@ -92,7 +95,7 @@ export default function AddressForm({ onSubmit, initialData }) {
         fullWidth
         margin="normal"
         name="address"
-        label="Address"
+        label={t("af_address")}
         multiline
         rows={3}
         value={formData.address}
@@ -103,13 +106,13 @@ export default function AddressForm({ onSubmit, initialData }) {
         fullWidth
         margin="normal"
         name="pincode"
-        label="Pincode"
+        label={t("af_pincode")}
         value={formData.pincode}
         onChange={handleChange}
         required
       />
       <FormControl fullWidth margin="normal">
-        <InputLabel>State</InputLabel>
+        <InputLabel>{t("af_state")}</InputLabel>
         <Select
           name="state"
           value={formData.state}
@@ -124,7 +127,7 @@ export default function AddressForm({ onSubmit, initialData }) {
         </Select>
       </FormControl>
       <Button type="submit" variant="contained" color="primary" fullWidth>
-        Save Address
+        {t("af_save_address")}
       </Button>
     </form>
   );

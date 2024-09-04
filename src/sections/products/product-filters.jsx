@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import PropTypes from "prop-types";
+import { useTranslation } from "react-i18next";
 
 import Box from "@mui/material/Box";
 import Stack from "@mui/material/Stack";
@@ -17,27 +18,27 @@ import Radio from "@mui/material/Radio";
 import Iconify from "../../components/iconify";
 
 export const CATEGORY_OPTIONS = [
-  "All",
-  "Pens",
-  "Pencils",
-  "Notebooks",
-  "Paper",
-  "Folders",
-  "Binders",
-  "Staplers",
-  "Scissors",
-  "Markers",
-  "Highlighters",
-  "Erasers",
+  "pf_all",
+  "pf_pens",
+  "pf_pencils",
+  "pf_notebooks",
+  "pf_paper",
+  "pf_folders",
+  "pf_binders",
+  "pf_staplers",
+  "pf_scissors",
+  "pf_markers",
+  "pf_highlighters",
+  "pf_erasers",
 ];
 
 export const PRICE_OPTIONS = [
-  { value: "1-100", label: "₹1 - ₹100" },
-  { value: "100-200", label: "₹100 - ₹200" },
-  { value: "200-300", label: "₹200 - ₹300" },
-  { value: "300-400", label: "₹300 - ₹400" },
-  { value: "400-500", label: "₹400 - ₹500" },
-  { value: "500+", label: "₹500 and more" },
+  { value: "1-100", label: "pf_1_100" },
+  { value: "100-200", label: "pf_100_200" },
+  { value: "200-300", label: "pf_200_300" },
+  { value: "300-400", label: "pf_300_400" },
+  { value: "400-500", label: "pf_400_500" },
+  { value: "500+", label: "pf_500_more" },
 ];
 
 export const COLOR_OPTIONS = [
@@ -67,13 +68,14 @@ export default function ProductFilters({
   onCloseFilter,
   onFilter,
 }) {
+  const { t } = useTranslation();
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [selectedPrice, setSelectedPrice] = useState("");
   const [selectedColors, setSelectedColors] = useState([]);
 
   const handleCategoryChange = (category) => {
     setSelectedCategories((prev) =>
-      category === "All"
+      category === "pf_all"
         ? []
         : prev.includes(category)
           ? prev.filter((c) => c !== category)
@@ -95,7 +97,8 @@ export default function ProductFilters({
 
   const handleApplyFilters = () => {
     onFilter({
-      categories: selectedCategories.length > 0 ? selectedCategories : ["All"],
+      categories:
+        selectedCategories.length > 0 ? selectedCategories : ["pf_all"],
       price: selectedPrice,
       colors: selectedColors,
     });
@@ -112,7 +115,7 @@ export default function ProductFilters({
 
   const renderCategory = (
     <Stack spacing={1}>
-      <Typography variant="subtitle2">Category</Typography>
+      <Typography variant="subtitle2">{t("pf_category")}</Typography>
       <FormGroup>
         {CATEGORY_OPTIONS.map((item) => (
           <FormControlLabel
@@ -123,7 +126,7 @@ export default function ProductFilters({
                 onChange={() => handleCategoryChange(item)}
               />
             }
-            label={item}
+            label={t(item)}
           />
         ))}
       </FormGroup>
@@ -132,7 +135,7 @@ export default function ProductFilters({
 
   const renderColors = (
     <Stack spacing={1}>
-      <Typography variant="subtitle2">Colors</Typography>
+      <Typography variant="subtitle2">{t("pf_colors")}</Typography>
       <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
         {COLOR_OPTIONS.map((color) => (
           <Box
@@ -159,14 +162,14 @@ export default function ProductFilters({
 
   const renderPrice = (
     <Stack spacing={1}>
-      <Typography variant="subtitle2">Price</Typography>
+      <Typography variant="subtitle2">{t("pf_price")}</Typography>
       <RadioGroup value={selectedPrice} onChange={handlePriceChange}>
         {PRICE_OPTIONS.map((item) => (
           <FormControlLabel
             key={item.value}
             value={item.value}
             control={<Radio />}
-            label={item.label}
+            label={t(item.label)}
           />
         ))}
       </RadioGroup>
@@ -181,7 +184,7 @@ export default function ProductFilters({
         endIcon={<Iconify icon="ic:round-filter-list" />}
         onClick={onOpenFilter}
       >
-        Filters&nbsp;
+        {t("pf_filters")}&nbsp;
       </Button>
       <Drawer
         anchor="right"
@@ -198,7 +201,7 @@ export default function ProductFilters({
           sx={{ px: 1, py: 2 }}
         >
           <Typography variant="h6" sx={{ ml: 1 }}>
-            Filters
+            {t("pf_filters")}
           </Typography>
           <IconButton onClick={onCloseFilter}>
             <Iconify icon="eva:close-fill" />
@@ -224,7 +227,7 @@ export default function ProductFilters({
             onClick={handleApplyFilters}
             startIcon={<Iconify icon="ic:round-filter-list" />}
           >
-            Apply Filters
+            {t("pf_apply_filters")}
           </Button>
           <Button
             fullWidth
@@ -236,7 +239,7 @@ export default function ProductFilters({
             startIcon={<Iconify icon="ic:round-clear-all" />}
             sx={{ mt: 1 }}
           >
-            Clear All
+            {t("pf_clear_all")}
           </Button>
         </Box>
       </Drawer>

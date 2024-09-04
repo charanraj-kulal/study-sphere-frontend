@@ -10,6 +10,7 @@ import Divider from "@mui/material/Divider";
 import Card from "@mui/material/Card";
 import UserProfileSection from "../UserProfileSection";
 import { useUser } from "../../../hooks/UserContext";
+import { useTranslation } from "react-i18next"; // Add this import
 
 import {
   collection,
@@ -53,6 +54,7 @@ import CommentSection from "../CommentSection";
 import BreadcrumbsNavigation from "../BreadcrumbsNavigation";
 
 export default function BlogView() {
+  const { t } = useTranslation(); // Add this line
   const navigate = useNavigate();
   const location = useLocation();
   const [openNewPost, setOpenNewPost] = useState(false);
@@ -60,7 +62,10 @@ export default function BlogView() {
   const [sortOption, setSortOption] = useState("latest");
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedBlog, setSelectedBlog] = useState(null);
-  const [breadcrumbs, setBreadcrumbs] = useState(["Dashboard", "Blog"]);
+  const [breadcrumbs, setBreadcrumbs] = useState([
+    t("bv_dashboard"),
+    t("bv_blog"),
+  ]);
   const [loading, setLoading] = useState(true);
   const [anchorEl, setAnchorEl] = useState(null);
   const shareButtonRef = useRef(null);
@@ -92,7 +97,7 @@ export default function BlogView() {
       setAnchorEl(shareButtonRef.current);
       setIsPopoverOpen(true);
     } catch (error) {
-      console.error("Error updating share count:", error);
+      console.error(t("bv_error_updating_share_count"), error);
     }
   };
 
@@ -104,12 +109,14 @@ export default function BlogView() {
     : "";
 
   const handleEmailShare = () => {
-    window.location.href = `mailto:?subject=Check out this blog post&body=I thought you might be interested in this blog post: ${shareUrl}`;
+    window.location.href = `mailto:?subject=${t("bv_email_subject")}&body=${t("bv_email_body", { shareUrl })}`;
     handleShareClose();
   };
 
   const handleWhatsAppShare = () => {
-    window.open(`https://wa.me/?text=Check out this blog post: ${shareUrl}`);
+    window.open(
+      `https://wa.me/?text=${t("bv_whatsapp_message", { shareUrl })}`
+    );
     handleShareClose();
   };
 
@@ -131,7 +138,7 @@ export default function BlogView() {
       ctx.drawImage(img, 0, 0);
       const pngFile = canvas.toDataURL("image/png");
       const downloadLink = document.createElement("a");
-      downloadLink.download = "Blog_post_QRCode";
+      downloadLink.download = t("bv_qr_code_filename");
       downloadLink.href = pngFile;
       downloadLink.click();
     };
@@ -143,11 +150,11 @@ export default function BlogView() {
       if (userDoc.exists()) {
         return userDoc.data();
       } else {
-        console.log("No such user!");
+        console.log(t("bv_no_such_user"));
         return null;
       }
     } catch (error) {
-      console.error("Error fetching user data:", error);
+      console.error(t("bv_error_fetching_user_data"), error);
       return null;
     }
   };
@@ -161,7 +168,7 @@ export default function BlogView() {
         if (blogDoc.exists()) {
           const blogData = { id: blogDoc.id, ...blogDoc.data() };
           setSelectedBlog(blogData);
-          setBreadcrumbs(["Dashboard", "Blog", blogData.title]);
+          setBreadcrumbs([t("bv_dashboard"), t("bv_blog"), blogData.title]);
           incrementViewCount(blogId);
 
           // Fetch user data
@@ -170,11 +177,11 @@ export default function BlogView() {
             setBlogPosterData(userData);
           }
         } else {
-          console.log("No such document!");
+          console.log(t("bv_no_such_document"));
           // Show error toast
         }
       } catch (error) {
-        console.error("Error fetching blog:", error);
+        console.error(t("bv_error_fetching_blog"), error);
         // Show error toast
       } finally {
         setLoading(false);
@@ -182,7 +189,7 @@ export default function BlogView() {
     };
 
     fetchBlog();
-  }, [blogId]);
+  }, [blogId, t]);
   useEffect(() => {
     const urlParams = new URLSearchParams(location.search);
     const blogIdFromUrl = urlParams.get("blogId");
@@ -215,14 +222,14 @@ export default function BlogView() {
 
       setPosts(fetchedPosts);
     } catch (error) {
-      console.error("Error fetching posts:", error);
+      console.error(t("bv_error_fetching_posts"), error);
     } finally {
       setLoading(false);
     }
   };
   useEffect(() => {
     fetchPosts();
-  }, [location]);
+  }, [location, t]);
 
   const handleCardClick = (blog) => {
     setBlogId(blog.id);
@@ -231,7 +238,7 @@ export default function BlogView() {
 
   const incrementViewCount = async (blogId) => {
     if (!userData || !userData.uid) {
-      console.error("User data is not available");
+      console.error(t("bv_user_data_not_available"));
       return;
     }
 
@@ -252,7 +259,7 @@ export default function BlogView() {
         }
       }
     } catch (error) {
-      console.error("Error updating view count:", error);
+      console.error(t("bv_error_updating_view_count"), error);
     }
   };
   const handleBreadcrumbClick = (event, index) => {
@@ -260,7 +267,7 @@ export default function BlogView() {
     if (index === 0) {
       navigate("/dashboard");
     } else if (index === 1) {
-      setBreadcrumbs(["Dashboard", "Blog"]);
+      setBreadcrumbs([t("bv_dashboard"), t("bv_blog")]);
       setSelectedBlog(null);
       navigate(
         `/dashboard/blog${searchTerm ? `?search=${encodeURIComponent(searchTerm)}` : ""}`,
@@ -331,7 +338,7 @@ export default function BlogView() {
       navigate("/dashboard/blog", { replace: true });
       // You might want to show a success message here
     } catch (error) {
-      console.error("Error deleting blog:", error);
+      console.error(t("bv_error_deleting_blog"), error);
       // You might want to show an error message here
     } finally {
       setDeleteDialogOpen(false);
@@ -342,7 +349,7 @@ export default function BlogView() {
   return (
     <Container>
       <Typography variant="h4" sx={{ mb: 5 }}>
-        Blog
+        {t("bv_blog")}
       </Typography>
       <Card sx={{ p: 4, mt: 3 }}>
         <BreadcrumbsNavigation
@@ -400,7 +407,7 @@ export default function BlogView() {
                       color: "#0A4191",
                     }}
                   >
-                    Share
+                    {t("bv_share")}
                   </Typography>
                 </Button>
                 {selectedBlog.blogPosterUid === userData.uid && (
@@ -410,7 +417,7 @@ export default function BlogView() {
                     variant="contained"
                     color="error"
                   >
-                    Delete
+                    {t("bv_delete")}
                   </Button>
                 )}
               </Box>
@@ -438,7 +445,7 @@ export default function BlogView() {
               }}
             >
               <Typography variant="h6" sx={{ mb: 2, color: "#1a237e" }}>
-                Comments
+                {t("bv_comments")}
               </Typography>
               <CommentSection blogId={selectedBlog.id} currentUser={userData} />
             </Box>
@@ -462,19 +469,19 @@ export default function BlogView() {
                   <ListItemIcon>
                     <EmailIcon />
                   </ListItemIcon>
-                  <ListItemText primary="Email" />
+                  <ListItemText primary={t("bv_email")} />
                 </ListItem>
                 <ListItem button onClick={handleWhatsAppShare}>
                   <ListItemIcon>
                     <WhatsAppIcon />
                   </ListItemIcon>
-                  <ListItemText primary="WhatsApp" />
+                  <ListItemText primary={t("bv_whatsapp")} />
                 </ListItem>
                 <ListItem button onClick={handleCopyLink}>
                   <ListItemIcon>
                     <LinkIcon />
                   </ListItemIcon>
-                  <ListItemText primary="Copy Link" />
+                  <ListItemText primary={t("bv_copy_link")} />
                 </ListItem>
               </List>
               <Box
@@ -486,7 +493,7 @@ export default function BlogView() {
                 }}
               >
                 <Typography variant="subtitle1" gutterBottom>
-                  QR Code
+                  {t("bv_qr_code")}
                 </Typography>
                 <QRCodeSVG id="QRCode" value={shareUrl} size={128} level="M" />
                 <Button
@@ -499,7 +506,7 @@ export default function BlogView() {
                     p: 1,
                   }}
                 >
-                  Download QR Code
+                  {t("bv_download_qr_code")}
                 </Button>
               </Box>
             </Popover>
@@ -512,18 +519,17 @@ export default function BlogView() {
               aria-describedby="alert-dialog-description"
             >
               <DialogTitle id="alert-dialog-title">
-                {"Confirm Delete"}
+                {t("bv_confirm_delete")}
               </DialogTitle>
               <DialogContent>
                 <DialogContentText id="alert-dialog-description">
-                  Are you sure you want to delete this blog post? This action
-                  cannot be undone.
+                  {t("bv_confirm_delete_message")}
                 </DialogContentText>
               </DialogContent>
               <DialogActions>
-                <Button onClick={handleDeleteCancel}>Cancel</Button>
+                <Button onClick={handleDeleteCancel}>{t("bv_cancel")}</Button>
                 <Button onClick={handleDeleteConfirm} autoFocus color="error">
-                  Delete
+                  {t("bv_delete")}
                 </Button>
               </DialogActions>
             </Dialog>
@@ -536,14 +542,14 @@ export default function BlogView() {
               justifyContent="space-between"
               mb={5}
             >
-              <Typography variant="h4">Blogs</Typography>
+              <Typography variant="h4">{t("bv_blogs")}</Typography>
               <Button
                 variant="contained"
                 color="inherit"
                 startIcon={<Iconify icon="eva:plus-fill" />}
                 onClick={() => setOpenNewPost(true)}
               >
-                New Post
+                {t("bv_new_post")}
               </Button>
             </Stack>
             <Stack
@@ -555,9 +561,9 @@ export default function BlogView() {
               <PostSearch posts={posts} onSearch={handleSearch} />
               <PostSort
                 options={[
-                  { value: "latest", label: "Latest" },
-                  { value: "popular", label: "Popular" },
-                  { value: "oldest", label: "Oldest" },
+                  { value: "latest", label: t("bv_latest") },
+                  { value: "popular", label: t("bv_popular") },
+                  { value: "oldest", label: t("bv_oldest") },
                 ]}
                 onSort={handleSort}
                 currentSort={sortOption}
@@ -591,7 +597,7 @@ export default function BlogView() {
               fullWidth
               maxWidth="md"
             >
-              <DialogTitle>New Post</DialogTitle>
+              <DialogTitle>{t("bv_new_post")}</DialogTitle>
               <DialogContent>
                 <NewPostForm
                   onClose={() => {
