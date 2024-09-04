@@ -1,5 +1,6 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import PropTypes from "prop-types";
+import { useTranslation } from "react-i18next";
 
 import Menu from "@mui/material/Menu";
 import Button from "@mui/material/Button";
@@ -10,13 +11,14 @@ import Typography from "@mui/material/Typography";
 import Iconify from "../../components/iconify";
 
 const SORT_OPTIONS = [
-  { value: "featured", label: "Oldest" },
-  { value: "newest", label: "Newest" },
-  { value: "priceDesc", label: "Price: High-Low" },
-  { value: "priceAsc", label: "Price: Low-High" },
+  { value: "featured", label: "sort_oldest" },
+  { value: "newest", label: "sort_newest" },
+  { value: "priceDesc", label: "sort_price_high_low" },
+  { value: "priceAsc", label: "sort_price_low_high" },
 ];
 
 export default function ShopProductSort({ onSort }) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(null);
   const [selected, setSelected] = useState("newest");
 
@@ -46,30 +48,22 @@ export default function ShopProductSort({ onSort }) {
           />
         }
       >
-        Sort By:&nbsp;
+        {t("sort_by")}:&nbsp;
         <Typography
           component="span"
           variant="subtitle2"
           sx={{ color: "text.secondary" }}
         >
-          {SORT_OPTIONS.find((option) => option.value === selected).label}
+          {t(SORT_OPTIONS.find((option) => option.value === selected).label)}
         </Typography>
       </Button>
 
       <Menu
-        open={!!open}
+        open={Boolean(open)}
         anchorEl={open}
         onClose={handleClose}
-        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-        transformOrigin={{ vertical: "top", horizontal: "right" }}
-        slotProps={{
-          paper: {
-            sx: {
-              [`& .${listClasses.root}`]: {
-                p: 0,
-              },
-            },
-          },
+        PaperProps={{
+          sx: { width: 200, maxHeight: listClasses.length * 48 },
         }}
       >
         {SORT_OPTIONS.map((option) => (
@@ -77,8 +71,9 @@ export default function ShopProductSort({ onSort }) {
             key={option.value}
             selected={option.value === selected}
             onClick={() => handleMenuItemClick(option)}
+            sx={{ typography: "body2" }}
           >
-            {option.label}
+            {t(option.label)}
           </MenuItem>
         ))}
       </Menu>
@@ -87,5 +82,5 @@ export default function ShopProductSort({ onSort }) {
 }
 
 ShopProductSort.propTypes = {
-  onSort: PropTypes.func.isRequired,
+  onSort: PropTypes.func,
 };
