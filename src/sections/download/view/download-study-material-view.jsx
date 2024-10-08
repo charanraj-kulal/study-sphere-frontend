@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import Container from "@mui/material/Container";
 import Typography from "@mui/material/Typography";
@@ -21,52 +21,52 @@ import {
   getDoc,
   doc,
   updateDoc,
+  limit,
 } from "firebase/firestore";
 import { db } from "../../../firebase";
 import IllustrationGif from "../../../assets/illustrations/illustration_download_pdf.gif";
+import debounce from "lodash/debounce";
 
 export default function DownloadStudyMaterialView() {
-  const { t } = useTranslation(); // Translation hook
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const { userData } = useUser();
+  const { showToast } = useToast();
+  const [isNavigating, setIsNavigating] = useState(false);
 
-  const [studyMaterials, setStudyMaterials] = useState([]);
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchState, setSearchState] = useState({
+    materials: [],
+    loading: false,
+    query: "",
+    selectedMaterial: null,
+    isProcessing: false,
+  });
+
   const [breadcrumbs, setBreadcrumbs] = useState([
     t("dashboard"),
     t("download"),
   ]);
-  const [selectedMaterial, setSelectedMaterial] = useState(null);
   const [starDialogOpen, setStarDialogOpen] = useState(false);
-  const { showToast } = useToast();
 
-  useEffect(() => {
-    const urlParams = new URLSearchParams(location.search);
-    const documentId = urlParams.get("documentId");
-    const searchParam = urlParams.get("search");
-    if (documentId) {
-      handleCardClick({ id: documentId });
-    }
-    if (searchParam) {
-      setSearchQuery(searchParam);
-    }
-    const fetchStudyMaterials = async () => {
-      if (!searchQuery) {
-        setStudyMaterials([]);
-        setLoading(false);
-        return;
-      }
+  const debouncedSearch = useCallback(
+    debounce((query) => {
+      setSearchState((prev) => ({ ...prev, query, loading: true }));
+      fetchMaterials(query);
+    }, 300),
+    []
+  );
 
-      setLoading(true);
+  const fetchMaterials = async (searchQuery) => {
+    setSearchState((prev) => ({ ...prev, loading: true }));
+    try {
       const materialsRef = collection(db, "documents");
       const q = query(
         materialsRef,
         where("visibility", "==", "public"),
         where("Approved", "==", "Yes"),
-        orderBy("uploadedOn", "desc")
+        orderBy("uploadedOn", "desc"),
+        limit(20)
       );
 
       const querySnapshot = await getDocs(q);
@@ -94,62 +94,88 @@ export default function DownloadStudyMaterialView() {
             .includes(searchQuery.toLowerCase())
       );
 
-      setStudyMaterials(filteredMaterials);
-      setLoading(false);
-    };
-
-    fetchStudyMaterials();
-  }, [searchQuery, location]);
-
-  const handleSearch = (query) => {
-    setSearchQuery(query);
-    setLoading(true);
-    setSelectedMaterial(null);
-    navigate(`/dashboard/download?search=${encodeURIComponent(query)}`, {
-      replace: true,
-    });
-  };
-
-  const handleCardClick = async (material) => {
-    setIsProcessing(true);
-    try {
-      const docRef = doc(db, "documents", material.id);
-      const docSnap = await getDoc(docRef);
-      if (docSnap.exists()) {
-        const updatedMaterial = { id: docSnap.id, ...docSnap.data() };
-        setSelectedMaterial(updatedMaterial);
-        setBreadcrumbs([
-          t("dashboard"),
-          t("download"),
-          updatedMaterial.documentName,
-        ]);
-        // Update URL without redirecting
-        navigate(`/dashboard/download?documentId=${material.id}`, {
-          replace: true,
-        });
-      } else {
-        console.log("No such document!");
-        showToast("error", t("error_document_not_found"));
-      }
+      setSearchState((prev) => ({
+        ...prev,
+        materials: filteredMaterials,
+        loading: false,
+      }));
     } catch (error) {
-      console.error("Error fetching updated document:", error);
-      showToast("error", t("error_fetching_document"));
-    } finally {
-      setIsProcessing(false);
+      console.error("Error fetching materials:", error);
+      showToast("error", t("error_fetching_materials"));
+      setSearchState((prev) => ({ ...prev, loading: false }));
     }
   };
 
+  useEffect(() => {
+    const urlParams = new URLSearchParams(location.search);
+    const documentId = urlParams.get("documentId");
+    const searchParam = urlParams.get("search") || "";
+
+    if (documentId && !searchState.selectedMaterial) {
+      handleCardClick({ id: documentId });
+    } else if (searchParam !== searchState.query) {
+      debouncedSearch(searchParam);
+    }
+
+    return () => {
+      debouncedSearch.cancel();
+    };
+  }, [location, debouncedSearch]);
+
+  const handleSearch = (query) => {
+    if (query !== searchState.query) {
+      debouncedSearch(query);
+      setSearchState((prev) => ({ ...prev, selectedMaterial: null }));
+      navigate(`/dashboard/download?search=${encodeURIComponent(query)}`, {
+        replace: true,
+      });
+    }
+  };
+
+  const handleCardClick = useCallback(
+    async (material) => {
+      if (searchState.isProcessing) return;
+
+      setSearchState((prev) => ({ ...prev, isProcessing: true }));
+
+      try {
+        const docRef = doc(db, "documents", material.id);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          const updatedMaterial = { id: docSnap.id, ...docSnap.data() };
+          setSearchState((prev) => ({
+            ...prev,
+            selectedMaterial: updatedMaterial,
+            isProcessing: false,
+          }));
+          setBreadcrumbs([
+            t("dashboard"),
+            t("download"),
+            updatedMaterial.documentName,
+          ]);
+          navigate(`/dashboard/download?documentId=${material.id}`, {
+            replace: true,
+          });
+        } else {
+          showToast("error", t("error_document_not_found"));
+        }
+      } catch (error) {
+        showToast("error", t("error_fetching_document"));
+      } finally {
+        setSearchState((prev) => ({ ...prev, isProcessing: false }));
+      }
+    },
+    [navigate, setBreadcrumbs, showToast, t]
+  );
   const handleBreadcrumbClick = (event, index) => {
     event.preventDefault();
     if (index === 0) {
       navigate("/dashboard");
       setBreadcrumbs([t("dashboard"), t("download")]);
-      setSelectedMaterial(null);
-      // Remove documentId from URL
+      setSearchState((prev) => ({ ...prev, selectedMaterial: null }));
     } else if (index === 1) {
       setBreadcrumbs([t("dashboard"), t("download")]);
-      setSelectedMaterial(null);
-      // Remove documentId from URL
+      setSearchState((prev) => ({ ...prev, selectedMaterial: null }));
       navigate("/dashboard/download", { replace: true });
     }
   };
@@ -191,10 +217,10 @@ export default function DownloadStudyMaterialView() {
   };
 
   const handleStarRating = async (rating) => {
-    if (!selectedMaterial || !userData) return;
+    if (!searchState.selectedMaterial || !userData) return;
 
-    const docRef = doc(db, "documents", selectedMaterial.id);
-    setIsProcessing(true);
+    const docRef = doc(db, "documents", searchState.selectedMaterial.id);
+    setSearchState((prev) => ({ ...prev, isProcessing: true }));
     try {
       const docSnap = await getDoc(docRef);
       const currentData = docSnap.data();
@@ -213,7 +239,6 @@ export default function DownloadStudyMaterialView() {
       }
 
       newStarArray[rating - 1] += 1;
-
       userRatings[userData.uid] = rating;
 
       await updateDoc(docRef, {
@@ -221,10 +246,14 @@ export default function DownloadStudyMaterialView() {
         userRatings: userRatings,
       });
 
-      setSelectedMaterial((prevMaterial) => ({
-        ...prevMaterial,
-        star: newStarArray,
-        userRatings: userRatings,
+      setSearchState((prev) => ({
+        ...prev,
+        selectedMaterial: {
+          ...prev.selectedMaterial,
+          star: newStarArray,
+          userRatings: userRatings,
+        },
+        isProcessing: false,
       }));
 
       showToast(
@@ -235,7 +264,7 @@ export default function DownloadStudyMaterialView() {
       console.error("Error updating rating:", error.message, error.code);
       showToast("error", `${t("failed_to_update_rating")}: ${error.message}`);
     } finally {
-      setIsProcessing(false);
+      setSearchState((prev) => ({ ...prev, isProcessing: false }));
     }
   };
 
@@ -254,7 +283,9 @@ export default function DownloadStudyMaterialView() {
     return totalVotes > 0 ? (totalRatings / totalVotes).toFixed(2) : 0;
   };
 
-  const handleShare = () => {};
+  const handleShare = () => {
+    // Implement share functionality
+  };
 
   if (!userData) {
     return <Typography>{t("loading_user_data")}</Typography>;
@@ -265,10 +296,10 @@ export default function DownloadStudyMaterialView() {
       <Typography variant="h4" sx={{ mb: 5 }}>
         {t("download_study_materials")}
       </Typography>
-      {isProcessing && <LottieLoader />}
+      {searchState.isProcessing && <LottieLoader />}
       <Card sx={{ p: 4, mt: 3 }}>
         <Box sx={{ display: "flex", justifyContent: "center", mb: 3 }}>
-          <SearchBar onSearch={handleSearch} initialQuery={searchQuery} />
+          <SearchBar onSearch={handleSearch} initialQuery={searchState.query} />
         </Box>
 
         <BreadcrumbsNavigation
@@ -276,9 +307,9 @@ export default function DownloadStudyMaterialView() {
           handleBreadcrumbClick={handleBreadcrumbClick}
         />
 
-        {selectedMaterial ? (
+        {searchState.selectedMaterial ? (
           <SelectedMaterialDetails
-            selectedMaterial={selectedMaterial}
+            selectedMaterial={searchState.selectedMaterial}
             calculateAverageRating={calculateAverageRating}
             setStarDialogOpen={setStarDialogOpen}
             handleDownload={handleDownload}
@@ -287,7 +318,7 @@ export default function DownloadStudyMaterialView() {
             handleStarRating={handleStarRating}
             userData={userData}
           />
-        ) : !searchQuery ? (
+        ) : !searchState.query ? (
           <Box sx={{ textAlign: "center", my: 5 }}>
             <img
               src={IllustrationGif}
@@ -304,14 +335,13 @@ export default function DownloadStudyMaterialView() {
         ) : (
           <>
             <Typography variant="body1" sx={{ mb: 3, fontWeight: "bold" }}>
-              {loading
+              {searchState.loading
                 ? t("searching")
-                : `${studyMaterials.length} ${t("results_found", { count: studyMaterials.length })}`}
+                : `${searchState.materials.length} ${t("results_found", { count: searchState.materials.length })}`}
             </Typography>
             <StudyMaterialCards
-              studyMaterials={studyMaterials}
-              loading={loading || isProcessing}
-              searchQuery={searchQuery}
+              studyMaterials={searchState.materials}
+              searchQuery={searchState.query}
               onCardClick={handleCardClick}
               onDownload={handleDownload}
             />

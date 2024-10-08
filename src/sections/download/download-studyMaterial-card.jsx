@@ -1,10 +1,9 @@
+import React, { useState, useEffect } from "react";
 import Grid from "@mui/material/Grid";
 import Card from "@mui/material/Card";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Avatar from "@mui/material/Avatar";
-import Iconify from "../../components/iconify/iconify";
-import Button from "@mui/material/Button";
 import IconButton from "@mui/material/IconButton";
 import StarIcon from "@mui/icons-material/Star";
 import GetAppIcon from "@mui/icons-material/GetApp";
@@ -12,6 +11,15 @@ import Stack from "@mui/material/Stack";
 import CardNoData from "./CardNoData";
 import SkeletonCard from "../../components/skeletons/downloadStudyMaterial/DownloadStudyMaterialSkeleton";
 import { formatTimeAgo } from "../../utils/timeUtils";
+import {
+  collection,
+  query,
+  where,
+  getDocs,
+  orderBy,
+  limit,
+} from "firebase/firestore";
+import { db } from "../../firebase";
 
 const formatCount = (count) => {
   if (count >= 1000000) {
@@ -22,13 +30,73 @@ const formatCount = (count) => {
   return count.toString();
 };
 
+const calculateAverageRating = (starArray) => {
+  if (!Array.isArray(starArray) || starArray.length === 0) return "0.00";
+  const totalRatings = starArray.reduce(
+    (sum, count, index) => sum + count * (index + 1),
+    0
+  );
+  const totalVotes = starArray.reduce((sum, count) => sum + count, 0);
+  return totalVotes > 0 ? (totalRatings / totalVotes).toFixed(2) : "0.00";
+};
+
 export default function StudyMaterialCards({
-  studyMaterials,
-  loading,
   searchQuery,
   onCardClick,
   onDownload,
 }) {
+  const [studyMaterials, setStudyMaterials] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchMaterials = async () => {
+      setLoading(true);
+      try {
+        const materialsRef = collection(db, "documents");
+        const q = query(
+          materialsRef,
+          where("visibility", "==", "public"),
+          where("Approved", "==", "Yes"),
+          orderBy("uploadedOn", "desc"),
+          limit(20)
+        );
+
+        const querySnapshot = await getDocs(q);
+        const materials = querySnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+
+        const filteredMaterials = materials.filter(
+          (material) =>
+            material.documentName
+              .toLowerCase()
+              .includes(searchQuery.toLowerCase()) ||
+            material.description
+              .toLowerCase()
+              .includes(searchQuery.toLowerCase()) ||
+            material.documentTopics.some((topic) =>
+              topic.toLowerCase().includes(searchQuery.toLowerCase())
+            ) ||
+            material.uploadedBy
+              .toLowerCase()
+              .includes(searchQuery.toLowerCase()) ||
+            material.uploaderCourse
+              .toLowerCase()
+              .includes(searchQuery.toLowerCase())
+        );
+
+        setStudyMaterials(filteredMaterials);
+      } catch (error) {
+        console.error("Error fetching materials:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMaterials();
+  }, [searchQuery]);
+
   if (loading) {
     return (
       <Grid container spacing={3}>
@@ -41,16 +109,6 @@ export default function StudyMaterialCards({
     );
   }
 
-  //star rating calc
-  const calculateAverageRating = (starArray) => {
-    if (!Array.isArray(starArray) || starArray.length === 0) return "0.00";
-    const totalRatings = starArray.reduce(
-      (sum, count, index) => sum + count * (index + 1),
-      0
-    );
-    const totalVotes = starArray.reduce((sum, count) => sum + count, 0);
-    return totalVotes > 0 ? (totalRatings / totalVotes).toFixed(2) : "0.00";
-  };
   if (studyMaterials.length === 0 && searchQuery) {
     return <CardNoData query={searchQuery} />;
   }
@@ -93,7 +151,7 @@ export default function StudyMaterialCards({
                   transform: "scale(1.5)",
                   transformOrigin: "center center",
                   borderRadius: 6,
-                  border: "1px solid rgba(0, 0, 0, 0.1)", // Light black border
+                  border: "1px solid rgba(0, 0, 0, 0.1)",
                 }}
                 scrolling="no"
               />
@@ -147,9 +205,7 @@ export default function StudyMaterialCards({
                       <StarIcon fontSize="small" />
                     </IconButton>
                     <Typography variant="body2" sx={{ fontWeight: "bold" }}>
-                      {Array.isArray(material.star)
-                        ? calculateAverageRating(material.star)
-                        : "0.00"}
+                      {calculateAverageRating(material.star)}
                     </Typography>
                   </Stack>
                   <Stack direction="row" alignItems="center">

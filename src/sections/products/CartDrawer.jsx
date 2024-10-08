@@ -180,7 +180,8 @@ export default function CartDrawer({
       currency: "INR",
       name: "Study Sphere store",
       description: "Purchase Description",
-      // image: "https://ibb.co/4mnfNpm", // Add your logo URL here
+      image:
+        "https://ik.imagekit.io/charanraj/Poultry/Products%20Poultry-Hen%20and%20heaven/razorpay%20logo.png", // Add your logo URL here
       handler: function (response) {
         savePurchasesToFirestore();
         // Handle successful payment

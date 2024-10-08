@@ -94,6 +94,8 @@ export default function BuyNowDialog({
       amount: Math.round(amountAfterPoints * 100), // Convert to paise
       currency: "INR",
       name: "Study Sphere store",
+      image:
+        "https://ik.imagekit.io/charanraj/Poultry/Products%20Poultry-Hen%20and%20heaven/razorpay%20logo.png",
       description: `${t("bn_buy_now", { productName: product.productName })}`,
       handler: function (response) {
         showToast(

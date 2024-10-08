@@ -14,6 +14,7 @@ import Iconify from "../../components/iconify";
 import Searchbar from "./common/searchbar";
 import { NAV, HEADER } from "./config-layout";
 import AccountPopover from "./common/account-popover";
+import PointsDisplay from "./common/pointsDisplay";
 import LanguagePopover from "./common/language-popover";
 import NotificationsPopover from "./common/notifications-popover";
 import Toast from "../../components/Toast";
@@ -38,6 +39,7 @@ export default function Header({ onOpenNav }) {
       <Box sx={{ flexGrow: 1 }} />
 
       <Stack direction="row" alignItems="center" spacing={1}>
+        <PointsDisplay />
         <LanguagePopover />
         <NotificationsPopover />
         <AccountPopover />
