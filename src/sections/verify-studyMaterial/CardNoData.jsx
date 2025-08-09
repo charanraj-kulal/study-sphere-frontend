@@ -4,8 +4,8 @@ import CardContent from "@mui/material/CardContent";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
 
-import IllustrationNoResult from "assets/illustrations/illustration_no_data.png";
-import IllustrationBadSearch from "assets/illustrations/illustration_bad_search.png";
+import IllustrationNoResult from "/assets/illustrations/illustration_no_data.png";
+import IllustrationBadSearch from "/assets/illustrations/illustration_bad_search.png";
 
 export default function CardNoData({ query }) {
   const isEmptySearch = query === "";

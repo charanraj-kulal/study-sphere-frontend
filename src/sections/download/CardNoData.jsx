@@ -1,7 +1,7 @@
 import PropTypes from "prop-types";
 import Card from "@mui/material/Card";
 import Typography from "@mui/material/Typography";
-import IllustrationBadSearch from "assets/illustrations/illustration_bad_search.png";
+import IllustrationBadSearch from "/assets/illustrations/illustration_bad_search.png";
 import Box from "@mui/material/Box";
 import { useTranslation } from "react-i18next";
 

@@ -16,9 +16,9 @@ import LeaderboardTable from "../leaderboard-table-rows";
 import TopRankCard from "../top-rank-cards";
 import { ConfettiButton } from "../../../components/magicui/confetti-button"; // Import the ConfettiButton
 
-import rank1Image from "assets/images/medals/1_medal.png";
-import rank2Image from "assets/images/medals/2_medal.png";
-import rank3Image from "assets/images/medals/3_medal.png";
+import rank1Image from "/assets/images/medals/1_medal.png";
+import rank2Image from "/assets/images/medals/2_medal.png";
+import rank3Image from "/assets/images/medals/3_medal.png";
 import { useTranslation } from "react-i18next";
 
 export default function LeaderboardView() {

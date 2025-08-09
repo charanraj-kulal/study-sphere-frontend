@@ -23,7 +23,7 @@ import {
   updateDoc,
 } from "firebase/firestore";
 import { db } from "../../../firebase";
-import IllustrationGif from "assets/illustrations/illustration_download_pdf.gif";
+import IllustrationGif from "/assets/illustrations/illustration_download_pdf.gif";
 
 export default function DownloadStudyMaterialView() {
   const { t } = useTranslation(); // Translation hook
