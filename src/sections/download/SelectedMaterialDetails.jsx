@@ -160,7 +160,8 @@ const SelectedMaterialDetails = ({
     setIsSummaryLoading(true);
     try {
       const response = await fetch(
-        `http://localhost:10000/api/get-pdf-text/${selectedMaterial.id}`
+        import.meta.env.VITE_SERVER_URL +
+          `/api/get-pdf-text/${selectedMaterial.id}`
       );
       if (!response.ok) {
         const errorText = await response.text();

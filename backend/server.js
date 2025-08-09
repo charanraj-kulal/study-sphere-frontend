@@ -23,6 +23,48 @@ import serviceAccount from "./serviceAccountKey.js";
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
 });
+
+// Initialize Express app FIRST
+const app = express();
+const port = process.env.PORT || 10000;
+
+const allowedOrigins = [
+  "http://localhost:5173",
+  "http://localhost:3000",
+  "https://study-sphere-beryl.vercel.app",
+  "https://study-sphere.com",
+];
+
+// CORS configuration - NOW app is initialized
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      // Allow requests with no origin (like mobile apps or curl requests)
+      if (!origin) return callback(null, true);
+
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      // For development, allow localhost on any port
+      if (
+        process.env.MODE !== "production" &&
+        origin &&
+        origin.includes("localhost")
+      ) {
+        return callback(null, true);
+      }
+
+      callback(new Error("Not allowed by CORS"));
+    },
+    methods: ["GET", "POST", "OPTIONS"],
+    credentials: true,
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
+
+app.use(bodyParser.json());
+
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST,
   port: process.env.SMTP_PORT,
@@ -35,11 +77,6 @@ const transporter = nodemailer.createTransport({
     rejectUnauthorized: false, // Allow self-signed certificates
   },
 });
-const app = express();
-const port = process.env.PORT || 10000;
-app.use(bodyParser.json());
-app.use(cors({ origin: "http://localhost:5173" })); // Adjust the origin to your frontend's address
-
 //summary end point
 app.get("/api/get-pdf-text/:documentId", async (req, res) => {
   const { documentId } = req.params;
@@ -468,7 +505,9 @@ async function sendApprovalEmail(
     throw error;
   }
 }
-
+app.get("/api/health", (req, res) => {
+  res.json({ status: "OK", message: "Server is running" });
+});
 app.post("/api/approve-document", async (req, res) => {
   const { documentId, userEmail, documentName, verifiedBy } = req.body;
 
