@@ -4,7 +4,7 @@ import { styled } from "@mui/system";
 
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import AboutUsImage from "../../assets/images/landingpage_illustrations/about_us.png";
+import AboutUsImage from "/assets/images/landingpage_illustrations/about_us.png";
 
 gsap.registerPlugin(ScrollTrigger);
 

@@ -19,9 +19,9 @@ import FacebookIcon from "@mui/icons-material/Facebook";
 import TwitterIcon from "@mui/icons-material/Twitter";
 import LinkedInIcon from "@mui/icons-material/LinkedIn";
 import InstagramIcon from "@mui/icons-material/Instagram";
-// import FaviconImage from "../../assets/icons/favicon/favicon.png";
-import FaviconImage from "../../assets/images/logo/logo.png";
-import FooterImage from "../../assets/background/footer-image.png";
+// import FaviconImage from "/assets/icons/favicon/favicon.png";
+import FaviconImage from "/assets/images/logo/logo.png";
+import FooterImage from "/assets/background/footer-image.png";
 
 gsap.registerPlugin(ScrollTrigger);
 

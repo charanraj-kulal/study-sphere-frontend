@@ -23,7 +23,7 @@ import CustomScrollbar from "../../components/CustomScrollbar";
 
 import { NAV } from "./config-layout";
 import navConfig from "./config-navigation";
-import IllustrationAvatar from "../../assets/illustrations/illustration_donation.png";
+import IllustrationAvatar from "/assets/illustrations/illustration_donation.png";
 
 // ----------------------------------------------------------------------
 

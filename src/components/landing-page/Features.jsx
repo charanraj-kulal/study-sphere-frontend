@@ -9,7 +9,7 @@ import {
 } from "@mui/material";
 import { styled } from "@mui/system";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import FeatureImage from "../../assets/images/landingpage_illustrations/feature_gif.gif";
+import FeatureImage from "/assets/images/landingpage_illustrations/feature_gif.gif";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 

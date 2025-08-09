@@ -31,7 +31,7 @@ const POST_TITLES = [
 
 export const posts = [...Array(23)].map((_, index) => ({
   id: faker.string.uuid(),
-  cover: `../assets/images/covers/cover_${index + 1}.jpg`,
+  cover: `assets/images/covers/cover_${index + 1}.jpg`,
   title: POST_TITLES[index + 1],
   createdAt: faker.date.past(),
   view: faker.number.int(99999),
@@ -40,6 +40,6 @@ export const posts = [...Array(23)].map((_, index) => ({
   favorite: faker.number.int(99999),
   author: {
     name: faker.person.fullName(),
-    avatarUrl: `../assets/images/avatars/avatar_${index + 1}.jpg`,
+    avatarUrl: `assets/images/avatars/avatar_${index + 1}.jpg`,
   },
 }));

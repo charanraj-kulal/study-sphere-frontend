@@ -70,7 +70,7 @@ export default function PostCard({ post, index, onCardClick }) {
   const latestPostLarge = index === 0;
   const latestPost = index === 1 || index === 2;
 
-  const coverImage = `../assets/images/covers/cover_${(index % 24) + 1}.jpg`;
+  const coverImage = `assets/images/covers/cover_${(index % 24) + 1}.jpg`;
 
   const renderAvatar = (
     <Avatar

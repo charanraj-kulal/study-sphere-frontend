@@ -14,9 +14,9 @@ import {
 import { collection, getDocs, query, where, orderBy } from "firebase/firestore";
 import { db } from "../../firebase";
 
-import rank1Image from "../../assets/images/medals/1_badge.png";
-import rank2Image from "../../assets/images/medals/2_badge.png";
-import rank3Image from "../../assets/images/medals/3_badge.png";
+import rank1Image from "assets/images/medals/1_badge.png";
+import rank2Image from "assets/images/medals/2_badge.png";
+import rank3Image from "assets/images/medals/3_badge.png";
 import { useTranslation } from "react-i18next"; // Import translation hook
 
 const LeaderboardTable = () => {

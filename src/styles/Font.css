@@ -2,7 +2,7 @@
 
 @font-face {
   font-family: "LEMONMILK";
-  src: url("../assets/fonts/custom/LemonMilk/LEMONMILK-Bold.otf")
+  src: url("assets/fonts/custom/LemonMilk/LEMONMILK-Bold.otf")
     format("opentype");
   font-weight: bold;
 
@@ -10,7 +10,7 @@
 }
 @font-face {
   font-family: "Customfont";
-  src: url("../assets/fonts/custom/\/Signika_Negative/static/SignikaNegative-Medium.ttf")
+  src: url("assets/fonts/custom/\/Signika_Negative/static/SignikaNegative-Medium.ttf")
     format("opentype");
   font-weight: bold;
   line-height: 120px;
@@ -18,7 +18,7 @@
 }
 @font-face {
   font-family: "Pacifico";
-  src: url("../assets/fonts/custom/Pacifico/Pacifico-Regular.ttf")
+  src: url("assets/fonts/custom/Pacifico/Pacifico-Regular.ttf")
     format("opentype");
   font-weight: bold;
   line-height: 120px;
@@ -26,14 +26,14 @@
 }
 @font-face {
   font-family: "hindi";
-  src: url("../assets/fonts/hindi/Mangal\ Regular.ttf") format("opentype");
+  src: url("assets/fonts/hindi/Mangal\ Regular.ttf") format("opentype");
   font-weight: bold;
   line-height: 120px;
   font-style: normal;
 }
 @font-face {
   font-family: "kannada";
-  src: url("../assets/fonts/kannada/AnekKannada_Condensed-Regular.ttf")
+  src: url("assets/fonts/kannada/AnekKannada_Condensed-Regular.ttf")
     format("opentype");
   font-weight: bold;
   line-height: 120px;

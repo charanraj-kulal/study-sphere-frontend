@@ -3,7 +3,7 @@ import { Box, Typography, Container, Button } from "@mui/material";
 import { styled } from "@mui/system";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import DomainImage from "../../assets/images/landingpage_illustrations/domain.png";
+import DomainImage from "/assets/images/landingpage_illustrations/domain.png";
 
 gsap.registerPlugin(ScrollTrigger);
 

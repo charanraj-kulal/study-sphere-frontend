@@ -3,7 +3,7 @@ import { gsap } from "gsap";
 import { Box, Typography, Button, Container } from "@mui/material";
 import { styled } from "@mui/system";
 import { useUser } from "../../hooks/UserContext";
-import HeroImage from "../../assets/images/landingpage_illustrations/hero_image.png";
+import HeroImage from "/assets/images/landingpage_illustrations/hero_image.png";
 import { Section } from "lucide-react";
 
 const StyledHeroSection = styled("section")(({ theme }) => ({

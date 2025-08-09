@@ -35,14 +35,14 @@ import { fToNow } from "../../../utils/format-time";
 import Iconify from "../../../components/iconify";
 import Scrollbar from "../../../components/scrollbar";
 
-import BellIcon from "../../../assets/icons/ic_notification_bell.svg";
-import MailIcon from "../../../assets/icons/ic_notification_mail.svg";
-import ChatIcon from "../../../assets/icons/ic_notification_chat.svg";
-import FileCheckIcon from "../../../assets/icons/ic_file_check.svg";
-import FileRemoveIcon from "../../../assets/icons/ic_file_remove.svg";
-import Following from "../../../assets/icons/ic_following.svg";
-// import BookIcon from "../../../assets/icons/ic_book_open.svg";
-import BookIcon from "../../../assets/icons/ic_notification_pdf.svg";
+import BellIcon from "/assets/icons/ic_notification_bell.svg";
+import MailIcon from "/assets/icons/ic_notification_mail.svg";
+import ChatIcon from "/assets/icons/ic_notification_chat.svg";
+import FileCheckIcon from "/assets/icons/ic_file_check.svg";
+import FileRemoveIcon from "/assets/icons/ic_file_remove.svg";
+import Following from "/assets/icons/ic_following.svg";
+// import BookIcon from "/assets/icons/ic_book_open.svg";
+import BookIcon from "/assets/icons/ic_notification_pdf.svg";
 
 export default function NotificationsPopover() {
   const [notifications, setNotifications] = useState([]);
