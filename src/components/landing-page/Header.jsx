@@ -146,7 +146,7 @@ const Header = () => {
             <Grid item xs={3}>
               <Typography variant="h6" component="div">
                 <img
-                  src="../src/assets/images/logo/logo.png"
+                  src="assets/images/logo/logo.png"
                   alt="Study Sphere Logo"
                   height="70" // Increased logo size
                 />

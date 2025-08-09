@@ -46,12 +46,7 @@ export default function AppView() {
             title="Total Sales"
             total={714000}
             color="success"
-            icon={
-              <img
-                alt="icon"
-                src="../src/assets/icons/glass/ic_glass_bag.png"
-              />
-            }
+            icon={<img alt="icon" src="assets/icons/glass/ic_glass_bag.png" />}
           />
         </Grid>
 
@@ -61,10 +56,7 @@ export default function AppView() {
             total={1352831}
             color="info"
             icon={
-              <img
-                alt="icon"
-                src="../src/assets/icons/glass/ic_glass_verified.svg"
-              />
+              <img alt="icon" src="assets/icons/glass/ic_glass_verified.svg" />
             }
           />
         </Grid>
@@ -75,10 +67,7 @@ export default function AppView() {
             total={1723315}
             color="warning"
             icon={
-              <img
-                alt="icon"
-                src="../src/assets/icons/glass/ic_glass_upload.svg"
-              />
+              <img alt="icon" src="assets/icons/glass/ic_glass_upload.svg" />
             }
           />
         </Grid>
@@ -89,10 +78,7 @@ export default function AppView() {
             total={234}
             color="error"
             icon={
-              <img
-                alt="icon"
-                src="../src/assets/icons/glass/ic_glass_download.svg"
-              />
+              <img alt="icon" src="assets/icons/glass/ic_glass_download.svg" />
             }
           />
         </Grid>
@@ -202,7 +188,7 @@ export default function AppView() {
               id: faker.string.uuid(),
               title: faker.person.jobTitle(),
               description: faker.commerce.productDescription(),
-              image: `../src/assets/images/covers/cover_${index + 1}.jpg`,
+              image: `assets/images/covers/cover_${index + 1}.jpg`,
               postedAt: faker.date.recent(),
             }))}
           />

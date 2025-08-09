@@ -26,12 +26,12 @@ const Logo = forwardRef(({ disabledLink = false, sx, ...other }, ref) => {
       <Stack direction="row" alignItems="center" spacing={1} marginLeft={6}>
         <Box
           component="img"
-          src="/../src/assets/icons/favicon/favicon.png"
+          src="/assets/icons/favicon/favicon.png"
           sx={{ width: 50, height: 50, cursor: "pointer", ...sx }}
         />
         <Box
           component="img"
-          src="/../src/assets/images/logo/logo_text.png"
+          src="/assets/images/logo/logo_text.png"
           sx={{ width: 90, height: 90, cursor: "pointer", ...sx }}
         />
       </Stack>
@@ -42,7 +42,7 @@ const Logo = forwardRef(({ disabledLink = false, sx, ...other }, ref) => {
   //   <Box
   //     ref={ref}
   //     component="div"
-  //     src="../src/assets/illustrations/illustration_avatar.png"
+  //     src="assets/illustrations/illustration_avatar.png"
   //     sx={{
   //       width: 40,
   //       height: 40,

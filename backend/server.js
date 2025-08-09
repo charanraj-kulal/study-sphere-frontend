@@ -35,10 +35,12 @@ const allowedOrigins = [
   "https://study-sphere.com",
 ];
 
-// CORS configuration - NOW app is initialized
+// Enhanced CORS configuration
 app.use(
   cors({
     origin: function (origin, callback) {
+      console.log("Request origin:", origin);
+
       // Allow requests with no origin (like mobile apps or curl requests)
       if (!origin) return callback(null, true);
 
@@ -55,13 +57,24 @@ app.use(
         return callback(null, true);
       }
 
-      callback(new Error("Not allowed by CORS"));
+      console.log("CORS blocked origin:", origin);
+      callback(new Error(`Not allowed by CORS: ${origin}`));
     },
-    methods: ["GET", "POST", "OPTIONS"],
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
     credentials: true,
-    allowedHeaders: ["Content-Type", "Authorization"],
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+      "X-Requested-With",
+      "Accept",
+      "Origin",
+    ],
+    optionsSuccessStatus: 200,
   })
 );
+
+// Handle preflight requests explicitly
+app.options("*", cors());
 
 app.use(bodyParser.json());
 
@@ -77,6 +90,30 @@ const transporter = nodemailer.createTransport({
     rejectUnauthorized: false, // Allow self-signed certificates
   },
 });
+
+// Health check endpoint with environment info
+app.get("/api/health", (req, res) => {
+  const envCheck = {
+    status: "OK",
+    message: "Server is running",
+    environment: {
+      NODE_ENV: process.env.NODE_ENV,
+      MODE: process.env.MODE,
+      hasFirebaseApiKey:
+        !!process.env.VITE_FIREBASE_API_KEY ||
+        !!process.env.VITE_FIREBASE_API_KEY,
+      hasJwtSecret: !!(
+        process.env.JWT_SECRET || process.env.YOUR_JWT_SECRET_KEY
+      ),
+      hasSmtpConfig: !!(process.env.SMTP_HOST && process.env.SMTP_USER),
+      timestamp: new Date().toISOString(),
+    },
+  };
+
+  console.log("Health check:", envCheck);
+  res.json(envCheck);
+});
+
 //summary end point
 app.get("/api/get-pdf-text/:documentId", async (req, res) => {
   const { documentId } = req.params;
@@ -176,6 +213,7 @@ app.get("/api/download/:documentId", async (req, res) => {
     res.status(500).json({ error: error.message || "Error downloading file" });
   }
 });
+
 //email sending
 app.post("/api/send-contact-email", async (req, res) => {
   const { name, email, subject, message } = req.body;
@@ -197,6 +235,7 @@ app.post("/api/send-contact-email", async (req, res) => {
     res.status(500).send("Error sending email");
   }
 });
+
 app.post("/api/send-welcome-email", async (req, res) => {
   const { name, email, course, userrole } = req.body;
 
@@ -222,8 +261,6 @@ app.post("/api/send-welcome-email", async (req, res) => {
   try {
     await transporter.sendMail({
       from: '"Study-Sphere" <noreply@studysphere.com>',
-      // from: "charanraj9731@gmail.com",
-
       to: email,
       subject: "Welcome to Study-Sphere!",
       html: emailTemplate,
@@ -235,19 +272,23 @@ app.post("/api/send-welcome-email", async (req, res) => {
     res.status(500).json({ error: "Failed to send welcome email" });
   }
 });
+
 async function sendWelcomeEmail(name, email, course, userrole) {
   const templatePath = path.join(__dirname, "welcome_email.html");
   let emailTemplate = fs.readFileSync(templatePath, "utf8");
 
-  // Use template literal to interpolate values
-  const htmlContent = eval("`" + emailTemplate + "`");
+  // Use template literal to interpolate values (safer replacement)
+  emailTemplate = emailTemplate.replace(/\${name}/g, name);
+  emailTemplate = emailTemplate.replace(/\${email}/g, email);
+  emailTemplate = emailTemplate.replace(/\${course}/g, course);
+  emailTemplate = emailTemplate.replace(/\${userrole}/g, userrole);
 
   try {
     await transporter.sendMail({
       from: '"Study-Sphere" <noreply@studysphere.com>',
       to: email,
       subject: "Welcome to Study-Sphere!",
-      html: htmlContent,
+      html: emailTemplate,
     });
     console.log("Welcome email sent successfully");
   } catch (error) {
@@ -255,37 +296,86 @@ async function sendWelcomeEmail(name, email, course, userrole) {
     throw error;
   }
 }
+
+// Enhanced login endpoint with better error handling and debugging
 app.post("/login", async (req, res) => {
-  console.log("Login endpoint hit");
+  console.log("=== LOGIN ATTEMPT START ===");
+  console.log("Timestamp:", new Date().toISOString());
+  console.log("Environment:", {
+    NODE_ENV: process.env.NODE_ENV,
+    MODE: process.env.MODE,
+    hasApiKey: !!(
+      process.env.VITE_FIREBASE_API_KEY || process.env.VITE_FIREBASE_API_KEY
+    ),
+    port: process.env.PORT,
+  });
+
   const { email, password } = req.body;
   console.log("Received login request with email:", email);
 
   if (!email || !password) {
-    console.log("Email and password are required");
+    console.log("❌ Missing credentials");
     return res.status(400).send({ message: "Email and password are required" });
   }
 
   try {
-    console.log("Attempting to authenticate with Firebase");
-    const apiKey = process.env.VITE_FIREBASE_API_kEY; // Replace with your actual API key
+    // Check for API key with better error handling
+    const apiKey =
+      process.env.VITE_FIREBASE_API_KEY || process.env.VITE_FIREBASE_API_KEY;
+
+    if (!apiKey) {
+      console.error("❌ Firebase API key not found in environment variables");
+      console.log(
+        "Available env vars:",
+        Object.keys(process.env).filter(
+          (key) => key.includes("FIREBASE") || key.includes("API")
+        )
+      );
+      return res.status(500).send({
+        message: "Server configuration error: Firebase API key missing",
+        debug:
+          process.env.NODE_ENV === "development"
+            ? "VITE_FIREBASE_API_KEY not found"
+            : undefined,
+      });
+    }
+
+    console.log(
+      "🔑 Using Firebase API key (first 10 chars):",
+      apiKey.substring(0, 10) + "..."
+    );
+    console.log("🚀 Attempting Firebase authentication...");
+
     const authResponse = await axios.post(
       `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${apiKey}`,
       {
         email,
         password,
         returnSecureToken: true,
+      },
+      {
+        timeout: 10000, // 10 second timeout
+        headers: {
+          "Content-Type": "application/json",
+        },
       }
     );
 
+    console.log("✅ Firebase auth successful");
+
     if (authResponse.data && authResponse.data.idToken) {
       const { localId } = authResponse.data;
+      console.log("👤 User ID:", localId);
 
       try {
         const userRecord = await admin.auth().getUser(localId);
-        console.log("User record retrieved:", userRecord);
+        console.log(
+          "📋 User record retrieved, email verified:",
+          userRecord.emailVerified
+        );
 
         if (!userRecord.emailVerified) {
-          console.log("Email not verified");
+          console.log("❌ Email not verified");
           return res.status(403).send({ message: "Email not verified" });
         }
 
@@ -296,18 +386,24 @@ app.post("/login", async (req, res) => {
           .get();
 
         if (!userDoc.exists) {
-          console.log("User not found in database");
+          console.log("❌ User not found in Firestore");
           return res
             .status(404)
             .send({ message: "User not found in database" });
         }
 
         const userData = userDoc.data();
-        console.log("Retrieved user data from Firestore:", userData);
+        console.log(
+          "📊 Retrieved user data from Firestore - role:",
+          userData.userrole,
+          "name:",
+          userData.name
+        );
 
         // Ensure `isVerified` status in Firestore matches email verification status
         if (userData.isVerified !== "Yes") {
           try {
+            console.log("🔄 Updating verification status...");
             await admin
               .firestore()
               .collection("users")
@@ -324,13 +420,26 @@ app.post("/login", async (req, res) => {
               userData.course,
               userData.userrole
             );
+            console.log("📧 Welcome email sent");
           } catch (error) {
             console.error(
-              "Error updating verification status or sending welcome email:",
+              "⚠️ Error updating verification status or sending welcome email:",
               error
             );
-            // You might want to handle this error appropriately
+            // Continue with login even if email fails
           }
+        }
+
+        // Use environment variable for JWT secret
+        const jwtSecret =
+          process.env.JWT_SECRET ||
+          process.env.YOUR_JWT_SECRET_KEY ||
+          "fallback-secret-key";
+
+        if (jwtSecret === "fallback-secret-key") {
+          console.warn(
+            "⚠️ Using fallback JWT secret - not recommended for production"
+          );
         }
 
         const token = jwt.sign(
@@ -344,13 +453,13 @@ app.post("/login", async (req, res) => {
             status: userData.status,
             isEmailVerified: true,
           },
-          "YOUR_JWT_SECRET_KEY",
+          jwtSecret,
           {
             expiresIn: "1h",
           }
         );
 
-        console.log("Sending response:", {
+        const responseData = {
           token,
           displayName: userData.name,
           course: userData.course,
@@ -360,34 +469,48 @@ app.post("/login", async (req, res) => {
           userRole: userData.userrole,
           status: userData.status,
           isEmailVerified: true,
-        });
+        };
 
-        res.send({
-          token,
-          displayName: userData.name,
-          course: userData.course,
-          uid: userRecord.uid,
-          email,
-          photoURL: userData.profilePhotoURL,
-          userRole: userData.userrole,
-          status: userData.status,
-          isEmailVerified: true,
+        console.log("✅ Login successful for user:", userData.name);
+        console.log("=== LOGIN ATTEMPT END ===");
+
+        res.send(responseData);
+      } catch (firestoreError) {
+        console.error(
+          "❌ Error retrieving user data from Firestore:",
+          firestoreError
+        );
+        res.status(500).send({
+          message: "Error retrieving user data",
+          debug:
+            process.env.NODE_ENV === "development"
+              ? firestoreError.message
+              : undefined,
         });
-      } catch (error) {
-        console.error("Error retrieving user data:", error);
-        res.status(500).send({ message: "Error retrieving user data" });
       }
     } else {
-      console.log("Invalid login credentials");
+      console.log("❌ Invalid response from Firebase - no idToken");
       res.status(401).send({ message: "Invalid email or password" });
     }
   } catch (error) {
-    console.error(
-      "Error during authentication:",
-      error.response?.data || error.message
-    );
+    console.error("❌ Authentication error:", {
+      message: error.message,
+      status: error.response?.status,
+      statusText: error.response?.statusText,
+      data: error.response?.data,
+      config: {
+        url: error.config?.url,
+        method: error.config?.method,
+        timeout: error.config?.timeout,
+      },
+    });
+
+    // Handle specific Firebase Auth errors
     if (error.response && error.response.data && error.response.data.error) {
-      switch (error.response.data.error.message) {
+      const firebaseError = error.response.data.error;
+      console.log("🔍 Firebase error details:", firebaseError);
+
+      switch (firebaseError.message) {
         case "EMAIL_NOT_FOUND":
           return res.status(404).send({ message: "Email not found" });
         case "INVALID_PASSWORD":
@@ -398,11 +521,42 @@ app.post("/login", async (req, res) => {
             .send({ message: "User account has been disabled" });
         case "INVALID_LOGIN_CREDENTIALS":
           return res.status(401).send({ message: "Invalid email or password" });
+        case "TOO_MANY_ATTEMPTS_TRY_LATER":
+          return res.status(429).send({
+            message: "Too many failed attempts. Please try again later.",
+          });
+        case "INVALID_EMAIL":
+          return res.status(400).send({ message: "Invalid email format" });
         default:
-          return res.status(400).send({ message: "Authentication failed" });
+          console.log("🔍 Unknown Firebase error:", firebaseError.message);
+          return res.status(400).send({
+            message: "Authentication failed",
+            debug:
+              process.env.NODE_ENV === "development"
+                ? firebaseError.message
+                : undefined,
+          });
       }
     }
-    res.status(500).send({ message: "Server error during authentication" });
+
+    // Handle network/timeout errors
+    if (error.code === "ECONNABORTED" || error.message.includes("timeout")) {
+      return res
+        .status(504)
+        .send({ message: "Request timeout. Please try again." });
+    }
+
+    if (error.code === "ENOTFOUND" || error.code === "ECONNREFUSED") {
+      return res
+        .status(503)
+        .send({ message: "Service temporarily unavailable" });
+    }
+
+    console.log("=== LOGIN ATTEMPT FAILED ===");
+    res.status(500).send({
+      message: "Server error during authentication",
+      debug: process.env.NODE_ENV === "development" ? error.message : undefined,
+    });
   }
 });
 

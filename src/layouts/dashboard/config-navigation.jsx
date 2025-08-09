@@ -2,7 +2,7 @@ import SvgColor from "../../components/svg-color";
 
 const icon = (name) => (
   <SvgColor
-    src={`../src/assets/icons/navbar/${name}.svg`}
+    src={`assets/icons/navbar/${name}.svg`}
     sx={{ width: 1, height: 1 }}
   />
 );
